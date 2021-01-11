@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	fmt.Println("page version v0.1.0")
+	const appVersion = "v0.1.0"
+	fmt.Printf("page version %s\n", appVersion)
 }
