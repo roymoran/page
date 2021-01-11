@@ -1,0 +1,9 @@
+1. Define contents of yml configuration file
+2. Print out basic usage and version on 'page' command execution
+3. Define file structure for project, along with stub tests
+4. Add stub methods for handling commands - init, up, etc.
+5. Define extensible pattern for adding domain registrar providers
+6. Define extensible pattern for adding host providers
+7. Define local credential management mechanism for providers
+8. Impliment page init
+9. Impliment page up
