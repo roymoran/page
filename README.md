@@ -1,5 +1,7 @@
 # page
 
+## Dependencies
+- [Golang v1.15.6](https://golang.org/)
 ## Build, Test, and Run
 ```bash
 # from src directory
