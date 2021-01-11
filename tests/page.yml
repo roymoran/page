@@ -1,13 +1,13 @@
-# PageUp definition file
+# Page definition file
 # https://aka.ms/yaml
 
-# version - pageup config template version
+# version - Page config template version
 version: "v0"
 # template - identifier where page template is located
 template: "https://github.com/roymoran/page"
 
 # domain info 
-# name - name of domain for this page
+# name - name of- domain for this page
 # 
 # registrar which domain name
 # name - doman name with tld -> example.com (doman should exist on account)
@@ -23,7 +23,7 @@ domain:
 # host provider where page is
 # deployed
 host:
-  name: 'pageup'
+  name: 'page'
   username: 'username'
   password: 'password'
 
