@@ -5,7 +5,7 @@
 # from src directory
 # install dependencies
 $ go install
-# build (stores executable among local user executable programs)
+# build and output executable to user programs directories
 # once built you can execute the command using the executable name
 # 'page' from you command line
 $ go build -o /usr/local/bin/page
