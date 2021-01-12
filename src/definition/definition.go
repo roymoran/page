@@ -1,8 +1,9 @@
 /*
-Package utility defines utility methods for reading/writing
-the standard yaml definiton file
+Package definiton defines methods for interacting wtih
+and managing the standard yaml definition file for this
+cli tool.
 */
-package utility
+package definiton
 
 // WriteDefinitionFile writes the yaml file
 // with default configurations at the location
