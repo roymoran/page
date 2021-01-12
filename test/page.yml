@@ -5,8 +5,12 @@
 version: "v0"
 # template - identifier where page template is located
 template: "https://github.com/roymoran/page"
+# unexpanded domain uses default registrar info
+domain: 'example.com'
+# unexpanded host uses default host info
+host: 'page'
 
-# domain info 
+# expanded domain 
 # name - name of- domain for this page
 # 
 # registrar which domain name
@@ -20,6 +24,7 @@ domain:
   password: password
   token: token
 
+# expanded host
 # host provider where page is
 # deployed
 host:
