@@ -1,7 +1,7 @@
 # Docs
 
 ## Page Definition File
-The goal of the definition file is to describe only the essential information required to create and deploy a page with the cli. The simplest form of the definition file is what is generated when running `page init`. We should use smart defaults for any key that isn't included or isn't expanded on. Any modifications to the definiton file should aim to be compatible with current versions of the definition file. If there is an incompatible change made to the file, the value of version must reflect that by incrementing it like so - 0, 1, 2, etcetera.
+The goal of the definition file is to describe only the essential information required to create and deploy a page with the cli. The simplest form of the definition file is what is generated when running `page init`. We should use smart defaults for any key that isn't included or isn't expanded on. Any modifications to the definiton file should aim to be compatible with current versions of the definition file. If there is an incompatible change made to the definition file, the value of `version` must reflect that by incrementing it like so - 0, 1, 2, etcetera.
 
 ### Current Version
 0
