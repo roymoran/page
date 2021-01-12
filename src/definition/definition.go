@@ -1,7 +1,8 @@
 /*
 Package definiton defines methods for interacting wtih
-and managing the standard yaml definition file for this
-cli tool.
+and managing the yaml definition file for this cli
+tool. Example of page definition file can be found
+in from root directory at docs/README.md
 */
 package definiton
 

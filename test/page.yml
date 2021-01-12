@@ -1,35 +1,9 @@
-# Page definition file
-# https://aka.ms/yaml
-
 # version - Page config template version
-version: "v0"
-# template - identifier where page template is located
+version: "0"
+# template - uniform resource locator where page 
+# template is located and accessible
 template: "https://github.com/roymoran/page"
-# unexpanded domain uses default registrar info
+# unexpanded domain uses default registrar info/config
 domain: 'example.com'
-# unexpanded host uses default host info
+# unexpanded host uses default host info/config
 host: 'page'
-
-# expanded domain 
-# name - name of- domain for this page
-# 
-# registrar which domain name
-# name - doman name with tld -> example.com (doman should exist on account)
-# registrar -  domain name registrar
-# username/paasword - credentials for provided domain  name registrar
-domain:
-  name: 'example.com'
-  registrar: 'namecheap'
-  username: username
-  password: password
-  token: token
-
-# expanded host
-# host provider where page is
-# deployed
-host:
-  name: 'page'
-  username: 'username'
-  password: 'password'
-
-  
