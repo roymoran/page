@@ -9,14 +9,22 @@ import (
 type None struct {
 }
 
-func (i None) Execute() bool {
+func (n None) UsageInfoShort() string {
+	return ""
+}
+
+func (n None) UsageInfoExpanded() string {
+	return ""
+}
+
+func (n None) Execute() bool {
 	return true
 }
 
-func (i None) Output() string {
-	return fmt.Sprint("page version ", constants.AppVersion(), "\n")
+func (n None) Output() string {
+	return fmt.Sprint("page version ", constants.AppVersion(), "\n\n", BuildUsageInfo(), "\n")
 }
 
-func (i None) ValidArgs() bool {
+func (n None) ValidArgs() bool {
 	return true
 }

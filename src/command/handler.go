@@ -5,14 +5,21 @@ up, etc.
 */
 package command
 
+import (
+	"fmt"
+	"os"
+	"text/tabwriter"
+)
+
+type Command struct {
+	Name string
+}
 type ICommand interface {
 	ValidArgs() bool
 	Execute() bool
 	Output() string
-}
-
-type Command struct {
-	Name string
+	UsageInfoShort() string
+	UsageInfoExpanded() string
 }
 
 // commandLookup creates a mapping of each command
@@ -21,8 +28,10 @@ type Command struct {
 // is passed in which case the return is the
 // version info of the cli tool
 var commandLookup = map[string]ICommand{
-	"none": None{},
-	"init": Init{},
+	"init":      Init{},
+	"up":        Up{},
+	"configure": Configure{},
+	"none":      None{},
 }
 
 // Handle is the entry point that begins execution
@@ -41,4 +50,19 @@ func Handle(args []string) string {
 
 	command.Execute()
 	return command.Output()
+}
+
+// make your page live\n  up	publishes your page using the page defintion provided
+func BuildUsageInfo() string {
+	usageInfo := "Common Page commands. For specific command usage use 'page [command_name] --help':\n\nstart, publish, and configure a new page project\n"
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+	for commandName, command := range commandLookup {
+		if commandName == "none" {
+			continue
+		}
+		usageInfo += fmt.Sprint("\n")
+		usageInfo += fmt.Sprint(commandName, "\t", command.UsageInfoShort())
+	}
+	writer.Flush()
+	return fmt.Sprint(usageInfo)
 }
