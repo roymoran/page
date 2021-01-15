@@ -34,6 +34,8 @@ func Handle(args []string) {
 	var command ICommand
 
 	if len(args) == 0 {
+		// special case, cli tool is executed
+		// with no arguments
 		command = commandLookup["none"]
 	} else {
 		command = commandLookup[args[0]]
