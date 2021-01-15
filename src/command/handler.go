@@ -41,7 +41,4 @@ func Handle(args []string) string {
 
 	command.Execute()
 	return command.Output()
-	// TODO: Implement
-	// Arg sanitation/preprocessing
-	// Command execution
 }

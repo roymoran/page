@@ -12,6 +12,7 @@ $ go install
 # 'page' from you command line
 $ go build -o /usr/local/bin/page
 # run tests
+$ cd tests
 $ go test
 # run without building executable
 $ go run main.go
