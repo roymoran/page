@@ -14,7 +14,7 @@ func (i None) Execute() bool {
 }
 
 func (i None) Output() string {
-	return fmt.Sprint("page version ", constants.AppVersion())
+	return fmt.Sprint("page version ", constants.AppVersion(), "\n")
 }
 
 func (i None) ValidArgs() bool {

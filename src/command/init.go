@@ -11,7 +11,7 @@ func (i Init) Execute() bool {
 }
 
 func (i Init) Output() string {
-	return "TODO: implement"
+	return ""
 }
 
 func (i Init) ValidArgs() bool {

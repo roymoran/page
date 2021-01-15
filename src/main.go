@@ -18,5 +18,5 @@ func main() {
 	// send response to standard out
 	// var _, args = os.Args[0], os.Args[1:]
 	output := command.Handle(os.Args[1:])
-	fmt.Println(output)
+	fmt.Print(output)
 }
