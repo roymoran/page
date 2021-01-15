@@ -1,10 +1,13 @@
 package command
 
+import "builtonpage.com/main/definition"
+
 type Init struct {
 }
 
 func (i Init) Execute() bool {
-	return true
+	ok := definition.WriteDefinitionFile()
+	return ok
 }
 
 func (i Init) Output() string {

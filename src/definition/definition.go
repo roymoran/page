@@ -11,11 +11,15 @@ import (
 	"log"
 )
 
-var data = `
-version: v0
-template: https://github.com/roymoran/page
-domain: example.com
-host: page
+var defaultTemplate = `# version - Page config template version
+version: "v0"
+# template - uniform resource locator where page 
+# template is located and accessible
+template: "https://github.com/roymoran/page"
+# unexpanded domain uses default registrar info/config
+domain: "example.com"
+# unexpanded host uses default host info/config
+host: "page"
 `
 
 // WriteDefinitionFile writes the yaml file
@@ -27,18 +31,12 @@ host: page
 // false is returned.
 func WriteDefinitionFile() bool {
 	status := true
-	fileContents, readErr := ioutil.ReadFile("./definition.yml")
-	if readErr != nil {
-		log.Fatal(readErr)
-		status = false
-		return status
-	}
 
-	writeErr := ioutil.WriteFile("page.yml", []byte(fileContents), 0644)
+	writeErr := ioutil.WriteFile("page.yml", []byte(defaultTemplate), 0644)
 	if writeErr != nil {
+		log.Fatal("Failed to init page.yml")
 		log.Fatal(writeErr)
 		status = false
-		return status
 	}
 
 	return status

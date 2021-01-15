@@ -1,5 +1,5 @@
 # version - Page config template version
-version: "0"
+version: "v0"
 # template - uniform resource locator where page 
 # template is located and accessible
 template: "https://github.com/roymoran/page"
