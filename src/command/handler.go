@@ -5,8 +5,6 @@ up, etc.
 */
 package command
 
-import "fmt"
-
 type ICommand interface {
 	ValidArgs() bool
 	Execute() bool
@@ -30,7 +28,7 @@ var commandLookup = map[string]ICommand{
 // Handle is the entry point that begins execution
 // of all commands. It parses the command line args
 // and calls execute on the appropriate command.
-func Handle(args []string) {
+func Handle(args []string) string {
 	var command ICommand
 
 	if len(args) == 0 {
@@ -42,7 +40,7 @@ func Handle(args []string) {
 	}
 
 	command.Execute()
-	fmt.Println(command.Output())
+	return command.Output()
 	// TODO: Implement
 	// Arg sanitation/preprocessing
 	// Command execution
