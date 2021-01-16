@@ -17,6 +17,10 @@ func (n None) UsageInfoExpanded() string {
 	return ""
 }
 
+func (n None) UsageCategory() int {
+	return -1
+}
+
 func (n None) Execute() bool {
 	return true
 }

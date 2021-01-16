@@ -11,6 +11,10 @@ func (c Configure) UsageInfoExpanded() string {
 	return ""
 }
 
+func (c Configure) UsageCategory() int {
+	return 2
+}
+
 func (c Configure) Execute() bool {
 	return true
 }

@@ -7,8 +7,6 @@ package command
 
 import (
 	"fmt"
-	"os"
-	"text/tabwriter"
 )
 
 type Command struct {
@@ -20,6 +18,13 @@ type ICommand interface {
 	Output() string
 	UsageInfoShort() string
 	UsageInfoExpanded() string
+	UsageCategory() int
+}
+
+var usageCategories = []string{
+	"start a new page project",
+	"publish page project",
+	"configure domain registrar and host provider for your projects",
 }
 
 // commandLookup creates a mapping of each command
@@ -52,17 +57,22 @@ func Handle(args []string) string {
 	return command.Output()
 }
 
-// make your page live\n  up	publishes your page using the page defintion provided
 func BuildUsageInfo() string {
-	usageInfo := "Common Page commands. For specific command usage use 'page [command_name] --help':\n\nstart, publish, and configure a new page project\n"
-	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
-	for commandName, command := range commandLookup {
-		if commandName == "none" {
-			continue
+	usageInfo := "Common Page commands:\n"
+
+	for catergoryId, category := range usageCategories {
+		usageInfo += fmt.Sprint("\n", category, "\n")
+
+		for commandName, command := range commandLookup {
+			if commandName == "none" {
+				continue
+			}
+
+			if command.UsageCategory() == catergoryId {
+				usageInfo += fmt.Sprint("  ", commandName, "\t\t", command.UsageInfoShort(), "\n")
+			}
 		}
-		usageInfo += fmt.Sprint("\n")
-		usageInfo += fmt.Sprint(commandName, "\t", command.UsageInfoShort())
 	}
-	writer.Flush()
-	return fmt.Sprint(usageInfo)
+
+	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page [command_name] --help'")
 }

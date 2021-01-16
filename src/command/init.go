@@ -13,6 +13,10 @@ func (i Init) UsageInfoExpanded() string {
 	return ""
 }
 
+func (i Init) UsageCategory() int {
+	return 0
+}
+
 func (i Init) Execute() bool {
 	ok := definition.WriteDefinitionFile()
 	return ok

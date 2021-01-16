@@ -11,6 +11,10 @@ func (u Up) UsageInfoExpanded() string {
 	return ""
 }
 
+func (u Up) UsageCategory() int {
+	return 1
+}
+
 func (u Up) Execute() bool {
 	return true
 }
