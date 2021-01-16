@@ -6,7 +6,7 @@ type Init struct {
 }
 
 func (i Init) UsageInfoShort() string {
-	return "creates a new page.yml definition filesjskkksjsjks"
+	return "creates a new page.yml definition file"
 }
 
 func (i Init) UsageInfoExpanded() string {
