@@ -6,7 +6,9 @@ up, etc.
 package command
 
 import (
+	"bytes"
 	"fmt"
+	"text/tabwriter"
 )
 
 type Command struct {
@@ -33,10 +35,10 @@ var usageCategories = []string{
 // is passed in which case the return is the
 // version info of the cli tool
 var commandLookup = map[string]ICommand{
-	"init":      Init{},
-	"up":        Up{},
-	"configure": Configure{},
-	"none":      None{},
+	"init": Init{},
+	"up":   Up{},
+	"conf": Configure{},
+	"none": None{},
 }
 
 // Handle is the entry point that begins execution
@@ -57,10 +59,10 @@ func Handle(args []string) string {
 	return command.Output()
 }
 
-// TODO: Use tabwriter for fixed widths
 func BuildUsageInfo() string {
 	usageInfo := "Common Page commands:\n"
-
+	var b bytes.Buffer
+	tabwriter.NewWriter(&b, 0, 8, 1, '\t', tabwriter.AlignRight)
 	for catergoryId, category := range usageCategories {
 		usageInfo += fmt.Sprint("\n", category, "\n")
 
@@ -70,7 +72,9 @@ func BuildUsageInfo() string {
 			}
 
 			if command.UsageCategory() == catergoryId {
-				usageInfo += fmt.Sprint("  ", commandName, "\t\t", command.UsageInfoShort(), "\n")
+				fmt.Fprint(&b, "  ", commandName, "\t\t", command.UsageInfoShort(), "\n")
+				usageInfo += fmt.Sprint(b.String())
+				b.Reset()
 			}
 		}
 	}
