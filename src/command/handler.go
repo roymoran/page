@@ -25,7 +25,7 @@ type ICommand interface {
 
 var usageCategories = []string{
 	"start a new page project",
-	"publish page project",
+	"publish a page project",
 	"configure defaults for registrar/host provider",
 }
 
