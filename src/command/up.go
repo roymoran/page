@@ -22,16 +22,21 @@ func (u Up) Execute() bool {
 	// Download template from url, build static assets as needed,
 	// then read build files into memory. Take into consideration the size
 	// of the built assets - will it be ok to store in memory until deploy?
-	// or maybe copy these one by one into a deploy directory? maintaining a
-	// flag that signals deploy step once assets are ready.
+	// or maybe copy these one by one into a deploy directory (zip if needed)?
+	// maintaining a flag that signals deploy step once assets are ready.
 
 	// Get default host for host_value on yaml file. Does infrastructure
 	// exist to deploy assets? If not create infrastructure with message
 	// 'Creating infrastructure on [host_value]...'
+	// Infrastructure could potentially be defined and created with
+	// Infrastructure as Code tool e.g. terraform
 
 	// Get default registrar for registrar_value on yaml file,
 	// does domain exist on registrar? if not register with message
 	// 'Registering domain.com with [registrar_value]...'
+
+	// Take assets from deploy directory, and execute depoyment via host
+	// cli
 
 	return true
 }
