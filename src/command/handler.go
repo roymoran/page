@@ -57,6 +57,7 @@ func Handle(args []string) string {
 	return command.Output()
 }
 
+// TODO: Use tabwriter for fixed widths
 func BuildUsageInfo() string {
 	usageInfo := "Common Page commands:\n"
 
