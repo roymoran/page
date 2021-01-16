@@ -26,7 +26,7 @@ type ICommand interface {
 var usageCategories = []string{
 	"start a new page project",
 	"publish page project",
-	"configure default domain registrar and host provider",
+	"configure defaults for registrar/host provider",
 }
 
 // commandLookup creates a mapping of each command
@@ -37,7 +37,7 @@ var usageCategories = []string{
 var commandLookup = map[string]ICommand{
 	"init": Init{},
 	"up":   Up{},
-	"conf": Configure{},
+	"conf": Conf{},
 	"none": None{},
 }
 
