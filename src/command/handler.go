@@ -24,7 +24,7 @@ type ICommand interface {
 var usageCategories = []string{
 	"start a new page project",
 	"publish page project",
-	"configure domain registrar and host provider for your projects",
+	"configure default domain registrar and host provider",
 }
 
 // commandLookup creates a mapping of each command
