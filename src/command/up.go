@@ -29,11 +29,14 @@ func (u Up) Execute() bool {
 	// exist to deploy assets? If not create infrastructure with message
 	// 'Creating infrastructure on [host_value]...'
 	// Infrastructure could potentially be defined and created with
-	// Infrastructure as Code tool e.g. terraform
+	// Infrastructure as Code tool e.g. terraform (this logic)
+	// may need to be done 'page conf host...' command
 
 	// Get default registrar for registrar_value on yaml file,
 	// does domain exist on registrar? if not register with message
 	// 'Registering domain.com with [registrar_value]...'
+	// configure dns records as needed so that the custom domain
+	// points to the host infrastructure
 
 	// Take assets from deploy directory, and execute depoyment via host
 	// cli
