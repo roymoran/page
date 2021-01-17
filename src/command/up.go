@@ -45,7 +45,7 @@ func (u Up) Execute() bool {
 }
 
 func (u Up) Output() string {
-	return ""
+	return "deployed.\n"
 }
 
 func (u Up) ValidArgs() bool {

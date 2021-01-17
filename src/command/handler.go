@@ -38,6 +38,7 @@ var commandLookup = map[string]ICommand{
 	"init": Init{},
 	"up":   Up{},
 	"conf": Conf{},
+	"help": Help{},
 	"none": None{},
 }
 
@@ -72,12 +73,12 @@ func BuildUsageInfo() string {
 			}
 
 			if command.UsageCategory() == catergoryId {
-				fmt.Fprint(&b, "  ", commandName, "\t\t", command.UsageInfoShort(), "\n")
+				fmt.Fprint(&b, "   ", commandName, "\t\t", command.UsageInfoShort(), "\n")
 				usageInfo += fmt.Sprint(b.String())
 				b.Reset()
 			}
 		}
 	}
 
-	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page [command_name] --help'")
+	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page help <command>'")
 }
