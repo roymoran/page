@@ -1,4 +1,4 @@
-package command
+package commands
 
 type Up struct {
 }

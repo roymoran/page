@@ -4,13 +4,13 @@ import (
 	"strings"
 	"testing"
 
-	"builtonpage.com/main/command"
+	"builtonpage.com/main/commands"
 )
 
 func TestNoneCommand(t *testing.T) {
 	args := []string{}
 	expectedSubstring := "page version v"
-	var output string = command.Handle(args)
+	var output string = commands.Handle(args)
 	if !strings.Contains(output, expectedSubstring) {
 		t.Errorf("Expected output to contain '%v' instead got '%v'", expectedSubstring, output)
 	}

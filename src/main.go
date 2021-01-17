@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"os"
 
-	"builtonpage.com/main/command"
+	"builtonpage.com/main/commands"
 )
 
 func main() {
-	output := command.Handle(os.Args[1:])
+	output := commands.Handle(os.Args[1:])
 	fmt.Print(output)
 }
