@@ -53,7 +53,13 @@ func Handle(args []string) string {
 		// with no arguments
 		command = commandLookup["none"]
 	} else {
-		command = commandLookup[args[0]]
+		// check if valid command otherwise
+		// return with invalid command message
+		if val, ok := commandLookup[args[0]]; ok {
+			command = val
+		} else {
+			return fmt.Sprint("unrecognized command ", args[0], ". See 'page' for list of valid commands.\n")
+		}
 	}
 
 	command.Execute()
