@@ -55,8 +55,8 @@ func Handle(args []string) string {
 	} else {
 		// check if valid command otherwise
 		// return with invalid command message
-		if val, ok := commandLookup[args[0]]; ok {
-			command = val
+		if c, ok := commandLookup[args[0]]; ok {
+			command = c
 		} else {
 			return fmt.Sprint("unrecognized command ", args[0], ". See 'page' for list of valid commands.\n")
 		}
