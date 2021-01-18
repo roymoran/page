@@ -21,8 +21,7 @@ func (n None) UsageCategory() int {
 	return -1
 }
 
-func (n None) Execute() bool {
-	return true
+func (n None) Execute() {
 }
 
 func (n None) Output() string {
@@ -33,6 +32,5 @@ func (n None) ValidArgs() bool {
 	return true
 }
 
-func (n None) LoadArgs(args []string) bool {
-	return true
+func (n None) LoadArgs(args []string) {
 }

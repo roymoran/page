@@ -16,8 +16,8 @@ type Command struct {
 }
 type ICommand interface {
 	ValidArgs() bool
-	LoadArgs(args []string) bool
-	Execute() bool
+	LoadArgs(args []string)
+	Execute()
 	Output() string
 	UsageInfoShort() string
 	UsageInfoExpanded() string

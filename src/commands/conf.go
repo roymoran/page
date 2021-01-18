@@ -8,6 +8,7 @@ import (
 
 type Conf struct {
 	ExecutionOutput string
+	ExecutionOk     bool
 }
 
 type ConfArgs struct {
@@ -18,30 +19,33 @@ type ConfArgs struct {
 	ArgValues       map[string]string
 }
 
-var conf Conf = Conf{}
+var conf Conf = Conf{
+	ExecutionOutput: "",
+	ExecutionOk:     true,
+}
 
 var confArgs ConfArgs = ConfArgs{
 	Action:          "",
 	Registrar:       nil,
 	Host:            nil,
 	OrderedArgLabel: []string{"providerType", "action", "providerName"},
+	ArgValues: map[string]string{
+		"providerType": "",
+		"action":       "",
+		"providerName": "",
+	},
 }
 
-func (c Conf) LoadArgs(args []string) bool {
-	argMap := make(map[string]string)
-	for _, argLabel := range confArgs.OrderedArgLabel {
-		argMap[argLabel] = ""
-	}
-
+func (c Conf) LoadArgs(args []string) {
 	for i, arg := range args {
-		argMap[confArgs.OrderedArgLabel[i]] = arg
+		if i > len(confArgs.OrderedArgLabel)-1 {
+			conf.ExecutionOk = false
+			return
+		}
+		confArgs.ArgValues[confArgs.OrderedArgLabel[i]] = arg
 	}
-
-	confArgs.ArgValues = argMap
 
 	conf.ExecutionOutput = fmt.Sprintln(args, confArgs.ArgValues)
-
-	return true
 }
 
 func (c Conf) UsageInfoShort() string {
@@ -72,8 +76,12 @@ func (c Conf) UsageCategory() int {
 	return 2
 }
 
-func (c Conf) Execute() bool {
-	return true
+func (c Conf) Execute() {
+	if !conf.ExecutionOk {
+		return
+	}
+
+	conf.ExecutionOutput = fmt.Sprintln(conf.ExecutionOk)
 }
 
 func (c Conf) Output() string {
