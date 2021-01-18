@@ -16,7 +16,6 @@ type ConfArgs struct {
 	Host            providers.IHost
 	OrderedArgLabel []string
 	ArgValues       map[string]string
-	Options         map[string]string
 }
 
 var conf Conf = Conf{}
@@ -26,7 +25,6 @@ var confArgs ConfArgs = ConfArgs{
 	Registrar:       nil,
 	Host:            nil,
 	OrderedArgLabel: []string{"providerType", "action", "providerName"},
-	Options:         map[string]string{"default": "false"},
 }
 
 func (c Conf) LoadArgs(args []string) bool {
@@ -42,6 +40,7 @@ func (c Conf) LoadArgs(args []string) bool {
 	confArgs.ArgValues = argMap
 
 	conf.ExecutionOutput = fmt.Sprintln(args, confArgs.ArgValues)
+
 	return true
 }
 
@@ -63,8 +62,6 @@ func (c Conf) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln("Example usage:")
 	extendedUsage += fmt.Sprintln("page conf registrar add namecheap")
 	extendedUsage += fmt.Sprintln("page conf host add namecheap")
-	extendedUsage += fmt.Sprintln("page conf registrar add namecheap --default")
-	extendedUsage += fmt.Sprintln("page conf host add namecheap --default")
 	extendedUsage += fmt.Sprintln("page conf registrar list")
 	extendedUsage += fmt.Sprintln("page conf host list")
 	extendedUsage += fmt.Sprintln()

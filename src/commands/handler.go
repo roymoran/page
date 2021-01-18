@@ -63,7 +63,10 @@ func Handle(args []string) string {
 		}
 	}
 
-	command.LoadArgs(args[1:])
+	if ok := command.LoadArgs(args[1:]); !ok {
+		return fmt.Sprint("unrecognized command ", args[0], ". See 'page' for list of valid commands.\n")
+	}
+
 	command.Execute()
 	return command.Output()
 }
