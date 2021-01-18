@@ -16,6 +16,7 @@ type Command struct {
 }
 type ICommand interface {
 	ValidArgs() bool
+	LoadArgs(args []string) bool
 	Execute() bool
 	Output() string
 	UsageInfoShort() string
@@ -35,11 +36,11 @@ var usageCategories = []string{
 // is passed in which case the return is the
 // version info of the cli tool
 var commandLookup = map[string]ICommand{
-	"init": Init{},
-	"up":   Up{},
+	// "init": Init{},
+	// "up":   Up{},
 	"conf": Conf{},
-	"help": Help{},
-	"none": None{},
+	// "help": Help{},
+	// "none": None{},
 }
 
 // Handle is the entry point that begins execution
@@ -62,6 +63,7 @@ func Handle(args []string) string {
 		}
 	}
 
+	command.LoadArgs(args[1:])
 	command.Execute()
 	return command.Output()
 }
