@@ -11,9 +11,6 @@ import (
 	"text/tabwriter"
 )
 
-type Command struct {
-	Name string
-}
 type ICommand interface {
 	ValidArgs() bool
 	LoadArgs(args []string)

@@ -59,6 +59,8 @@ func (c Conf) LoadArgs(args []string) {
 		confArgs.ArgValues[confArgs.OrderedArgLabel[i]] = arg
 	}
 
+	// TODO: Validate args passed for providerType, action, providerName are valid values
+	// otherwise set conf.ExecutionOk = false and conf.ExecutionOutput with error message
 	conf.ExecutionOutput = fmt.Sprintln(args, confArgs.ArgValues)
 }
 
@@ -92,6 +94,8 @@ func (c Conf) UsageCategory() int {
 
 func (c Conf) Execute() {
 	if !conf.ExecutionOk {
+		conf.ExecutionOutput += fmt.Sprintln("")
+		conf.ExecutionOutput += fmt.Sprint("See 'page help ", conf.DisplayName, "' for usage info.\n")
 		return
 	}
 
