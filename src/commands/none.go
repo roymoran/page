@@ -32,3 +32,7 @@ func (n None) Output() string {
 func (n None) ValidArgs() bool {
 	return true
 }
+
+func (n None) LoadArgs(args []string) bool {
+	return true
+}

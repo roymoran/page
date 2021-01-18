@@ -12,6 +12,6 @@ import (
 )
 
 func main() {
-	output := commands.Handle(os.Args[1:])
+	output := commands.Handle(os.Args)
 	fmt.Print(output)
 }

@@ -32,41 +32,50 @@ var usageCategories = []string{
 
 // commandLookup creates a mapping of each command
 // name with the struct that implements ICommand.
-// "none" is special case where no command name
-// is passed in which case the return is the
-// version info of the cli tool
+// Empty string is special case where no command name
+// is provided to the program. The output for this case
+//  is usage info on available commands
 var commandLookup = map[string]ICommand{
 	// "init": Init{},
 	// "up":   Up{},
 	"conf": Conf{},
 	// "help": Help{},
-	// "none": None{},
+	"": None{},
+}
+
+type ProgramArgs struct {
+	OrderedArgLabel     []string
+	ArgValues           map[string]string
+	AdditionalArgValues []string
+}
+
+var programArgs ProgramArgs = ProgramArgs{
+	ArgValues: map[string]string{
+		"programName": "",
+		"command":     "",
+	},
+	OrderedArgLabel: []string{"programName", "command"},
 }
 
 // Handle is the entry point that begins execution
 // of all commands. It parses the command line args
 // and calls execute on the appropriate command.
 func Handle(args []string) string {
-	var command ICommand
-
-	if len(args) == 0 {
-		// special case, cli tool is executed
-		// with no arguments
-		command = commandLookup["none"]
-	} else {
-		// check if valid command otherwise
-		// return with invalid command message
-		if c, ok := commandLookup[args[0]]; ok {
-			command = c
-		} else {
-			return fmt.Sprint("unrecognized command ", args[0], ". See 'page' for list of valid commands.\n")
+	for i, arg := range args {
+		if i > len(programArgs.OrderedArgLabel)-1 {
+			programArgs.AdditionalArgValues = args[i:]
+			break
 		}
+		programArgs.ArgValues[programArgs.OrderedArgLabel[i]] = arg
 	}
 
-	if ok := command.LoadArgs(args[1:]); !ok {
-		return fmt.Sprint("unrecognized command ", args[0], ". See 'page' for list of valid commands.\n")
+	command, commandValid := commandLookup[programArgs.ArgValues["command"]]
+
+	if !commandValid {
+		return fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
 	}
 
+	command.LoadArgs(programArgs.AdditionalArgValues)
 	command.Execute()
 	return command.Output()
 }
@@ -92,4 +101,9 @@ func BuildUsageInfo() string {
 	}
 
 	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page help <command>'")
+}
+
+func LoadArgsIfAny(args []string, command ICommand) bool {
+
+	return true
 }
