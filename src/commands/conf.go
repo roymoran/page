@@ -7,7 +7,7 @@ import (
 )
 
 type Conf struct {
-	Name                     string
+	DisplayName              string
 	ExecutionOutput          string
 	ExecutionOk              bool
 	MinimumExpectedArgs      int
@@ -23,7 +23,7 @@ type ConfArgs struct {
 }
 
 var conf Conf = Conf{
-	Name:                     "conf",
+	DisplayName:              "conf",
 	ExecutionOutput:          "",
 	ExecutionOk:              true,
 	MinimumExpectedArgs:      2,
@@ -45,13 +45,13 @@ var confArgs ConfArgs = ConfArgs{
 func (c Conf) LoadArgs(args []string) {
 	if len(args) < conf.MinimumExpectedArgs {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprintln(conf.Name, "expects at least", conf.MinimumExpectedArgs, "arguments, received", len(args))
+		conf.ExecutionOutput = fmt.Sprintln(conf.DisplayName, "expects at least", conf.MinimumExpectedArgs, "arguments, received", len(args))
 		return
 	}
 
 	if len(args) > conf.MaximumExpectedArguments {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprintln(conf.Name, "expects at most", conf.MaximumExpectedArguments, "arguments, received", len(args))
+		conf.ExecutionOutput = fmt.Sprintln(conf.DisplayName, "expects at most", conf.MaximumExpectedArguments, "arguments, received", len(args))
 		return
 	}
 
