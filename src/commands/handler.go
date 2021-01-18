@@ -38,7 +38,7 @@ var usageCategories = []string{
 var commandLookup = map[string]ICommand{
 	// "init": Init{},
 	// "up":   Up{},
-	"conf": Conf{},
+	conf.Name: Conf{},
 	// "help": Help{},
 	"": None{},
 }
