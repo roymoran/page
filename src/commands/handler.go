@@ -33,11 +33,11 @@ var usageCategories = []string{
 // is provided to the program. The output for this case
 //  is usage info on available commands
 var commandLookup = map[string]ICommand{
-	// "init": Init{},
+	initCommand.DisplayName: Init{},
 	// "up":   Up{},
 	conf.DisplayName: Conf{},
-	// "help": Help{},
-	"": None{},
+	help.DisplayName: Help{},
+	"":               None{},
 }
 
 type ProgramArgs struct {

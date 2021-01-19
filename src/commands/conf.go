@@ -42,13 +42,13 @@ var confArgs ConfArgs = ConfArgs{
 func (c Conf) LoadArgs(args []string) {
 	if len(args) < conf.MinimumExpectedArgs {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprintln(conf.DisplayName, "expects at least", conf.MinimumExpectedArgs, "arguments, received", len(args))
+		conf.ExecutionOutput += fmt.Sprintln(conf.DisplayName, "expects at least", conf.MinimumExpectedArgs, "arguments, received", len(args))
 		return
 	}
 
 	if len(args) > conf.MaximumExpectedArguments {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprintln(conf.DisplayName, "expects at most", conf.MaximumExpectedArguments, "arguments, received", len(args))
+		conf.ExecutionOutput += fmt.Sprintln(conf.DisplayName, "expects at most", conf.MaximumExpectedArguments, "arguments, received", len(args))
 		return
 	}
 
@@ -104,19 +104,21 @@ func (c Conf) UsageInfoShort() string {
 func (c Conf) UsageInfoExpanded() string {
 	extendedUsage := fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Summary:")
-	extendedUsage += fmt.Sprintln("conf - ", c.UsageInfoShort())
+	extendedUsage += fmt.Sprintln(conf.DisplayName, "-", c.UsageInfoShort())
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Description:")
-	extendedUsage += fmt.Sprintln("conf lets you configure the default host and domain name registrar for all page projects. You can also use the command to view currently supported hosts and registrars. This command also lets you change/manage the default value of the host or registrar.")
+	extendedUsage += fmt.Sprintln("lets you configure the default host and domain name registrar for all page projects.")
+	extendedUsage += fmt.Sprintln("You can also use the command to view currently supported hosts and registrars.")
+	extendedUsage += fmt.Sprintln("This command also lets you change/manage the default value of the host or registrar.")
 	extendedUsage += fmt.Sprintln()
-	extendedUsage += fmt.Sprintln("Additonal arguments and options:")
-	extendedUsage += fmt.Sprintln("conf does not require any additional arguments or options")
+	extendedUsage += fmt.Sprintln("Arguments:")
+	extendedUsage += fmt.Sprintln("does not require any additional arguments or options")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Example usage:")
-	extendedUsage += fmt.Sprintln("page conf registrar add namecheap")
-	extendedUsage += fmt.Sprintln("page conf host add namecheap")
-	extendedUsage += fmt.Sprintln("page conf registrar list")
-	extendedUsage += fmt.Sprintln("page conf host list")
+	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "registrar add namecheap")
+	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "host add namecheap")
+	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "registrar list")
+	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "host list")
 	extendedUsage += fmt.Sprintln()
 	return extendedUsage
 }
