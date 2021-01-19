@@ -99,8 +99,3 @@ func BuildUsageInfo() string {
 
 	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page help <command>'")
 }
-
-func LoadArgsIfAny(args []string, command ICommand) bool {
-
-	return true
-}
