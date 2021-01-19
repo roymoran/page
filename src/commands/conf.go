@@ -78,18 +78,20 @@ func (c Conf) LoadArgs(args []string) {
 	var registrarProviderConcrete providers.RegistrarProvider
 	var providerSupported bool
 
-	if confArgs.ArgValues["providerType"] == "registrar" {
-		registrarProviderConcrete = provider.(providers.RegistrarProvider)
-		_, providerSupported = registrarProviderConcrete.Supported[confArgs.ArgValues["providerName"]]
-	} else {
-		hostProviderConcrete = provider.(providers.HostProvider)
-		_, providerSupported = hostProviderConcrete.Supported[confArgs.ArgValues["providerName"]]
-	}
+	if confArgs.ArgValues["actionName"] != "list" {
+		if confArgs.ArgValues["providerType"] == "registrar" {
+			registrarProviderConcrete = provider.(providers.RegistrarProvider)
+			_, providerSupported = registrarProviderConcrete.Supported[confArgs.ArgValues["providerName"]]
+		} else {
+			hostProviderConcrete = provider.(providers.HostProvider)
+			_, providerSupported = hostProviderConcrete.Supported[confArgs.ArgValues["providerName"]]
+		}
 
-	if !providerSupported {
-		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", confArgs.ArgValues["providerName"], "' for ", confArgs.ArgValues["providerType"], ". See 'page ", confArgs.ArgValues["providerType"], " list' for currently supported ", confArgs.ArgValues["providerType"], "(s)")
-		return
+		if !providerSupported {
+			conf.ExecutionOk = false
+			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", confArgs.ArgValues["providerName"], "' for ", confArgs.ArgValues["providerType"], ". See 'page ", confArgs.ArgValues["providerType"], " list' for currently supported ", confArgs.ArgValues["providerType"], "s")
+			return
+		}
 	}
 
 	conf.ExecutionOutput = fmt.Sprintln(args, confArgs.ArgValues)
