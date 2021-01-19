@@ -6,34 +6,35 @@ import (
 )
 
 type Provider struct {
-	Actions   []string
-	Providers map[string]IProvider
+	Actions            map[string]func(IProvider) bool
+	Providers          map[string]IProvider
+	HostProviders      map[string]HostProvider
+	RegistrarProviders map[string]RegistrarProvider
 }
 
 type IProvider interface {
 	Add() bool
-	Remove() bool
 	List() bool
 }
 
 type RegistrarProvider struct {
-	SupportedRegistrars map[string]IRegistrar
+	Supported map[string]IRegistrar
 }
 
 type HostProvider struct {
-	SupportedHosts map[string]IHost
+	Supported map[string]IHost
 }
 
-var provider = Provider{
-	Actions: []string{"add", "remove", "list"},
+var SupportedProviders = Provider{
+	Actions: map[string]func(IProvider) bool{"add": IProvider.Add, "list": IProvider.List},
 	Providers: map[string]IProvider{
 		"host": HostProvider{
-			SupportedHosts: map[string]IHost{
+			Supported: map[string]IHost{
 				"page": hosts.PageHost{},
 			},
 		},
 		"registrar": RegistrarProvider{
-			SupportedRegistrars: map[string]IRegistrar{
+			Supported: map[string]IRegistrar{
 				"namecheap": registrars.Namecheap{},
 				"page":      registrars.Page{},
 			},
