@@ -5,6 +5,11 @@ import (
 	registrars "builtonpage.com/main/providers/registrars"
 )
 
+type Provider struct {
+	Actions   []string
+	Providers map[string]IProvider
+}
+
 type IProvider interface {
 	Add() bool
 	Remove() bool
@@ -19,16 +24,19 @@ type HostProvider struct {
 	SupportedHosts map[string]IHost
 }
 
-var provider = map[string]IProvider{
-	"host": HostProvider{
-		SupportedHosts: map[string]IHost{
-			"page": hosts.PageHost{},
+var provider = Provider{
+	Actions: []string{"add", "remove", "list"},
+	Providers: map[string]IProvider{
+		"host": HostProvider{
+			SupportedHosts: map[string]IHost{
+				"page": hosts.PageHost{},
+			},
 		},
-	},
-	"registrar": RegistrarProvider{
-		SupportedRegistrars: map[string]IRegistrar{
-			"namecheap": registrars.Namecheap{},
-			"page":      registrars.Page{},
+		"registrar": RegistrarProvider{
+			SupportedRegistrars: map[string]IRegistrar{
+				"namecheap": registrars.Namecheap{},
+				"page":      registrars.Page{},
+			},
 		},
 	},
 }
