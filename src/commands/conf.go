@@ -15,10 +15,8 @@ type Conf struct {
 }
 
 type ConfArgs struct {
-	Action          func(providers.IProvider) bool
-	Provider        providers.IProvider
-	OrderedArgLabel []string
-	ArgValues       map[string]string
+	Action   func(providers.IProvider) bool
+	Provider providers.IProvider
 }
 
 var conf CommandInfo = CommandInfo{
@@ -36,30 +34,29 @@ var conf CommandInfo = CommandInfo{
 }
 
 var confArgs ConfArgs = ConfArgs{
-	Action:          nil,
-	OrderedArgLabel: []string{"providerType", "actionName", "providerName"},
-	ArgValues: map[string]string{
-		"providerType": "",
-		"actionName":   "",
-		"providerName": "",
-	},
+	Action:   nil,
+	Provider: nil,
 }
 
 func (c Conf) LoadArgs() {
-	provider, ok := providers.SupportedProviders.Providers[confArgs.ArgValues["providerType"]]
+	if !conf.ExecutionOk {
+		return
+	}
+
+	provider, ok := providers.SupportedProviders.Providers[conf.ArgValues["providerType"]]
 	if !ok {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", confArgs.ArgValues["providerType"], "'. Expected either registrar or host")
+		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host")
 		return
 	}
 
 	confArgs.Provider = provider
 
-	action, actionExists := providers.SupportedProviders.Actions[confArgs.ArgValues["actionName"]]
+	action, actionExists := providers.SupportedProviders.Actions[conf.ArgValues["actionName"]]
 
 	if !actionExists {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", confArgs.ArgValues["actionName"], "'. Expected either add or list")
+		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list")
 		return
 	}
 
@@ -68,23 +65,21 @@ func (c Conf) LoadArgs() {
 	var registrarProviderConcrete providers.RegistrarProvider
 	var providerSupported bool
 
-	if confArgs.ArgValues["actionName"] != "list" {
-		if confArgs.ArgValues["providerType"] == "registrar" {
+	if conf.ArgValues["actionName"] != "list" {
+		if conf.ArgValues["providerType"] == "registrar" {
 			registrarProviderConcrete = provider.(providers.RegistrarProvider)
-			_, providerSupported = registrarProviderConcrete.Supported[confArgs.ArgValues["providerName"]]
+			_, providerSupported = registrarProviderConcrete.Supported[conf.ArgValues["providerName"]]
 		} else {
 			hostProviderConcrete = provider.(providers.HostProvider)
-			_, providerSupported = hostProviderConcrete.Supported[confArgs.ArgValues["providerName"]]
+			_, providerSupported = hostProviderConcrete.Supported[conf.ArgValues["providerName"]]
 		}
 
 		if !providerSupported {
 			conf.ExecutionOk = false
-			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", confArgs.ArgValues["providerName"], "' for ", confArgs.ArgValues["providerType"], ". See 'page ", confArgs.ArgValues["providerType"], " list' for currently supported ", confArgs.ArgValues["providerType"], "s")
+			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s")
 			return
 		}
 	}
-
-	conf.ExecutionOutput = fmt.Sprintln(confArgs.ArgValues)
 }
 
 func (c Conf) UsageInfoShort() string {
@@ -124,7 +119,7 @@ func (c Conf) Execute() {
 		return
 	}
 
-	conf.ExecutionOutput = fmt.Sprintln(conf.ExecutionOutput, conf.ExecutionOk)
+	confArgs.Action(confArgs.Provider)
 }
 
 func (c Conf) Output() string {
