@@ -8,23 +8,17 @@ type Help struct {
 	ExecutionOk              bool
 	MinimumExpectedArgs      int
 	MaximumExpectedArguments int
+	OrderedArgLabel          []string
+	ArgValues                map[string]string
 }
 
-type HelpArgs struct {
-	OrderedArgLabel []string
-	ArgValues       map[string]string
-}
-
-var help Help = Help{
+var help CommandInfo = CommandInfo{
 	DisplayName:              "help",
 	ExecutionOutput:          "",
 	ExecutionOk:              true,
 	MinimumExpectedArgs:      1,
 	MaximumExpectedArguments: 1,
-}
-
-var helpArgs HelpArgs = HelpArgs{
-	OrderedArgLabel: []string{"commandName"},
+	OrderedArgLabel:          []string{"commandName"},
 	ArgValues: map[string]string{
 		"commandName": "",
 	},
@@ -44,7 +38,7 @@ func (h Help) LoadArgs(args []string) {
 	}
 
 	for i, arg := range args {
-		helpArgs.ArgValues[helpArgs.OrderedArgLabel[i]] = arg
+		help.ArgValues[help.OrderedArgLabel[i]] = arg
 	}
 }
 
@@ -67,7 +61,7 @@ func (h Help) Execute() {
 		return
 	}
 
-	command := commandLookup[helpArgs.ArgValues["commandName"]]
+	command := commandLookup[help.ArgValues["commandName"]]
 	help.ExecutionOutput = command.UsageInfoExpanded()
 }
 

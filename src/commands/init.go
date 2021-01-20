@@ -14,7 +14,7 @@ type Init struct {
 	MaximumExpectedArguments int
 }
 
-var initCommand Init = Init{
+var initCommand CommandInfo = CommandInfo{
 	DisplayName:              "init",
 	ExecutionOutput:          "",
 	ExecutionOk:              true,

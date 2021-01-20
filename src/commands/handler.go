@@ -21,6 +21,16 @@ type ICommand interface {
 	UsageCategory() int
 }
 
+type CommandInfo struct {
+	DisplayName              string
+	ExecutionOutput          string
+	ExecutionOk              bool
+	MinimumExpectedArgs      int
+	MaximumExpectedArguments int
+	OrderedArgLabel          []string
+	ArgValues                map[string]string
+}
+
 var usageCategories = []string{
 	"start a new page project",
 	"publish a page project",
@@ -38,6 +48,12 @@ var commandLookup = map[string]ICommand{
 	conf.DisplayName: Conf{},
 	help.DisplayName: Help{},
 	"":               None{},
+}
+
+var commandInfoMap = map[string]*CommandInfo{
+	initCommand.DisplayName: &initCommand,
+	conf.DisplayName:        &conf,
+	help.DisplayName:        &help,
 }
 
 type ProgramArgs struct {
@@ -72,7 +88,7 @@ func Handle(args []string) string {
 		return fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
 	}
 
-	command.LoadArgs(programArgs.AdditionalArgValues)
+	LoadArgs(commandInfoMap[programArgs.ArgValues["command"]], programArgs.AdditionalArgValues)
 	command.Execute()
 	return command.Output()
 }
@@ -98,4 +114,22 @@ func BuildUsageInfo() string {
 	}
 
 	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page help <command>'")
+}
+
+func LoadArgs(commandInfo *CommandInfo, args []string) {
+	if len(args) < commandInfo.MinimumExpectedArgs {
+		commandInfo.ExecutionOk = false
+		commandInfo.ExecutionOutput += fmt.Sprintln(commandInfo.DisplayName, "expects at least", commandInfo.MinimumExpectedArgs, "arguments, received", len(args))
+		return
+	}
+
+	if len(args) > commandInfo.MaximumExpectedArguments {
+		commandInfo.ExecutionOk = false
+		commandInfo.ExecutionOutput += fmt.Sprintln(commandInfo.DisplayName, "expects at most", commandInfo.MaximumExpectedArguments, "arguments, received", len(args))
+		return
+	}
+
+	for i, arg := range args {
+		commandInfo.ArgValues[commandInfo.OrderedArgLabel[i]] = arg
+	}
 }

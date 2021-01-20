@@ -21,12 +21,18 @@ type ConfArgs struct {
 	ArgValues       map[string]string
 }
 
-var conf Conf = Conf{
+var conf CommandInfo = CommandInfo{
 	DisplayName:              "conf",
 	ExecutionOutput:          "",
 	ExecutionOk:              true,
 	MinimumExpectedArgs:      2,
 	MaximumExpectedArguments: 3,
+	OrderedArgLabel:          []string{"providerType", "actionName", "providerName"},
+	ArgValues: map[string]string{
+		"providerType": "",
+		"actionName":   "",
+		"providerName": "",
+	},
 }
 
 var confArgs ConfArgs = ConfArgs{
