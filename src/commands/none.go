@@ -36,9 +36,5 @@ func (n None) Output() string {
 	return fmt.Sprint("page version ", constants.AppVersion(), "\n\n", BuildUsageInfo(), "\n")
 }
 
-func (n None) ValidArgs() bool {
-	return true
-}
-
-func (n None) LoadArgs(args []string) {
+func (n None) LoadArgs() {
 }

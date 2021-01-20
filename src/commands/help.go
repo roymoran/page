@@ -24,22 +24,8 @@ var help CommandInfo = CommandInfo{
 	},
 }
 
-func (h Help) LoadArgs(args []string) {
-	if len(args) < help.MinimumExpectedArgs {
-		help.ExecutionOk = false
-		help.ExecutionOutput += fmt.Sprintln(help.DisplayName, "expects at least", help.MinimumExpectedArgs, "arguments, received", len(args))
-		return
-	}
+func (h Help) LoadArgs() {
 
-	if len(args) > help.MaximumExpectedArguments {
-		help.ExecutionOk = false
-		help.ExecutionOutput += fmt.Sprintln(help.DisplayName, "expects at most", help.MaximumExpectedArguments, "arguments, received", len(args))
-		return
-	}
-
-	for i, arg := range args {
-		help.ArgValues[help.OrderedArgLabel[i]] = arg
-	}
 }
 
 func (h Help) UsageInfoShort() string {
@@ -67,8 +53,4 @@ func (h Help) Execute() {
 
 func (h Help) Output() string {
 	return help.ExecutionOutput
-}
-
-func (h Help) ValidArgs() bool {
-	return true
 }

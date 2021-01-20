@@ -45,23 +45,7 @@ var confArgs ConfArgs = ConfArgs{
 	},
 }
 
-func (c Conf) LoadArgs(args []string) {
-	if len(args) < conf.MinimumExpectedArgs {
-		conf.ExecutionOk = false
-		conf.ExecutionOutput += fmt.Sprintln(conf.DisplayName, "expects at least", conf.MinimumExpectedArgs, "arguments, received", len(args))
-		return
-	}
-
-	if len(args) > conf.MaximumExpectedArguments {
-		conf.ExecutionOk = false
-		conf.ExecutionOutput += fmt.Sprintln(conf.DisplayName, "expects at most", conf.MaximumExpectedArguments, "arguments, received", len(args))
-		return
-	}
-
-	for i, arg := range args {
-		confArgs.ArgValues[confArgs.OrderedArgLabel[i]] = arg
-	}
-
+func (c Conf) LoadArgs() {
 	provider, ok := providers.SupportedProviders.Providers[confArgs.ArgValues["providerType"]]
 	if !ok {
 		conf.ExecutionOk = false
@@ -100,7 +84,7 @@ func (c Conf) LoadArgs(args []string) {
 		}
 	}
 
-	conf.ExecutionOutput = fmt.Sprintln(args, confArgs.ArgValues)
+	conf.ExecutionOutput = fmt.Sprintln(confArgs.ArgValues)
 }
 
 func (c Conf) UsageInfoShort() string {
@@ -145,10 +129,6 @@ func (c Conf) Execute() {
 
 func (c Conf) Output() string {
 	return conf.ExecutionOutput
-}
-
-func (c Conf) ValidArgs() bool {
-	return true
 }
 
 func (c Conf) AddHost() {

@@ -22,7 +22,7 @@ var initCommand CommandInfo = CommandInfo{
 	MaximumExpectedArguments: 0,
 }
 
-func (i Init) LoadArgs(args []string) {
+func (i Init) LoadArgs() {
 
 }
 
@@ -57,8 +57,4 @@ func (i Init) Execute() {
 
 func (i Init) Output() string {
 	return ""
-}
-
-func (i Init) ValidArgs() bool {
-	return true
 }

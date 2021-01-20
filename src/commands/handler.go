@@ -12,8 +12,7 @@ import (
 )
 
 type ICommand interface {
-	ValidArgs() bool
-	LoadArgs(args []string)
+	LoadArgs()
 	Execute()
 	Output() string
 	UsageInfoShort() string
@@ -89,7 +88,8 @@ func Handle(args []string) string {
 		return fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
 	}
 
-	LoadArgs(commandInfoMap[programArgs.ArgValues["command"]], programArgs.AdditionalArgValues)
+	ValidateArgs(commandInfoMap[programArgs.ArgValues["command"]], programArgs.AdditionalArgValues)
+	command.LoadArgs()
 	command.Execute()
 	return command.Output()
 }
@@ -117,7 +117,7 @@ func BuildUsageInfo() string {
 	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page help <command>'")
 }
 
-func LoadArgs(commandInfo *CommandInfo, args []string) {
+func ValidateArgs(commandInfo *CommandInfo, args []string) {
 	if len(args) < commandInfo.MinimumExpectedArgs {
 		commandInfo.ExecutionOk = false
 		commandInfo.ExecutionOutput += fmt.Sprintln(commandInfo.DisplayName, "expects at least", commandInfo.MinimumExpectedArgs, "arguments, received", len(args))
