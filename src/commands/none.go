@@ -9,6 +9,14 @@ import (
 type None struct {
 }
 
+var none CommandInfo = CommandInfo{
+	DisplayName:              "",
+	ExecutionOutput:          "",
+	ExecutionOk:              true,
+	MinimumExpectedArgs:      0,
+	MaximumExpectedArguments: 0,
+}
+
 func (n None) UsageInfoShort() string {
 	return ""
 }

@@ -54,6 +54,7 @@ var commandInfoMap = map[string]*CommandInfo{
 	initCommand.DisplayName: &initCommand,
 	conf.DisplayName:        &conf,
 	help.DisplayName:        &help,
+	none.DisplayName:        &none,
 }
 
 type ProgramArgs struct {
