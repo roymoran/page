@@ -1,6 +1,16 @@
 package commands
 
+import "fmt"
+
 type Up struct {
+}
+
+var up CommandInfo = CommandInfo{
+	DisplayName:              "up",
+	ExecutionOutput:          "",
+	ExecutionOk:              true,
+	MinimumExpectedArgs:      0,
+	MaximumExpectedArguments: 0,
 }
 
 func (u Up) UsageInfoShort() string {
@@ -15,7 +25,10 @@ func (u Up) UsageCategory() int {
 	return 1
 }
 
-func (u Up) Execute() bool {
+func (u Up) Execute() {
+	if !up.ExecutionOk {
+		return
+	}
 	// Parse yaml file
 
 	// Resolve template url, is it valid?
@@ -40,10 +53,15 @@ func (u Up) Execute() bool {
 
 	// Take assets from deploy directory, and execute depoyment via host
 	// cli
+	up.ExecutionOutput += fmt.Sprintln("deployed")
+}
 
-	return true
+func (u Up) LoadArgs() {
+	if !up.ExecutionOk {
+		return
+	}
 }
 
 func (u Up) Output() string {
-	return "deployed.\n"
+	return up.ExecutionOutput
 }

@@ -96,7 +96,7 @@ func (c Conf) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln("You can also use the command to view currently supported hosts and registrars.")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Arguments")
-	extendedUsage += fmt.Sprintln("Expects at least", conf.MinimumExpectedArgs, "arguments depending on whether you want to add hosts/registrars ")
+	extendedUsage += fmt.Sprintln("Expects at least", conf.MinimumExpectedArgs, "arguments depending on whether you want to add a host/registrar")
 	extendedUsage += fmt.Sprintln("or list the supported hosts/registrars. See example usage below.")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Example usage")
