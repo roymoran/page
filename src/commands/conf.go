@@ -83,7 +83,7 @@ func (c Conf) LoadArgs() {
 }
 
 func (c Conf) UsageInfoShort() string {
-	return "configures defaults for domain registrar and host provider"
+	return "configures defaults for domain registrar and host"
 }
 
 func (c Conf) UsageInfoExpanded() string {
