@@ -125,19 +125,3 @@ func (c Conf) Execute() {
 func (c Conf) Output() string {
 	return conf.ExecutionOutput
 }
-
-func (c Conf) AddHost() {
-
-}
-
-func (c Conf) AddRegistrar() {
-
-}
-
-func (c Conf) ListRegistrars() {
-
-}
-
-func (c Conf) ListHosts() {
-
-}
