@@ -15,7 +15,7 @@ type Conf struct {
 }
 
 type ConfArgs struct {
-	Action   func(providers.IProvider, string) bool
+	Action   func(providers.IProvider, string) (bool, string)
 	Provider providers.IProvider
 }
 
@@ -119,7 +119,7 @@ func (c Conf) Execute() {
 		return
 	}
 
-	confArgs.Action(confArgs.Provider, conf.ArgValues["providerName"])
+	_, conf.ExecutionOutput = confArgs.Action(confArgs.Provider, conf.ArgValues["providerName"])
 }
 
 func (c Conf) Output() string {
