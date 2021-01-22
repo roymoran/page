@@ -29,11 +29,28 @@ func (h Help) LoadArgs() {
 }
 
 func (h Help) UsageInfoShort() string {
-	return "creates a new page.yml definition file with default values"
+	return "get expanded description and usage info for any valid command"
 }
 
 func (h Help) UsageInfoExpanded() string {
-	return ""
+	extendedUsage := fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Summary")
+	extendedUsage += fmt.Sprintln(help.DisplayName, "-", h.UsageInfoShort())
+	extendedUsage += fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Description")
+	extendedUsage += fmt.Sprintln("Prints expanded description for a command, required arguments,")
+	extendedUsage += fmt.Sprintln("and example usage.")
+	extendedUsage += fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Arguments")
+	extendedUsage += fmt.Sprintln("Expects", help.MinimumExpectedArgs, "additional argument (the")
+	extendedUsage += fmt.Sprintln("the name of the command).")
+	extendedUsage += fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Example usage")
+	extendedUsage += fmt.Sprintln("page", help.DisplayName, "up")
+	extendedUsage += fmt.Sprintln("page", help.DisplayName, "conf")
+	extendedUsage += fmt.Sprintln("page", help.DisplayName, "init")
+	extendedUsage += fmt.Sprintln()
+	return extendedUsage
 }
 
 func (h Help) UsageCategory() int {
