@@ -25,7 +25,12 @@ var help CommandInfo = CommandInfo{
 }
 
 func (h Help) LoadArgs() {
-
+	_, ok := commandLookup[help.ArgValues["commandName"]]
+	if !ok {
+		help.ExecutionOk = false
+		help.ExecutionOutput += fmt.Sprint("unrecognized command '", help.ArgValues["commandName"], "'. Expected a valid command. See 'page' for valid commands.\n")
+		return
+	}
 }
 
 func (h Help) UsageInfoShort() string {
@@ -42,8 +47,7 @@ func (h Help) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln("and example usage.")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Arguments")
-	extendedUsage += fmt.Sprintln("Expects", help.MinimumExpectedArgs, "additional argument (the")
-	extendedUsage += fmt.Sprintln("the name of the command).")
+	extendedUsage += fmt.Sprintln("Expects", help.MinimumExpectedArgs, "additional argument (the the name of the command).")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Example usage")
 	extendedUsage += fmt.Sprintln("page", help.DisplayName, "up")
