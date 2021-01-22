@@ -18,7 +18,23 @@ func (u Up) UsageInfoShort() string {
 }
 
 func (u Up) UsageInfoExpanded() string {
-	return ""
+	extendedUsage := fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Summary")
+	extendedUsage += fmt.Sprintln(up.DisplayName, "-", u.UsageInfoShort())
+	extendedUsage += fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Description")
+	extendedUsage += fmt.Sprintln("Publishes your template to a live website using the .yml definition file in")
+	extendedUsage += fmt.Sprintln("the current directory. It uses the default host/registrar specified in the")
+	extendedUsage += fmt.Sprintln(".yml file. If neither a default host/registrar is found for the provided values,")
+	extendedUsage += fmt.Sprintln("the command will fail.")
+	extendedUsage += fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Arguments")
+	extendedUsage += fmt.Sprintln("Expects", up.MinimumExpectedArgs, "additional arguments.")
+	extendedUsage += fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("Example usage")
+	extendedUsage += fmt.Sprintln("page", up.DisplayName)
+	extendedUsage += fmt.Sprintln()
+	return extendedUsage
 }
 
 func (u Up) UsageCategory() int {
