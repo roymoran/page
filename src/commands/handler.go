@@ -129,7 +129,7 @@ func ValidateArgs(commandInfo *CommandInfo, args []string) {
 		commandInfo.ExecutionOutput += fmt.Sprintln(commandInfo.DisplayName, "expects at most", commandInfo.MaximumExpectedArguments, "arguments, received", len(args))
 	}
 
-	// TODO: Generalize so that on error this is appended to all commands
+	// TODO: Generalize so that on 'page help...' message is appended to all failing commands
 	if !commandInfo.ExecutionOk {
 		conf.ExecutionOutput += fmt.Sprintln()
 		conf.ExecutionOutput += fmt.Sprint("See 'page help ", commandInfo.DisplayName, "' for usage info.")
