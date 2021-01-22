@@ -122,12 +122,18 @@ func ValidateArgs(commandInfo *CommandInfo, args []string) {
 	if len(args) < commandInfo.MinimumExpectedArgs {
 		commandInfo.ExecutionOk = false
 		commandInfo.ExecutionOutput += fmt.Sprintln(commandInfo.DisplayName, "expects at least", commandInfo.MinimumExpectedArgs, "arguments, received", len(args))
-		return
 	}
 
 	if len(args) > commandInfo.MaximumExpectedArguments {
 		commandInfo.ExecutionOk = false
 		commandInfo.ExecutionOutput += fmt.Sprintln(commandInfo.DisplayName, "expects at most", commandInfo.MaximumExpectedArguments, "arguments, received", len(args))
+	}
+
+	// TODO: Generalize so that on error this is appended to all commands
+	if !commandInfo.ExecutionOk {
+		conf.ExecutionOutput += fmt.Sprintln()
+		conf.ExecutionOutput += fmt.Sprint("See 'page help ", commandInfo.DisplayName, "' for usage info.")
+		conf.ExecutionOutput += fmt.Sprintln()
 		return
 	}
 

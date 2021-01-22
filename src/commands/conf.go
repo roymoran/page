@@ -46,7 +46,7 @@ func (c Conf) LoadArgs() {
 	provider, ok := providers.SupportedProviders.Providers[conf.ArgValues["providerType"]]
 	if !ok {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host")
+		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host\n")
 		return
 	}
 
@@ -56,7 +56,7 @@ func (c Conf) LoadArgs() {
 
 	if !actionExists {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list")
+		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list\n")
 		return
 	}
 
@@ -76,7 +76,7 @@ func (c Conf) LoadArgs() {
 
 		if !providerSupported {
 			conf.ExecutionOk = false
-			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s")
+			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s\n")
 			return
 		}
 	}
@@ -114,10 +114,6 @@ func (c Conf) UsageCategory() int {
 
 func (c Conf) Execute() {
 	if !conf.ExecutionOk {
-		conf.ExecutionOutput += fmt.Sprintln()
-		conf.ExecutionOutput += fmt.Sprintln()
-		conf.ExecutionOutput += fmt.Sprint("See 'page help ", conf.DisplayName, "' for usage info.")
-		conf.ExecutionOutput += fmt.Sprintln()
 		return
 	}
 

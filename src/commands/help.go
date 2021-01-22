@@ -63,8 +63,6 @@ func (h Help) UsageCategory() int {
 
 func (h Help) Execute() {
 	if !help.ExecutionOk {
-		help.ExecutionOutput += fmt.Sprintln("")
-		help.ExecutionOutput += fmt.Sprint("See 'page help ", help.DisplayName, "' for usage info.\n")
 		return
 	}
 
