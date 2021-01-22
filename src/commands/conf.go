@@ -114,8 +114,10 @@ func (c Conf) UsageCategory() int {
 
 func (c Conf) Execute() {
 	if !conf.ExecutionOk {
-		conf.ExecutionOutput += fmt.Sprintln("")
-		conf.ExecutionOutput += fmt.Sprint("See 'page help ", conf.DisplayName, "' for usage info.\n")
+		conf.ExecutionOutput += fmt.Sprintln()
+		conf.ExecutionOutput += fmt.Sprintln()
+		conf.ExecutionOutput += fmt.Sprintln("See 'page help ", conf.DisplayName, "' for usage info.")
+		conf.ExecutionOutput += fmt.Sprintln()
 		return
 	}
 
