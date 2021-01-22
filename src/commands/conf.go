@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"builtonpage.com/main/providers"
 )
@@ -87,6 +88,11 @@ func (c Conf) UsageInfoShort() string {
 }
 
 func (c Conf) UsageInfoExpanded() string {
+	supportedProviderTypesConcat := strings.Join(providers.SupportedProviderTypes[:], ", ")
+	supportedActionsConcat := strings.Join(providers.SupportedAction[:], ", ")
+	supportedRegistrarProvidersConcat := strings.Join(providers.SupportedRegistrars[:], ", ")
+	supportedHostProvidersConcat := strings.Join(providers.SupportedHosts[:], ", ")
+
 	extendedUsage := fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Summary")
 	extendedUsage += fmt.Sprintln(conf.DisplayName, "-", c.UsageInfoShort())
@@ -95,7 +101,11 @@ func (c Conf) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln("Lets you configure the default host and domain name registrar for all page projects. You can also use the command to view currently supported hosts and registrars.")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Arguments")
-	extendedUsage += fmt.Sprintln("Expects at least", conf.MinimumExpectedArgs, "arguments depending on whether you want to add a host/registrar or list the supported hosts/registrars. See example usage below.")
+	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "[provider type] [action] [provider name]")
+	extendedUsage += fmt.Sprintln()
+	extendedUsage += fmt.Sprintln("[provider type] - indicates to the program what provider you are operating on either", supportedProviderTypesConcat, ". Any other value will result in an error.")
+	extendedUsage += fmt.Sprintln("[action] - indicates what action you would like to perform on provider type either", supportedActionsConcat, ". Any other value will result in an error.")
+	extendedUsage += fmt.Sprintln("[provider name] - indicates the specific provider you'd like to use. ", supportedRegistrarProvidersConcat, " for registrar. ", supportedHostProvidersConcat, " for host. See supported hosts/registrars with 'page conf [provider type] list'. Any other value will result in an error.")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Example usage")
 	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "host list")
