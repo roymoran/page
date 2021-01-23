@@ -75,7 +75,7 @@ func (u Up) Execute() {
 	up.ExecutionOutput += fmt.Sprintln("deployed")
 }
 
-func (u Up) LoadArgs() {
+func (u Up) BindArgs() {
 	if !up.ExecutionOk {
 		return
 	}

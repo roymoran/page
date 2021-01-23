@@ -12,7 +12,7 @@ import (
 )
 
 type ICommand interface {
-	LoadArgs()
+	BindArgs()
 	Execute()
 	Output() string
 	UsageInfoShort() string
@@ -90,7 +90,7 @@ func Handle(args []string) string {
 	}
 
 	ValidateArgs(commandInfoMap[programArgs.ArgValues["command"]], programArgs.AdditionalArgValues)
-	command.LoadArgs()
+	command.BindArgs()
 	command.Execute()
 	return command.Output()
 }

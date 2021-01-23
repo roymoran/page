@@ -39,7 +39,7 @@ var confArgs ConfArgs = ConfArgs{
 	Provider: nil,
 }
 
-func (c Conf) LoadArgs() {
+func (c Conf) BindArgs() {
 	if !conf.ExecutionOk {
 		return
 	}

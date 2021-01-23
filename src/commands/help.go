@@ -24,7 +24,7 @@ var help CommandInfo = CommandInfo{
 	},
 }
 
-func (h Help) LoadArgs() {
+func (h Help) BindArgs() {
 	_, ok := commandLookup[help.ArgValues["commandName"]]
 	if !ok {
 		help.ExecutionOk = false

@@ -22,7 +22,7 @@ var initCommand CommandInfo = CommandInfo{
 	MaximumExpectedArguments: 0,
 }
 
-func (i Init) LoadArgs() {
+func (i Init) BindArgs() {
 
 }
 
