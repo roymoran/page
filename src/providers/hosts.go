@@ -15,11 +15,8 @@ func (hp HostProvider) Add(name string) (bool, string) {
 }
 
 func (hp HostProvider) List(name string) (bool, string) {
-	supportedHosts := fmt.Sprintln("Supported hosts")
-
-	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
-
-	for hostName := range hostProvider.Supported {
+	supportedHosts := fmt.Sprint()
+	for _, hostName := range SupportedHosts {
 		supportedHosts += fmt.Sprintln(hostName)
 	}
 	supportedHosts += fmt.Sprintln()

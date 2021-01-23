@@ -105,7 +105,7 @@ func (c Conf) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("[provider type] - indicates to the program what provider you are operating on either", supportedProviderTypesConcat, ". Any other value will result in an error.")
 	extendedUsage += fmt.Sprintln("[action] - indicates what action you would like to perform on provider type either", supportedActionsConcat, ". Any other value will result in an error.")
-	extendedUsage += fmt.Sprintln("[provider name] - indicates the specific provider you'd like to use. ", supportedRegistrarProvidersConcat, " for registrar. ", supportedHostProvidersConcat, " for host. See supported hosts/registrars with 'page conf [provider type] list'. Any other value will result in an error.")
+	extendedUsage += fmt.Sprintln("[provider name] - required only if action is specified as 'add'. Provider name must be", supportedRegistrarProvidersConcat, " if specifying a registrar or", supportedHostProvidersConcat, " for a host. See supported hosts/registrars with 'page conf [provider type] list'. Any other value will result in an error.")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Example usage")
 	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "host list")

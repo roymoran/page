@@ -16,13 +16,10 @@ func (rp RegistrarProvider) Add(name string) (bool, string) {
 }
 
 func (rp RegistrarProvider) List(name string) (bool, string) {
-	supportedRegistrars := fmt.Sprintln("Supported registrars")
-	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
-
-	for registrarName := range registrarProvider.Supported {
+	supportedRegistrars := fmt.Sprint()
+	for _, registrarName := range SupportedRegistrars {
 		supportedRegistrars += fmt.Sprintln(registrarName)
 	}
 	supportedRegistrars += fmt.Sprintln()
-
 	return true, supportedRegistrars
 }

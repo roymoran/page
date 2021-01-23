@@ -2,6 +2,7 @@ package providers
 
 import (
 	"fmt"
+	"sort"
 
 	hosts "builtonpage.com/main/providers/hosts"
 	registrars "builtonpage.com/main/providers/registrars"
@@ -30,7 +31,9 @@ var SupportedProviders = Provider{
 	Providers: map[string]IProvider{
 		"host": HostProvider{
 			Supported: map[string]IHost{
-				"page": hosts.PageHost{},
+				"page":  hosts.PageHost{},
+				"azure": hosts.Azure{},
+				"aws":   hosts.AmazonWebServices{},
 			},
 		},
 		"registrar": RegistrarProvider{
@@ -56,6 +59,8 @@ func BuildSupportedHosts() []string {
 		index++
 	}
 
+	sort.Strings(hosts)
+
 	return hosts
 }
 
@@ -68,6 +73,8 @@ func BuildSupportedRegistrars() []string {
 		index++
 	}
 
+	sort.Strings(registrars)
+
 	return registrars
 }
 
@@ -79,6 +86,8 @@ func BuildSupportedActions() []string {
 		index++
 	}
 
+	sort.Strings(actions)
+
 	return actions
 }
 
@@ -89,6 +98,8 @@ func BuildSupportedProviderTypes() []string {
 		providerTypes[index] = fmt.Sprint(providerType)
 		index++
 	}
+
+	sort.Strings(providerTypes)
 
 	return providerTypes
 }
