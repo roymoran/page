@@ -1,6 +1,8 @@
 package providers
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type IHost interface {
 	Deploy() bool
