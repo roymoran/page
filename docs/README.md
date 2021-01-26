@@ -56,3 +56,6 @@ Significant software design decisions that are open to dicussion or have already
 Definition file format in **Yaml** or JSON? 
 - Allowance of comments so that its easy to include instructions for each key/value. Comments also allow us to link to external site for further instruction.
 - Readablity for both technical and non-technical users, the less syntax the better.
+
+Best approach for setting up infrastructure for initial configuration? Terraform, Pulumi, or directly using cloud SDKs? This question applies to self-hosted options (deploying on platforms that require standing up your own infrastructure) as opposed to hosting on platforms like GitHub Pages where they offer hosting as a service.
+- TBD
