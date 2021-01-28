@@ -1,5 +1,5 @@
 /*
-Package command provides an entry point for
+Package commands provides an entry point for
 the execution of all cli commands e.g. init,
 up, etc.
 */
