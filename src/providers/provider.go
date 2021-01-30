@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"builtonpage.com/main/cliinit"
 	hosts "builtonpage.com/main/providers/hosts"
 	registrars "builtonpage.com/main/providers/registrars"
 )
@@ -27,7 +28,7 @@ type HostProvider struct {
 }
 
 var SupportedProviders = Provider{
-	Actions: map[string]func(IProvider, string) (bool, string){"add": IProvider.Add, "list": IProvider.List},
+	Actions: map[string]func(IProvider, string) (bool, string){"add": AddProvider, "list": IProvider.List},
 	Providers: map[string]IProvider{
 		"host": HostProvider{
 			Supported: map[string]IHost{
@@ -43,6 +44,17 @@ var SupportedProviders = Provider{
 			},
 		},
 	},
+}
+
+func AddProvider(provider IProvider, providerName string) (bool, string) {
+	if !cliinit.CliInitialized() {
+		cliinit.CliInit()
+	}
+
+	// TODO: Change
+	_, _ = provider.Add(providerName)
+
+	return true, ""
 }
 
 var SupportedProviderTypes []string = BuildSupportedProviderTypes()
