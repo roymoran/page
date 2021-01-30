@@ -73,11 +73,11 @@ func InstallTerraformPlugin(hostName string, host IHost) {
 }
 
 func HostDirectoryConfigured(hostName string) bool {
-	// TODO:  Fix this method, returning wrong result.
-	fmt.Println("filepath.Join(cliinit.TfInstallPath, hostName)", filepath.Join(cliinit.TfInstallPath, hostName))
+	result := true
 	_, err := os.Stat(filepath.Join(cliinit.TfInstallPath, hostName))
-	fmt.Println("err", err)
-	result := os.IsNotExist(err)
-	fmt.Println("HostDirectoryConfigured", result)
+	if err != nil {
+		result = false
+		return result
+	}
 	return result
 }
