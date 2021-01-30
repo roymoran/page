@@ -47,7 +47,11 @@ func CliInit() {
 		log.Fatal("CliInit error. Error creating config.json.", dirErr)
 	}
 
-	InstallTerraform()
+	installErr := InstallTerraform()
+
+	if installErr != nil {
+		log.Fatal("CliInit error. Error installing terraform.", dirErr)
+	}
 
 	initialPageConfig.ConfigStatus = true
 	file, _ = json.MarshalIndent(initialPageConfig, "", " ")
@@ -82,11 +86,14 @@ func CliInitialized() bool {
 	return config.ConfigStatus
 }
 
-func InstallTerraform() {
+func InstallTerraform() error {
 	execPath, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(exactTfVersion, tfInstallPath))
 	fmt.Println("execPath", execPath)
 
 	if installErr != nil {
 		log.Fatal("InstallTerraform error.", installErr)
+		return installErr
 	}
+
+	return nil
 }
