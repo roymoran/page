@@ -9,7 +9,6 @@ package cliinit
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -87,8 +86,7 @@ func CliInitialized() bool {
 }
 
 func InstallTerraform() error {
-	execPath, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(exactTfVersion, tfInstallPath))
-	fmt.Println("execPath", execPath)
+	_, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(exactTfVersion, tfInstallPath))
 
 	if installErr != nil {
 		log.Fatal("InstallTerraform error.", installErr)
