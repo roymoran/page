@@ -1,5 +1,5 @@
 /*
-Package init provides types and methods to
+Package cliinit provides types and methods to
 perform intial configuration of cli including
 creating files/directories to support cli
 functionality.
