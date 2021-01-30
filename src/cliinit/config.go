@@ -1,8 +1,9 @@
 package cliinit
 
 type PageConfigJson struct {
-	TfPath       string           `json:"tfpath"`
-	TFVersion    string           `json:"tfversion"`
+	TfPath       string           `json:"tfPath"`
+	TfExecPath   string           `json:"tfExecPath"`
+	TFVersion    string           `json:"tfVersion"`
 	Providers    []ProviderConfig `json:"providers"`
 	ConfigStatus bool             `json:"configStatus"`
 }

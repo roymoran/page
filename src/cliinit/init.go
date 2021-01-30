@@ -17,15 +17,17 @@ import (
 	"github.com/hashicorp/terraform-exec/tfinstall"
 )
 
-var installDir, _ = os.UserHomeDir()
-var pageCliPath string = filepath.Join(installDir, ".pagecli")
-var tfInstallPath string = filepath.Join(pageCliPath, "tf")
-var configPath string = filepath.Join(pageCliPath, "config.json")
-var exactTfVersion string = "0.14.5"
+var InstallDir, _ = os.UserHomeDir()
+var PageCliPath string = filepath.Join(InstallDir, ".pagecli")
+var TfInstallPath string = filepath.Join(PageCliPath, "tf")
+var TfExecPath string = filepath.Join(TfInstallPath, "terraform")
+var ConfigPath string = filepath.Join(PageCliPath, "config.json")
+var ExactTfVersion string = "0.14.5"
 
 var initialPageConfig PageConfigJson = PageConfigJson{
-	TfPath:       tfInstallPath,
-	TFVersion:    exactTfVersion,
+	TfPath:       TfInstallPath,
+	TfExecPath:   "",
+	TFVersion:    ExactTfVersion,
 	Providers:    []ProviderConfig{},
 	ConfigStatus: false,
 }
@@ -34,27 +36,28 @@ var initialPageConfig PageConfigJson = PageConfigJson{
 // and installs required executables for the
 // cli
 func CliInit() {
-	dirErr := os.MkdirAll(tfInstallPath, os.ModePerm)
+	dirErr := os.MkdirAll(TfInstallPath, os.ModePerm)
 	if dirErr != nil {
 		log.Fatal("CliInit error. Error creating tf install path.", dirErr)
 	}
 
 	file, _ := json.MarshalIndent(initialPageConfig, "", " ")
-	configError := ioutil.WriteFile(configPath, file, 0644)
+	configError := ioutil.WriteFile(ConfigPath, file, 0644)
 
 	if configError != nil {
 		log.Fatal("CliInit error. Error creating config.json.", dirErr)
 	}
 
-	installErr := InstallTerraform()
+	execPath, installErr := InstallTerraform()
 
 	if installErr != nil {
 		log.Fatal("CliInit error. Error installing terraform.", dirErr)
 	}
 
 	initialPageConfig.ConfigStatus = true
+	initialPageConfig.TfExecPath = execPath
 	file, _ = json.MarshalIndent(initialPageConfig, "", " ")
-	configError = ioutil.WriteFile(configPath, file, 0644)
+	configError = ioutil.WriteFile(ConfigPath, file, 0644)
 
 	if configError != nil {
 		log.Fatal("CliInit error. Error setting InitialConfig to true.", configError)
@@ -67,7 +70,7 @@ func CliInit() {
 // function properly
 func CliInitialized() bool {
 	initialized := false
-	configData, fileErr := ioutil.ReadFile(configPath)
+	configData, fileErr := ioutil.ReadFile(ConfigPath)
 
 	if fileErr != nil {
 		log.Println(fileErr)
@@ -85,13 +88,13 @@ func CliInitialized() bool {
 	return config.ConfigStatus
 }
 
-func InstallTerraform() error {
-	_, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(exactTfVersion, tfInstallPath))
+func InstallTerraform() (string, error) {
+	execPath, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(ExactTfVersion, TfInstallPath))
 
 	if installErr != nil {
 		log.Fatal("InstallTerraform error.", installErr)
-		return installErr
+		return "", installErr
 	}
 
-	return nil
+	return execPath, nil
 }

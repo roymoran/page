@@ -13,3 +13,7 @@ func (p PageHost) ConfigureHost() bool {
 	fmt.Println("configured page host")
 	return true
 }
+
+func (p PageHost) HostProviderDefinition() string {
+	return ""
+}

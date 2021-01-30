@@ -47,6 +47,7 @@ var SupportedProviders = Provider{
 }
 
 func AddProvider(provider IProvider, providerName string) (bool, string) {
+	fmt.Println("cliinit.CliInitialized()", cliinit.CliInitialized())
 	if !cliinit.CliInitialized() {
 		cliinit.CliInit()
 	}

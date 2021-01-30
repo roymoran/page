@@ -8,6 +8,17 @@ type AmazonWebServices struct {
 	Infrastructure string
 }
 
+var AwsTerraformProvider = `
+terraform {
+	required_providers {
+		aws = {
+			source = "hashicorp/aws"
+			version = "3.25.0"
+		}
+	}
+}
+`
+
 var AmazonWebServicesConfig = AmazonWebServices{
 	Infrastructure: `
 	terraform {
@@ -43,4 +54,8 @@ func (aws AmazonWebServices) Deploy() bool {
 func (aws AmazonWebServices) ConfigureHost() bool {
 	fmt.Println("configured aws host")
 	return true
+}
+
+func (aws AmazonWebServices) HostProviderDefinition() string {
+	return AwsTerraformProvider
 }
