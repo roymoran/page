@@ -24,7 +24,7 @@ var TfExecPath string = filepath.Join(TfInstallPath, "terraform")
 var ConfigPath string = filepath.Join(PageCliPath, "config.json")
 var ExactTfVersion string = "0.14.5"
 
-var initialPageConfig PageConfigJson = PageConfigJson{
+var initialPageConfig PageConfig = PageConfig{
 	TfPath:       TfInstallPath,
 	TfExecPath:   "",
 	TFVersion:    ExactTfVersion,
@@ -77,7 +77,7 @@ func CliInitialized() bool {
 		return initialized
 	}
 
-	var config PageConfigJson
+	var config PageConfig
 	unmarshalErr := json.Unmarshal(configData, &config)
 
 	if unmarshalErr != nil {

@@ -25,6 +25,6 @@ func (a Azure) ConfigureHost() bool {
 	return true
 }
 
-func (a Azure) HostProviderDefinition() string {
-	return AzureTerraformProvider
+func (a Azure) HostProviderDefinition() []byte {
+	return []byte{}
 }

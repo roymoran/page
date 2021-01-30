@@ -14,6 +14,6 @@ func (p PageHost) ConfigureHost() bool {
 	return true
 }
 
-func (p PageHost) HostProviderDefinition() string {
-	return ""
+func (p PageHost) HostProviderDefinition() []byte {
+	return []byte{}
 }

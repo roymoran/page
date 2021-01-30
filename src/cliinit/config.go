@@ -1,6 +1,6 @@
 package cliinit
 
-type PageConfigJson struct {
+type PageConfig struct {
 	TfPath       string           `json:"tfPath"`
 	TfExecPath   string           `json:"tfExecPath"`
 	TFVersion    string           `json:"tfVersion"`

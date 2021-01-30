@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -8,43 +9,21 @@ type AmazonWebServices struct {
 	Infrastructure string
 }
 
-var AwsTerraformProvider = `
-terraform {
-	required_providers {
-		aws = {
-			source = "hashicorp/aws"
-			version = "3.25.0"
-		}
-	}
-}
-`
-
-var AmazonWebServicesConfig = AmazonWebServices{
-	Infrastructure: `
-	terraform {
-		required_providers {
-		  aws = {
-			source = "hashicorp/aws"
-			version = "3.25.0"
-		  }
-		}
-	  }
-
-	  provider "aws" {
-		profile = "default"
-		region  = "us-east-2"
-	  }
-
-	  resource "aws_s3_bucket" "b" {
-		bucket = "my-tf-test-bucket"
-		acl    = "private"
-	  
-		tags = {
-		  Name        = "My bucket"
-		  Environment = "Dev"
-		}
-	  }
-	`,
+var AwsDefinition TerraformTemplate = TerraformTemplate{
+	Terraform: RequiredProviders{
+		RequiredProvider: map[string]Provider{
+			"aws": {
+				Source:  "hashicorp/aws",
+				Version: "3.25.0",
+			},
+		},
+	},
+	Provider: map[string]ProviderConfig{
+		"aws": {
+			Profile: "default",
+			Region:  "us-east-2",
+		},
+	},
 }
 
 func (aws AmazonWebServices) Deploy() bool {
@@ -56,6 +35,7 @@ func (aws AmazonWebServices) ConfigureHost() bool {
 	return true
 }
 
-func (aws AmazonWebServices) HostProviderDefinition() string {
-	return AwsTerraformProvider
+func (aws AmazonWebServices) HostProviderDefinition() []byte {
+	file, _ := json.MarshalIndent(AwsDefinition, "", " ")
+	return file
 }

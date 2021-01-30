@@ -4,7 +4,7 @@ package providers
 // necessary resources to host a static site on
 // AWS. Includes creation of S3, S3 Bucket, CloudFront,
 // and CloudFront distribution
-var AWSInfra string = `terraform {
+var AwsTerraformDefinition string = `terraform {
 	required_providers {
 	  aws = {
 		source  = "hashicorp/aws"
@@ -94,3 +94,22 @@ var AWSInfra string = `terraform {
 	depends_on = [aws_s3_bucket.b]
   }
 `
+
+type TerraformTemplate struct {
+	Terraform RequiredProviders         `json:"terraform"`
+	Provider  map[string]ProviderConfig `json:"provider"`
+}
+
+type RequiredProviders struct {
+	RequiredProvider map[string]Provider `json:"required_providers"`
+}
+
+type Provider struct {
+	Source  string `json:"source"`
+	Version string `json:"version"`
+}
+
+type ProviderConfig struct {
+	Profile string `json:"profile"`
+	Region  string `json:"region"`
+}

@@ -15,7 +15,7 @@ import (
 type IHost interface {
 	Deploy() bool
 	ConfigureHost() bool
-	HostProviderDefinition() string
+	HostProviderDefinition() []byte
 }
 
 func (hp HostProvider) Add(name string) (bool, string) {
@@ -39,6 +39,16 @@ func (hp HostProvider) List(name string) (bool, string) {
 	return true, supportedHosts
 }
 
+func HostDirectoryConfigured(hostName string) bool {
+	result := true
+	_, err := os.Stat(filepath.Join(cliinit.TfInstallPath, hostName))
+	if err != nil {
+		result = false
+		return result
+	}
+	return result
+}
+
 func ConfigureHostDirectory(hostName string, host IHost) {
 	hostDirErr := os.MkdirAll(filepath.Join(cliinit.TfInstallPath, hostName), os.ModePerm)
 
@@ -58,7 +68,7 @@ func InstallTerraformPlugin(hostName string, host IHost) {
 	}
 
 	fmt.Println(cliinit.TfInstallPath)
-	_ = ioutil.WriteFile(filepath.Join(hostPath, hostName+".tf"), []byte(host.HostProviderDefinition()), 0644)
+	_ = ioutil.WriteFile(filepath.Join(hostPath, hostName+".tf.json"), host.HostProviderDefinition(), 0644)
 	tf, err := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
 	if err != nil {
 		log.Fatalln("error creating NewTerraform", hostPath, cliinit.TfInstallPath)
@@ -70,14 +80,4 @@ func InstallTerraformPlugin(hostName string, host IHost) {
 		log.Fatalln("error initializing tf directory", hostPath, cliinit.TfInstallPath)
 	}
 
-}
-
-func HostDirectoryConfigured(hostName string) bool {
-	result := true
-	_, err := os.Stat(filepath.Join(cliinit.TfInstallPath, hostName))
-	if err != nil {
-		result = false
-		return result
-	}
-	return result
 }
