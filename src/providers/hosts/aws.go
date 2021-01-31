@@ -1,13 +1,10 @@
 package providers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 
 	"builtonpage.com/main/cliinit"
-	"github.com/hashicorp/terraform-exec/tfexec"
 )
 
 type AmazonWebServices struct {
@@ -38,9 +35,6 @@ func (aws AmazonWebServices) Deploy() bool {
 func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) (bool, error) {
 	fmt.Println("entered aws ConfigureHost")
 	hostName := "aws"
-	hostPath := filepath.Join(cliinit.TfInstallPath, hostName)
-	tf, _ := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
-	tf.Apply(context.Background(), tfexec.State(stateFilePath))
 
 	provider := cliinit.ProviderConfig{
 		Type:             "host",

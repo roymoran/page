@@ -32,7 +32,7 @@ func (hp HostProvider) Add(name string) (bool, string) {
 		if hostDirErr != nil {
 			log.Fatalln("error creating host config directory for", hostPath, hostDirErr)
 		}
-		InstallTerraformPlugin(alias, hostPath, host, stateDefinitionPath, stateDefinitionPath)
+		InstallTerraformPlugin(alias, hostPath, host, definitionPath, stateDefinitionPath)
 		fmt.Println("finish 1 time Directory Config in hosts.go")
 	}
 
