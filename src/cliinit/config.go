@@ -9,7 +9,6 @@ type PageConfig struct {
 }
 
 type ProviderConfig struct {
-	Id               string `json:"id"`
 	Alias            string `json:"alias"`
 	Type             string `json:"type"` // 'registrar' or 'host'
 	HostName         string `json:"hostName"`

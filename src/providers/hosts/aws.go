@@ -39,14 +39,12 @@ func (aws AmazonWebServices) Deploy() bool {
 
 func (aws AmazonWebServices) ConfigureHost(alias string) (bool, error) {
 	hostName := "aws"
-	providerId := alias
 	hostPath := filepath.Join(cliinit.TfInstallPath, hostName)
-	definitionFilePath, stateFilePath := aws.InstallTerraformPlugin(providerId, hostPath)
+	definitionFilePath, stateFilePath := aws.InstallTerraformPlugin(alias, hostPath)
 	tf, _ := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
 	tf.Apply(context.Background(), tfexec.State(stateFilePath))
 
 	provider := cliinit.ProviderConfig{
-		Id:               providerId,
 		Type:             "host",
 		Alias:            alias,
 		HostName:         hostName,
