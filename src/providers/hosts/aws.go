@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"path/filepath"
 
 	"builtonpage.com/main/cliinit"
@@ -16,7 +14,7 @@ type AmazonWebServices struct {
 	Infrastructure string
 }
 
-var AwsDefinition TerraformTemplate = TerraformTemplate{
+var AwsProviderDefinition TerraformTemplate = TerraformTemplate{
 	Terraform: RequiredProviders{
 		RequiredProvider: map[string]Provider{
 			"aws": {
@@ -37,10 +35,10 @@ func (aws AmazonWebServices) Deploy() bool {
 	return true
 }
 
-func (aws AmazonWebServices) ConfigureHost(alias string) (bool, error) {
+func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) (bool, error) {
+	fmt.Println("entered aws ConfigureHost")
 	hostName := "aws"
 	hostPath := filepath.Join(cliinit.TfInstallPath, hostName)
-	definitionFilePath, stateFilePath := aws.InstallTerraformPlugin(alias, hostPath)
 	tf, _ := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
 	tf.Apply(context.Background(), tfexec.State(stateFilePath))
 
@@ -55,33 +53,11 @@ func (aws AmazonWebServices) ConfigureHost(alias string) (bool, error) {
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)
-
+	fmt.Println("finished aws ConfigureHost")
 	return true, addProviderErr
 }
 
 func (aws AmazonWebServices) HostProviderDefinition() []byte {
-	file, _ := json.MarshalIndent(AwsDefinition, "", " ")
+	file, _ := json.MarshalIndent(AwsProviderDefinition, "", " ")
 	return file
-}
-
-func (aws AmazonWebServices) InstallTerraformPlugin(providerId string, hostPath string) (defPath string, statePath string) {
-	definitionPath := filepath.Join(hostPath, providerId+".tf.json")
-	stateDefinitionPath := filepath.Join(hostPath, providerId+".tfstate")
-
-	_ = ioutil.WriteFile(definitionPath, aws.HostProviderDefinition(), 0644)
-	tf, err := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
-	if err != nil {
-		log.Fatalln("error creating NewTerraform", hostPath, cliinit.TfInstallPath)
-	}
-
-	err = tf.Init(context.Background(), tfexec.Upgrade(true), tfexec.LockTimeout("60s"))
-
-	if err != nil {
-		fmt.Println(tf.Output(context.Background()))
-		log.Fatalln("error initializing tf directory", hostPath, cliinit.TfInstallPath, err)
-	}
-
-	tf.Apply(context.Background(), tfexec.State(stateDefinitionPath))
-
-	return definitionPath, stateDefinitionPath
 }

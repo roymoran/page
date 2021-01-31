@@ -9,6 +9,7 @@ package cliinit
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -67,11 +68,11 @@ func CliInit() {
 // have been installed for the cli to
 // function properly
 func CliInitialized() bool {
+	fmt.Println("init check")
 	initialized := false
 	configData, fileErr := ioutil.ReadFile(ConfigPath)
 
 	if fileErr != nil {
-		log.Println(fileErr)
 		return initialized
 	}
 
@@ -79,10 +80,10 @@ func CliInitialized() bool {
 	unmarshalErr := json.Unmarshal(configData, &config)
 
 	if unmarshalErr != nil {
-		log.Println(unmarshalErr)
 		return initialized
 	}
 
+	fmt.Println("finish init check")
 	return config.ConfigStatus
 }
 

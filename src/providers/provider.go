@@ -47,13 +47,16 @@ var SupportedProviders = Provider{
 }
 
 func AddProvider(provider IProvider, providerName string) (bool, string) {
+	fmt.Println("AddProvider call")
 	if !cliinit.CliInitialized() {
+		fmt.Println("1 time init")
 		cliinit.CliInit()
+		fmt.Println("finish 1 time init")
 	}
 
 	// TODO: Change
 	_, _ = provider.Add(providerName)
-
+	fmt.Println("End AddProvider call")
 	return true, ""
 }
 

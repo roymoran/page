@@ -20,7 +20,7 @@ func (a Azure) Deploy() bool {
 	return true
 }
 
-func (a Azure) ConfigureHost(alias string) (bool, error) {
+func (a Azure) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) (bool, error) {
 	fmt.Println("configured azure host")
 	return true, nil
 }
