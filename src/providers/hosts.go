@@ -64,6 +64,7 @@ func HostDirectoryConfigured(hostPath string) bool {
 }
 
 func InstallTerraformPlugin(providerId string, hostPath string, host IHost, definitionPath string, stateDefinitionPath string) {
+	// TODO: Check fr and validate apply did not error
 	fmt.Println("in InstallTerraformPlugin")
 	_ = ioutil.WriteFile(definitionPath, host.HostProviderDefinition(), 0644)
 	tf, err := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
@@ -78,6 +79,11 @@ func InstallTerraformPlugin(providerId string, hostPath string, host IHost, defi
 		log.Fatalln("error initializing tf directory", hostPath, cliinit.TfInstallPath, err)
 	}
 
-	tf.Apply(context.Background(), tfexec.State(stateDefinitionPath))
+	applyErr := tf.Apply(context.Background(), tfexec.State(stateDefinitionPath))
+	if applyErr != nil {
+
+		fmt.Println("failed tf.Apply", applyErr)
+	}
+
 	fmt.Println("finish InstallTerraformPlugin")
 }

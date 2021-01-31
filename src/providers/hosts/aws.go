@@ -26,6 +26,21 @@ var AwsProviderDefinition TerraformTemplate = TerraformTemplate{
 			Region:  "us-east-2",
 		},
 	},
+	Locals: map[string]interface{}{
+		"s3OriginId":   "myS3Origin",
+		"s3BucketName": "pagecli-2827005964",
+	},
+	Resource: map[string]interface{}{
+		"aws_s3_bucket": map[string]interface{}{
+			"b": map[string]interface{}{
+				"bucket": "local.s3BucketName",
+				"website": map[string]interface{}{
+					"index_document": "index.html",
+					"error_document": "index.html",
+				},
+			},
+		},
+	},
 }
 
 func (aws AmazonWebServices) Deploy() bool {
