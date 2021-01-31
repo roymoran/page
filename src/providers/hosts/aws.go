@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -38,7 +39,7 @@ func (aws AmazonWebServices) Deploy() bool {
 
 func (aws AmazonWebServices) ConfigureHost(alias string) (bool, error) {
 	hostName := "aws"
-	providerId := hostName + "_" + alias
+	providerId := alias
 	hostPath := filepath.Join(cliinit.TfInstallPath, hostName)
 	definitionFilePath, stateFilePath := aws.InstallTerraformPlugin(providerId, hostPath)
 	tf, _ := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
@@ -78,6 +79,7 @@ func (aws AmazonWebServices) InstallTerraformPlugin(providerId string, hostPath 
 	err = tf.Init(context.Background(), tfexec.Upgrade(true), tfexec.LockTimeout("60s"))
 
 	if err != nil {
+		fmt.Println(tf.Output(context.Background()))
 		log.Fatalln("error initializing tf directory", hostPath, cliinit.TfInstallPath, err)
 	}
 
