@@ -33,7 +33,7 @@ var AwsProviderDefinition TerraformTemplate = TerraformTemplate{
 	Resource: map[string]interface{}{
 		"aws_s3_bucket": map[string]interface{}{
 			"b": map[string]interface{}{
-				"bucket": "local.s3BucketName",
+				"bucket": "pagecli-2827005964",
 				"website": map[string]interface{}{
 					"index_document": "index.html",
 					"error_document": "index.html",
