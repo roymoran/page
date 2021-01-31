@@ -9,11 +9,12 @@ type PageConfig struct {
 }
 
 type ProviderConfig struct {
-	Id           string `json:"id"`
-	Type         string `json:"type"` // 'registrar' or 'host'
-	Name         string `json:"name"`
-	Auth         string `json:"auth"`
-	Default      bool   `json:"default"`
-	TfConfigPath string `json:"tfConfigPath"`
-	TfStatePath  string `json:"tfStatePath"`
+	Id               string `json:"id"`
+	Alias            string `json:"alias"`
+	Type             string `json:"type"` // 'registrar' or 'host'
+	HostName         string `json:"hostName"`
+	Auth             string `json:"auth"`
+	Default          bool   `json:"default"`
+	TfDefinitionPath string `json:"tfDefinitionPath"`
+	TfStatePath      string `json:"tfStatePath"`
 }

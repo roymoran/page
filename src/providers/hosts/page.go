@@ -9,9 +9,9 @@ func (p PageHost) Deploy() bool {
 	return true
 }
 
-func (p PageHost) ConfigureHost() bool {
+func (p PageHost) ConfigureHost(alias string) (bool, error) {
 	fmt.Println("configured page host")
-	return true
+	return true, nil
 }
 
 func (p PageHost) HostProviderDefinition() []byte {

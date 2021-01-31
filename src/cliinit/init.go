@@ -41,23 +41,21 @@ func CliInit() {
 		log.Fatal("CliInit error. Error creating tf install path.", dirErr)
 	}
 
-	file, _ := json.MarshalIndent(initialPageConfig, "", " ")
-	configError := ioutil.WriteFile(ConfigPath, file, 0644)
+	configError := WriteConfigFile(initialPageConfig)
 
 	if configError != nil {
-		log.Fatal("CliInit error. Error creating config.json.", dirErr)
+		log.Fatal("CliInit error. Error creating config.json.", configError)
 	}
 
 	execPath, installErr := InstallTerraform()
 
 	if installErr != nil {
-		log.Fatal("CliInit error. Error installing terraform.", dirErr)
+		log.Fatal("CliInit error. Error installing terraform.", installErr)
 	}
 
 	initialPageConfig.ConfigStatus = true
 	initialPageConfig.TfExecPath = execPath
-	file, _ = json.MarshalIndent(initialPageConfig, "", " ")
-	configError = ioutil.WriteFile(ConfigPath, file, 0644)
+	configError = WriteConfigFile(initialPageConfig)
 
 	if configError != nil {
 		log.Fatal("CliInit error. Error setting InitialConfig to true.", configError)

@@ -20,9 +20,9 @@ func (a Azure) Deploy() bool {
 	return true
 }
 
-func (a Azure) ConfigureHost() bool {
+func (a Azure) ConfigureHost(alias string) (bool, error) {
 	fmt.Println("configured azure host")
-	return true
+	return true, nil
 }
 
 func (a Azure) HostProviderDefinition() []byte {
