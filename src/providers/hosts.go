@@ -27,7 +27,8 @@ func (hp HostProvider) Add(name string) (bool, string) {
 		}
 	}
 
-	host.ConfigureHost("alias2")
+	// TODO: Get host alias from stdin
+	host.ConfigureHost("alias")
 	return true, fmt.Sprintln()
 }
 

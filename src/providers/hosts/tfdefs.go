@@ -96,8 +96,8 @@ var AwsTerraformDefinition string = `terraform {
 `
 
 type TerraformTemplate struct {
-	Terraform RequiredProviders         `json:"terraform"`
-	Provider  map[string]ProviderConfig `json:"provider"`
+	Terraform RequiredProviders         `json:"terraform,omitempty"`
+	Provider  map[string]ProviderConfig `json:"provider,omitempty"`
 }
 
 type RequiredProviders struct {
