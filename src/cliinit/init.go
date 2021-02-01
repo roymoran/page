@@ -9,7 +9,6 @@ package cliinit
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -68,7 +67,6 @@ func CliInit() {
 // have been installed for the cli to
 // function properly
 func CliInitialized() bool {
-	fmt.Println("init check")
 	initialized := false
 	configData, fileErr := ioutil.ReadFile(ConfigPath)
 
@@ -83,7 +81,6 @@ func CliInitialized() bool {
 		return initialized
 	}
 
-	fmt.Println("finish init check")
 	return config.ConfigStatus
 }
 

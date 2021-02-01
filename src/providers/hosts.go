@@ -19,7 +19,6 @@ type IHost interface {
 }
 
 func (hp HostProvider) Add(name string, channel chan string) (bool, string) {
-	fmt.Println("Add Host Provider in hosts.go")
 	alias := "alias"
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
@@ -35,13 +34,11 @@ func (hp HostProvider) Add(name string, channel chan string) (bool, string) {
 		// Once this is implemented the tf apply command would have to be run per host config so this
 		// logic must be modified to
 		channel <- fmt.Sprintln("Performing one time", alias, "configuration and creating", name, "resources...")
-		fmt.Println("1 time Directory Config in hosts.go")
 		hostDirErr := os.MkdirAll(hostPath, os.ModePerm)
 		if hostDirErr != nil {
 			log.Fatalln("error creating host config directory for", hostPath, hostDirErr)
 		}
 		InstallTerraformPlugin(alias, hostPath, host, definitionPath, stateDefinitionPath)
-		fmt.Println("finish 1 time Directory Config in hosts.go")
 	}
 
 	// TODO: Get host alias from stdin
@@ -61,20 +58,17 @@ func (hp HostProvider) List(name string, channel chan string) (bool, string) {
 }
 
 func HostDirectoryConfigured(hostPath string) bool {
-	fmt.Println("HostDirectoryConfigured check in hosts.go")
 	result := true
 	_, err := os.Stat(hostPath)
 	if err != nil {
 		result = false
 		return result
 	}
-	fmt.Println("Finish HostDirectoryConfigured check in hosts.go")
 	return result
 }
 
 func InstallTerraformPlugin(providerId string, hostPath string, host IHost, definitionPath string, stateDefinitionPath string) {
 	// TODO: Check fr and validate apply did not error
-	fmt.Println("in InstallTerraformPlugin")
 	err := ioutil.WriteFile(definitionPath, host.HostProviderDefinition(), 0644)
 	if err != nil {
 		fmt.Println("failed ioutil.WriteFile for definition file", err)
@@ -98,6 +92,4 @@ func InstallTerraformPlugin(providerId string, hostPath string, host IHost, defi
 		fmt.Println(tf.Output(context.Background()))
 		fmt.Println("failed tf.Apply", applyErr)
 	}
-
-	fmt.Println("finish InstallTerraformPlugin")
 }

@@ -2,7 +2,6 @@ package providers
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"builtonpage.com/main/cliinit"
 )
@@ -44,7 +43,6 @@ func (aws AmazonWebServices) Deploy() bool {
 }
 
 func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) (bool, error) {
-	fmt.Println("entered aws ConfigureHost")
 	hostName := "aws"
 
 	provider := cliinit.ProviderConfig{
