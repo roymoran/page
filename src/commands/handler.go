@@ -74,7 +74,7 @@ var programArgs ProgramArgs = ProgramArgs{
 // Handle is the entry point that begins execution
 // of all commands. It parses the command line args
 // and calls execute on the appropriate command.
-func Handle(args []string) string {
+func Handle(args []string, channel chan string) {
 	for i, arg := range args {
 		if i > len(programArgs.OrderedArgLabel)-1 {
 			programArgs.AdditionalArgValues = args[i:]
@@ -86,13 +86,17 @@ func Handle(args []string) string {
 	command, commandValid := commandLookup[programArgs.ArgValues["command"]]
 
 	if !commandValid {
-		return fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
+		channel <- fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
+		close(channel)
+		return
 	}
 
 	ValidateArgs(commandInfoMap[programArgs.ArgValues["command"]], programArgs.AdditionalArgValues)
 	command.BindArgs()
 	command.Execute()
-	return command.Output()
+	channel <- command.Output()
+	close(channel)
+	return
 }
 
 func BuildUsageInfo() string {

@@ -12,8 +12,9 @@ import (
 )
 
 func main() {
-	// TODO: Allow for intermediate output as command
-	// is processing, mainly for long-running commands
-	output := commands.Handle(os.Args)
-	fmt.Print(output)
+	output := make(chan string)
+	go commands.Handle(os.Args, output)
+	for message := range output {
+		fmt.Println(message)
+	}
 }
