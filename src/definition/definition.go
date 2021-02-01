@@ -9,11 +9,13 @@ package definition
 import (
 	"io/ioutil"
 	"log"
+
+	"gopkg.in/yaml.v2"
 )
 
-var defaultTemplate = `# version - Page config template version
+var DefaultTemplate = `# version - Page config template version
 version: "v0"
-# template - uniform resource locator where 
+# template - uniform resource locator where
 # page template is located and accessible
 template: "https://github.com/roymoran/page"
 # unexpanded domain uses default registrar info/config
@@ -21,6 +23,15 @@ domain: "example.com"
 # unexpanded host uses default host info/config
 host: "page"
 `
+
+// Note: struct fields must be public in order for unmarshal to
+// correctly populate the data.
+type PageDefinition struct {
+	Version  string
+	Template string
+	Domain   string
+	Host     string
+}
 
 // WriteDefinitionFile writes the yaml file
 // with default configurations at the location
@@ -31,14 +42,12 @@ host: "page"
 // false is returned.
 func WriteDefinitionFile() bool {
 	status := true
-
-	writeErr := ioutil.WriteFile("page.yml", []byte(defaultTemplate), 0644)
+	writeErr := ioutil.WriteFile("page.yml", []byte(DefaultTemplate), 0644)
 	if writeErr != nil {
 		log.Fatal("Failed to init page.yml")
 		log.Fatal(writeErr)
 		status = false
 	}
-
 	return status
 }
 
@@ -47,6 +56,17 @@ func WriteDefinitionFile() bool {
 // from the current path given the filename. If
 // no file is found in the current path it returns
 // a file not found error.
-func ReadDefinitionFile() {
-	// TODO: Implement
+func ReadDefinitionFile() (PageDefinition, string, error) {
+	t := PageDefinition{}
+	data, err := ioutil.ReadFile("page.yml")
+	if err != nil {
+		return t, "unable to find page.yml in current directory.", err
+	}
+
+	err = yaml.Unmarshal([]byte(data), &t)
+	if err != nil {
+		return t, "error parsing page.yml. " + err.Error(), err
+	}
+
+	return t, "", nil
 }

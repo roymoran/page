@@ -1,6 +1,11 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+
+	"builtonpage.com/main/definition"
+)
 
 type Up struct {
 }
@@ -48,7 +53,13 @@ func (u Up) Execute() {
 	if !up.ExecutionOk {
 		return
 	}
-	// Parse yaml file
+
+	_, message, err := definition.ReadDefinitionFile()
+	if err != nil {
+		log.Fatalln("error:" + err.Error())
+		up.ExecutionOutput += message
+		return
+	}
 
 	// Resolve template url, is it valid?
 	// Download template from url, build static assets as needed,
