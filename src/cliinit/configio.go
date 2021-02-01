@@ -47,6 +47,7 @@ func WriteConfigFile(config PageConfig) error {
 		log.Fatal("error parsing config file", err)
 		return err
 	}
+	// TODO: perm os.FileMode? 0644?
 	err = ioutil.WriteFile(ConfigPath, []byte(file), 0644)
 
 	if err != nil {
