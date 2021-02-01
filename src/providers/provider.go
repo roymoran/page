@@ -48,7 +48,7 @@ var SupportedProviders = Provider{
 
 func AddProvider(provider IProvider, providerName string, channel chan string) (bool, string) {
 	if !cliinit.CliInitialized() {
-		channel <- fmt.Sprintln("Performing one time cli configuration...")
+		channel <- fmt.Sprint("Performing one time cli configuration...")
 		cliinit.CliInit()
 	}
 

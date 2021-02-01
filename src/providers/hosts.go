@@ -33,7 +33,7 @@ func (hp HostProvider) Add(name string, channel chan string) (bool, string) {
 		// alias. The alias will have be unique among all host configurations.
 		// Once this is implemented the tf apply command would have to be run per host config so this
 		// logic must be modified to
-		channel <- fmt.Sprintln("Performing one time", alias, "configuration and creating", name, "resources...")
+		channel <- fmt.Sprint("Applying ", name, " resource changes...")
 		hostDirErr := os.MkdirAll(hostPath, os.ModePerm)
 		if hostDirErr != nil {
 			log.Fatalln("error creating host config directory for", hostPath, hostDirErr)
@@ -42,7 +42,7 @@ func (hp HostProvider) Add(name string, channel chan string) (bool, string) {
 	}
 
 	// TODO: Get host alias from stdin
-	channel <- fmt.Sprintln("Adding", name, "host configuration...")
+	channel <- fmt.Sprint("Adding ", name, " host configuration...")
 	host.ConfigureHost(alias, definitionPath, stateDefinitionPath)
 
 	return true, fmt.Sprintln()
