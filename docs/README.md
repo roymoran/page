@@ -10,8 +10,9 @@ The goal of the definition file is to describe only the essential information re
 ```yaml
 # version - Page config template version
 version: "0"
-# template - uniform resource locator where page 
-# template is located and accessible
+# template - uniform resource locator where
+# page template is located and accessible
+# via git clone
 template: "https://github.com/roymoran/page"
 # unexpanded domain uses default registrar info/config
 domain: 'example.com'
@@ -23,8 +24,9 @@ The example definition file below uses expanded keys to provide extra flexibilit
 ```yaml
 # version - Page config template version
 version: "0"
-# template - uniform resource locator where page 
-# template is located and accessible
+# template - uniform resource locator where
+# page template is located and accessible
+# via git clone
 template:
   url: "https://github.com/roymoran/page"
 

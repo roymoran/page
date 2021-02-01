@@ -17,7 +17,8 @@ var DefaultTemplate = `# version - Page config template version
 version: "v0"
 # template - uniform resource locator where
 # page template is located and accessible
-template: "https://github.com/roymoran/page"
+# via git clone
+template: "https://github.com/roymoran/index"
 # unexpanded domain uses default registrar info/config
 domain: "example.com"
 # unexpanded host uses default host info/config
