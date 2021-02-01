@@ -8,11 +8,6 @@ import (
 )
 
 type Conf struct {
-	DisplayName              string
-	ExecutionOutput          string
-	ExecutionOk              bool
-	MinimumExpectedArgs      int
-	MaximumExpectedArguments int
 }
 
 type ConfArgs struct {

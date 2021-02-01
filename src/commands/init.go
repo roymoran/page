@@ -7,11 +7,6 @@ import (
 )
 
 type Init struct {
-	DisplayName              string
-	ExecutionOutput          string
-	ExecutionOk              bool
-	MinimumExpectedArgs      int
-	MaximumExpectedArguments int
 }
 
 var initCommand CommandInfo = CommandInfo{

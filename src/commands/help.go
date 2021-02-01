@@ -3,13 +3,6 @@ package commands
 import "fmt"
 
 type Help struct {
-	DisplayName              string
-	ExecutionOutput          string
-	ExecutionOk              bool
-	MinimumExpectedArgs      int
-	MaximumExpectedArguments int
-	OrderedArgLabel          []string
-	ArgValues                map[string]string
 }
 
 var help CommandInfo = CommandInfo{
