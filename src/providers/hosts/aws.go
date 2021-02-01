@@ -58,7 +58,6 @@ func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath stri
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)
-	fmt.Println("finished aws ConfigureHost")
 	return true, addProviderErr
 }
 

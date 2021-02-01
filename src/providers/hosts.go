@@ -18,7 +18,7 @@ type IHost interface {
 	HostProviderDefinition() []byte
 }
 
-func (hp HostProvider) Add(name string) (bool, string) {
+func (hp HostProvider) Add(name string, channel chan string) (bool, string) {
 	fmt.Println("Add Host Provider in hosts.go")
 	alias := "alias"
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
@@ -27,6 +27,14 @@ func (hp HostProvider) Add(name string) (bool, string) {
 	definitionPath := filepath.Join(hostPath, alias+".tf.json")
 	stateDefinitionPath := filepath.Join(hostPath, alias+".tfstate")
 	if !HostDirectoryConfigured(hostPath) {
+		// TODO: This logic only allows for single host configured per host type e.g. aws, azure, etc.
+		// please allow for user to configure multilple aws hosts (so there would be a single provider
+		// tf file per directlry that contains provider details and the multiple tf files per host
+		// configuration). This implies that each host config must be uniquely identified by a unique
+		// alias. The alias will have be unique among all host configurations.
+		// Once this is implemented the tf apply command would have to be run per host config so this
+		// logic must be modified to
+		channel <- fmt.Sprintln("Performing one time", alias, "configuration and creating", name, "resources...")
 		fmt.Println("1 time Directory Config in hosts.go")
 		hostDirErr := os.MkdirAll(hostPath, os.ModePerm)
 		if hostDirErr != nil {
@@ -37,12 +45,13 @@ func (hp HostProvider) Add(name string) (bool, string) {
 	}
 
 	// TODO: Get host alias from stdin
+	channel <- fmt.Sprintln("Adding", name, "host configuration...")
 	host.ConfigureHost(alias, definitionPath, stateDefinitionPath)
 
 	return true, fmt.Sprintln()
 }
 
-func (hp HostProvider) List(name string) (bool, string) {
+func (hp HostProvider) List(name string, channel chan string) (bool, string) {
 	supportedHosts := fmt.Sprint()
 	for _, hostName := range SupportedHosts {
 		supportedHosts += fmt.Sprintln(hostName)
@@ -66,22 +75,27 @@ func HostDirectoryConfigured(hostPath string) bool {
 func InstallTerraformPlugin(providerId string, hostPath string, host IHost, definitionPath string, stateDefinitionPath string) {
 	// TODO: Check fr and validate apply did not error
 	fmt.Println("in InstallTerraformPlugin")
-	_ = ioutil.WriteFile(definitionPath, host.HostProviderDefinition(), 0644)
+	err := ioutil.WriteFile(definitionPath, host.HostProviderDefinition(), 0644)
+	if err != nil {
+		fmt.Println("failed ioutil.WriteFile for definition file", err)
+	}
+
 	tf, err := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
 	if err != nil {
-		log.Fatalln("error creating NewTerraform", hostPath, cliinit.TfInstallPath)
+		fmt.Println(tf.Output(context.Background()))
+		fmt.Println("error creating NewTerraform", hostPath, cliinit.TfInstallPath)
 	}
 
 	err = tf.Init(context.Background(), tfexec.Upgrade(true), tfexec.LockTimeout("60s"))
 
 	if err != nil {
 		fmt.Println(tf.Output(context.Background()))
-		log.Fatalln("error initializing tf directory", hostPath, cliinit.TfInstallPath, err)
+		fmt.Println("error initializing tf directory", hostPath, cliinit.TfInstallPath, err)
 	}
 
 	applyErr := tf.Apply(context.Background(), tfexec.State(stateDefinitionPath))
 	if applyErr != nil {
-
+		fmt.Println(tf.Output(context.Background()))
 		fmt.Println("failed tf.Apply", applyErr)
 	}
 

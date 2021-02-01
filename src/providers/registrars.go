@@ -8,14 +8,14 @@ type IRegistrar interface {
 	ConfigureRegistrar() bool
 }
 
-func (rp RegistrarProvider) Add(name string) (bool, string) {
+func (rp RegistrarProvider) Add(name string, channel chan string) (bool, string) {
 	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
 	registrar := registrarProvider.Supported[name]
 	registrar.ConfigureRegistrar()
 	return true, fmt.Sprintln()
 }
 
-func (rp RegistrarProvider) List(name string) (bool, string) {
+func (rp RegistrarProvider) List(name string, channel chan string) (bool, string) {
 	supportedRegistrars := fmt.Sprint()
 	for _, registrarName := range SupportedRegistrars {
 		supportedRegistrars += fmt.Sprintln(registrarName)

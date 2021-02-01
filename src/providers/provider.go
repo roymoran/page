@@ -10,13 +10,13 @@ import (
 )
 
 type Provider struct {
-	Actions   map[string]func(IProvider, string) (bool, string)
+	Actions   map[string]func(IProvider, string, chan string) (bool, string)
 	Providers map[string]IProvider
 }
 
 type IProvider interface {
-	Add(string) (bool, string)
-	List(string) (bool, string)
+	Add(string, chan string) (bool, string)
+	List(string, chan string) (bool, string)
 }
 
 type RegistrarProvider struct {
@@ -28,7 +28,7 @@ type HostProvider struct {
 }
 
 var SupportedProviders = Provider{
-	Actions: map[string]func(IProvider, string) (bool, string){"add": AddProvider, "list": IProvider.List},
+	Actions: map[string]func(IProvider, string, chan string) (bool, string){"add": AddProvider, "list": IProvider.List},
 	Providers: map[string]IProvider{
 		"host": HostProvider{
 			Supported: map[string]IHost{
@@ -46,16 +46,17 @@ var SupportedProviders = Provider{
 	},
 }
 
-func AddProvider(provider IProvider, providerName string) (bool, string) {
+func AddProvider(provider IProvider, providerName string, channel chan string) (bool, string) {
 	fmt.Println("AddProvider call")
 	if !cliinit.CliInitialized() {
+		channel <- fmt.Sprintln("Performing one time cli configuration...")
 		fmt.Println("1 time init")
 		cliinit.CliInit()
 		fmt.Println("finish 1 time init")
 	}
 
 	// TODO: Change
-	_, _ = provider.Add(providerName)
+	_, _ = provider.Add(providerName, channel)
 	fmt.Println("End AddProvider call")
 	return true, ""
 }
