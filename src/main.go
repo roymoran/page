@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	// TODO: Allow for intermediate output as command
+	// is processing, mainly for long-running commands
 	output := commands.Handle(os.Args)
 	fmt.Print(output)
 }
