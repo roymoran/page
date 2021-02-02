@@ -3,7 +3,7 @@ package providers
 import "fmt"
 
 type IRegistrar interface {
-	RegisterDomain() bool
+	ConfigureRegistrar() bool
 	ConfigureDns() bool
 	AddRegistrar(string) error
 }

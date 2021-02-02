@@ -1,6 +1,11 @@
 package cliinit
 
 type PageConfig struct {
+	// TODO: Is it worth storing these paths?
+	// Could we not access these programatically
+	// with os.UserHomeDir() each time we needed
+	// them? Values stored in config may be brittle
+	// to filesystem changes
 	TfPath       string           `json:"tfPath"`
 	TfExecPath   string           `json:"tfExecPath"`
 	TFVersion    string           `json:"tfVersion"`

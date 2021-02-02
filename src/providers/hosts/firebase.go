@@ -1,11 +1,16 @@
 package providers
 
-import "builtonpage.com/main/cliinit"
+import (
+	"fmt"
+
+	"builtonpage.com/main/cliinit"
+)
 
 type Firebase struct {
 }
 
-func (f Firebase) Deploy() bool {
+func (f Firebase) ConfigureHost() bool {
+	fmt.Println("configured firebase host")
 	return true
 }
 

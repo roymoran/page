@@ -46,6 +46,10 @@ var SupportedProviders = Provider{
 	},
 }
 
+// TODO: Maybe we don't want the channel to be propegated?
+// if there is an error in Adding the provider or initializing
+// the cli we can let conf.go receive the message via err.Error()
+// have conf.go/handler.go communicate that over the channel
 func AddProvider(provider IProvider, providerName string, channel chan string) error {
 	if !cliinit.CliInitialized() {
 		channel <- fmt.Sprint("Performing one time cli configuration...")

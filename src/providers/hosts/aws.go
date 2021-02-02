@@ -2,6 +2,7 @@ package providers
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"builtonpage.com/main/cliinit"
 )
@@ -38,7 +39,8 @@ var AwsProviderDefinition TerraformTemplate = TerraformTemplate{
 	},
 }
 
-func (aws AmazonWebServices) Deploy() bool {
+func (aws AmazonWebServices) ConfigureHost() bool {
+	fmt.Println("configured aws host")
 	return true
 }
 

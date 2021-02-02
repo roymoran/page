@@ -1,6 +1,10 @@
 package providers
 
-import "builtonpage.com/main/cliinit"
+import (
+	"fmt"
+
+	"builtonpage.com/main/cliinit"
+)
 
 type Azure struct {
 }
@@ -16,7 +20,8 @@ terraform {
 }
 `
 
-func (a Azure) Deploy() bool {
+func (a Azure) ConfigureHost() bool {
+	fmt.Println("configured azure host")
 	return true
 }
 

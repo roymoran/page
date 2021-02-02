@@ -1,11 +1,16 @@
 package providers
 
-import "builtonpage.com/main/cliinit"
+import (
+	"fmt"
+
+	"builtonpage.com/main/cliinit"
+)
 
 type PageHost struct {
 }
 
-func (p PageHost) Deploy() bool {
+func (p PageHost) ConfigureHost() bool {
+	fmt.Println("configured page host")
 	return true
 }
 

@@ -1,11 +1,16 @@
 package providers
 
-import "builtonpage.com/main/cliinit"
+import (
+	"fmt"
+
+	"builtonpage.com/main/cliinit"
+)
 
 type Namecheap struct {
 }
 
-func (n Namecheap) RegisterDomain() bool {
+func (n Namecheap) ConfigureRegistrar() bool {
+	fmt.Println("configured page registrar")
 	return true
 }
 

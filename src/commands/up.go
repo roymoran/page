@@ -82,8 +82,7 @@ func (u Up) Execute() {
 	var providerSupported bool
 
 	registrarProviderConcrete = registrarProvider.(providers.RegistrarProvider)
-
-	_, providerSupported = registrarProviderConcrete.Supported[pageDefinition.Registrar]
+	registrar, providerSupported := registrarProviderConcrete.Supported[pageDefinition.Registrar]
 
 	if !providerSupported {
 		up.ExecutionOk = false
@@ -92,7 +91,7 @@ func (u Up) Execute() {
 	}
 
 	hostProviderConcrete = hostProvider.(providers.HostProvider)
-	_, providerSupported = hostProviderConcrete.Supported[pageDefinition.Host]
+	host, providerSupported := hostProviderConcrete.Supported[pageDefinition.Host]
 
 	if !providerSupported {
 		up.ExecutionOk = false
@@ -109,6 +108,9 @@ func (u Up) Execute() {
 		OutputChannel <- "Error fetching template at " + pageDefinition.Template + ". (details: " + err.Error() + ")"
 		return
 	}
+
+	host.ConfigureHost()
+	registrar.ConfigureRegistrar()
 
 	// Resolve template url, is it valid?
 	// Download template from url, build static assets as needed,

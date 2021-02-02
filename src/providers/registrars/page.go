@@ -1,11 +1,16 @@
 package providers
 
-import "builtonpage.com/main/cliinit"
+import (
+	"fmt"
+
+	"builtonpage.com/main/cliinit"
+)
 
 type Page struct {
 }
 
-func (p Page) RegisterDomain() bool {
+func (p Page) ConfigureRegistrar() bool {
+	fmt.Println("configured page registrar")
 	return true
 }
 

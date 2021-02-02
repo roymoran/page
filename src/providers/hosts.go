@@ -13,7 +13,7 @@ import (
 )
 
 type IHost interface {
-	Deploy() bool
+	ConfigureHost() bool
 	AddHost(alias string, definitionPath string, statePath string) error
 	HostProviderDefinition() []byte
 }
