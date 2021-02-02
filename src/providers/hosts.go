@@ -14,11 +14,11 @@ import (
 
 type IHost interface {
 	Deploy() bool
-	ConfigureHost(alias string, definitionPath string, statePath string) (bool, error)
+	ConfigureHost(alias string, definitionPath string, statePath string) error
 	HostProviderDefinition() []byte
 }
 
-func (hp HostProvider) Add(name string, channel chan string) (bool, string) {
+func (hp HostProvider) Add(name string, channel chan string) error {
 	alias := "alias"
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
@@ -45,16 +45,14 @@ func (hp HostProvider) Add(name string, channel chan string) (bool, string) {
 	channel <- fmt.Sprint("Adding ", name, " host configuration...")
 	host.ConfigureHost(alias, definitionPath, stateDefinitionPath)
 
-	return true, fmt.Sprintln()
+	return nil
 }
 
-func (hp HostProvider) List(name string, channel chan string) (bool, string) {
-	supportedHosts := fmt.Sprint()
+func (hp HostProvider) List(name string, channel chan string) error {
 	for _, hostName := range SupportedHosts {
-		supportedHosts += fmt.Sprintln(hostName)
+		channel <- fmt.Sprint(hostName)
 	}
-	supportedHosts += fmt.Sprintln()
-	return true, supportedHosts
+	return nil
 }
 
 func HostDirectoryConfigured(hostPath string) bool {

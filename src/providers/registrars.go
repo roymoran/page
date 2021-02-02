@@ -5,21 +5,19 @@ import "fmt"
 type IRegistrar interface {
 	RegisterDomain() bool
 	ConfigureDns() bool
-	ConfigureRegistrar() bool
+	ConfigureRegistrar(string) error
 }
 
-func (rp RegistrarProvider) Add(name string, channel chan string) (bool, string) {
+func (rp RegistrarProvider) Add(name string, channel chan string) error {
 	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
 	registrar := registrarProvider.Supported[name]
-	registrar.ConfigureRegistrar()
-	return true, fmt.Sprintln()
+	registrar.ConfigureRegistrar("namecheap_main")
+	return nil
 }
 
-func (rp RegistrarProvider) List(name string, channel chan string) (bool, string) {
-	supportedRegistrars := fmt.Sprint()
+func (rp RegistrarProvider) List(name string, channel chan string) error {
 	for _, registrarName := range SupportedRegistrars {
-		supportedRegistrars += fmt.Sprintln(registrarName)
+		channel <- fmt.Sprint(registrarName)
 	}
-	supportedRegistrars += fmt.Sprintln()
-	return true, supportedRegistrars
+	return nil
 }

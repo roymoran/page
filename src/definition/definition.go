@@ -15,23 +15,26 @@ import (
 
 var DefaultTemplate = `# version - Page config template version
 version: "v0"
+# unexpanded host uses default host info/config
+host: "aws"
+# unexpanded registrar uses default registrar info/config
+registrar: "namecheap"
+# unexpanded domain uses default registrar info/config
+domain: "example.com"
 # template - uniform resource locator where
 # page template is located and accessible
 # via git clone
 template: "https://github.com/roymoran/index"
-# unexpanded domain uses default registrar info/config
-domain: "example.com"
-# unexpanded host uses default host info/config
-host: "page"
 `
 
 // Note: struct fields must be public in order for unmarshal to
 // correctly populate the data.
 type PageDefinition struct {
-	Version  string
-	Template string
-	Domain   string
-	Host     string
+	Template  string
+	Registrar string
+	Host      string
+	Domain    string
+	Version   string
 }
 
 // WriteDefinitionFile writes the yaml file

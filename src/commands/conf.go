@@ -11,7 +11,7 @@ type Conf struct {
 }
 
 type ConfArgs struct {
-	Action   func(providers.IProvider, string, chan string) (bool, string)
+	Action   func(providers.IProvider, string, chan string) error
 	Provider providers.IProvider
 }
 
@@ -120,7 +120,10 @@ func (c Conf) Execute() {
 		return
 	}
 
-	_, conf.ExecutionOutput = confArgs.Action(confArgs.Provider, conf.ArgValues["providerName"], OutputChannel)
+	err := confArgs.Action(confArgs.Provider, conf.ArgValues["providerName"], OutputChannel)
+	if err != nil {
+		conf.ExecutionOk = false
+	}
 }
 
 func (c Conf) Output() string {

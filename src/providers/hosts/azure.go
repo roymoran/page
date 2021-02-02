@@ -1,6 +1,6 @@
 package providers
 
-import "fmt"
+import "builtonpage.com/main/cliinit"
 
 type Azure struct {
 }
@@ -20,9 +20,19 @@ func (a Azure) Deploy() bool {
 	return true
 }
 
-func (a Azure) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) (bool, error) {
-	fmt.Println("configured azure host")
-	return true, nil
+func (a Azure) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
+	provider := cliinit.ProviderConfig{
+		Type:             "host",
+		Alias:            alias,
+		Name:             "azure",
+		Auth:             "tbd",
+		Default:          true,
+		TfDefinitionPath: definitionFilePath,
+		TfStatePath:      stateFilePath,
+	}
+
+	addProviderErr := cliinit.AddProvider(provider)
+	return nil
 }
 
 func (a Azure) HostProviderDefinition() []byte {

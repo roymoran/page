@@ -10,13 +10,13 @@ import (
 )
 
 type Provider struct {
-	Actions   map[string]func(IProvider, string, chan string) (bool, string)
+	Actions   map[string]func(IProvider, string, chan string) error
 	Providers map[string]IProvider
 }
 
 type IProvider interface {
-	Add(string, chan string) (bool, string)
-	List(string, chan string) (bool, string)
+	Add(string, chan string) error
+	List(string, chan string) error
 }
 
 type RegistrarProvider struct {
@@ -28,7 +28,7 @@ type HostProvider struct {
 }
 
 var SupportedProviders = Provider{
-	Actions: map[string]func(IProvider, string, chan string) (bool, string){"add": AddProvider, "list": IProvider.List},
+	Actions: map[string]func(IProvider, string, chan string) error{"add": AddProvider, "list": IProvider.List},
 	Providers: map[string]IProvider{
 		"host": HostProvider{
 			Supported: map[string]IHost{
@@ -46,15 +46,15 @@ var SupportedProviders = Provider{
 	},
 }
 
-func AddProvider(provider IProvider, providerName string, channel chan string) (bool, string) {
+func AddProvider(provider IProvider, providerName string, channel chan string) error {
 	if !cliinit.CliInitialized() {
 		channel <- fmt.Sprint("Performing one time cli configuration...")
 		cliinit.CliInit()
 	}
 
-	// TODO: Change
-	_, _ = provider.Add(providerName, channel)
-	return true, ""
+	// TODO: Consider removing bool, string return values
+	err := provider.Add(providerName, channel)
+	return err
 }
 
 var SupportedProviderTypes []string = BuildSupportedProviderTypes()

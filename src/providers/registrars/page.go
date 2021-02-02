@@ -1,6 +1,6 @@
 package providers
 
-import "fmt"
+import "builtonpage.com/main/cliinit"
 
 type Page struct {
 }
@@ -13,7 +13,17 @@ func (p Page) ConfigureDns() bool {
 	return true
 }
 
-func (p Page) ConfigureRegistrar() bool {
-	fmt.Println("configured page registrar")
-	return true
+func (p Page) ConfigureRegistrar(alias string) error {
+	provider := cliinit.ProviderConfig{
+		Type:             "registrar",
+		Alias:            alias,
+		Name:             "page",
+		Auth:             "tbd",
+		Default:          true,
+		TfDefinitionPath: "",
+		TfStatePath:      "",
+	}
+
+	addProviderErr := cliinit.AddProvider(provider)
+	return addProviderErr
 }

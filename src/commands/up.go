@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"builtonpage.com/main/definition"
+	"builtonpage.com/main/providers"
 	"github.com/go-git/go-git/v5"
 )
 
@@ -73,10 +74,35 @@ func (u Up) Execute() {
 	tempDir, _ := ioutil.TempDir("", "template")
 	defer os.RemoveAll(tempDir)
 
+	registrarProvider, _ := providers.SupportedProviders.Providers["registrar"]
+	hostProvider, _ := providers.SupportedProviders.Providers["host"]
+
+	var hostProviderConcrete providers.HostProvider
+	var registrarProviderConcrete providers.RegistrarProvider
+	var providerSupported bool
+
+	registrarProviderConcrete = registrarProvider.(providers.RegistrarProvider)
+
+	_, providerSupported = registrarProviderConcrete.Supported[pageDefinition.Registrar]
+
+	if !providerSupported {
+		up.ExecutionOk = false
+		OutputChannel <- "Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars."
+		return
+	}
+
+	hostProviderConcrete = hostProvider.(providers.HostProvider)
+	_, providerSupported = hostProviderConcrete.Supported[pageDefinition.Host]
+
+	if !providerSupported {
+		up.ExecutionOk = false
+		OutputChannel <- "Provided unsupported host (" + pageDefinition.Host + "). See 'page conf host list' for supported registrars."
+		return
+	}
+
 	// TODO: Consider cloning to in-memory storage
 	_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
-		URL:      pageDefinition.Template,
-		Progress: os.Stdout,
+		URL: pageDefinition.Template,
 	})
 
 	if err != nil {

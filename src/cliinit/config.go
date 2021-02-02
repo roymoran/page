@@ -11,7 +11,7 @@ type PageConfig struct {
 type ProviderConfig struct {
 	Alias            string `json:"alias"`
 	Type             string `json:"type"` // 'registrar' or 'host'
-	HostName         string `json:"hostName"`
+	Name             string `json:"name"`
 	Auth             string `json:"auth"`
 	Default          bool   `json:"default"`
 	TfDefinitionPath string `json:"tfDefinitionPath"`

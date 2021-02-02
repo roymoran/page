@@ -9,15 +9,17 @@ The goal of the definition file is to describe only the essential information re
 ### Examples
 ```yaml
 # version - Page config template version
-version: "0"
+version: "v0"
+# unexpanded host uses default host info/config
+host: "aws"
+# unexpanded registrar uses default registrar info/config
+registrar: "namecheap"
+# unexpanded domain uses default registrar info/config
+domain: "example.com"
 # template - uniform resource locator where
 # page template is located and accessible
 # via git clone
-template: "https://github.com/roymoran/page"
-# unexpanded domain uses default registrar info/config
-domain: 'example.com'
-# unexpanded host uses default host info/config
-host: 'page'
+template: "https://github.com/roymoran/index"
 ```
 
 The example definition file below uses expanded keys to provide extra flexibility for use cases/scenarios that might come up.

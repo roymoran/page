@@ -42,13 +42,11 @@ func (aws AmazonWebServices) Deploy() bool {
 	return true
 }
 
-func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) (bool, error) {
-	hostName := "aws"
-
+func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
-		HostName:         hostName,
+		Name:             "aws",
 		Auth:             "tbd",
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
@@ -56,7 +54,7 @@ func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath stri
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)
-	return true, addProviderErr
+	return addProviderErr
 }
 
 func (aws AmazonWebServices) HostProviderDefinition() []byte {
