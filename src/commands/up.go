@@ -73,6 +73,7 @@ func (u Up) Execute() {
 	tempDir, _ := ioutil.TempDir("", "template")
 	defer os.RemoveAll(tempDir)
 
+	// TODO: Consider cloning to in-memory storage
 	_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
 		URL:      pageDefinition.Template,
 		Progress: os.Stdout,
