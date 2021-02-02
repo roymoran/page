@@ -13,7 +13,7 @@ func (n Namecheap) ConfigureDns() bool {
 	return true
 }
 
-func (n Namecheap) ConfigureRegistrar(alias string) error {
+func (n Namecheap) AddRegistrar(alias string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "registrar",
 		Alias:            alias,

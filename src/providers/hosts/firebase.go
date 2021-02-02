@@ -9,7 +9,7 @@ func (f Firebase) Deploy() bool {
 	return true
 }
 
-func (f Firebase) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
+func (f Firebase) CoAddHostnfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,

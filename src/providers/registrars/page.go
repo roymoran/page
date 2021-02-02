@@ -13,7 +13,7 @@ func (p Page) ConfigureDns() bool {
 	return true
 }
 
-func (p Page) ConfigureRegistrar(alias string) error {
+func (p Page) AddRegistrar(alias string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "registrar",
 		Alias:            alias,

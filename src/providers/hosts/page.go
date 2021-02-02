@@ -9,7 +9,7 @@ func (p PageHost) Deploy() bool {
 	return true
 }
 
-func (p PageHost) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
+func (p PageHost) AddHost(alias string, definitionFilePath string, stateFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,

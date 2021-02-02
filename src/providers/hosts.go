@@ -14,7 +14,7 @@ import (
 
 type IHost interface {
 	Deploy() bool
-	ConfigureHost(alias string, definitionPath string, statePath string) error
+	AddHost(alias string, definitionPath string, statePath string) error
 	HostProviderDefinition() []byte
 }
 
@@ -43,7 +43,7 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 
 	// TODO: Get host alias from stdin
 	channel <- fmt.Sprint("Adding ", name, " host configuration...")
-	host.ConfigureHost(alias, definitionPath, stateDefinitionPath)
+	host.AddHost(alias, definitionPath, stateDefinitionPath)
 
 	return nil
 }

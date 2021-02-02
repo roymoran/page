@@ -5,13 +5,13 @@ import "fmt"
 type IRegistrar interface {
 	RegisterDomain() bool
 	ConfigureDns() bool
-	ConfigureRegistrar(string) error
+	AddRegistrar(string) error
 }
 
 func (rp RegistrarProvider) Add(name string, channel chan string) error {
 	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
 	registrar := registrarProvider.Supported[name]
-	registrar.ConfigureRegistrar("namecheap_main")
+	registrar.AddRegistrar("namecheap_main")
 	return nil
 }
 

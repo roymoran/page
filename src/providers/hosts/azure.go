@@ -20,7 +20,7 @@ func (a Azure) Deploy() bool {
 	return true
 }
 
-func (a Azure) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
+func (a Azure) AddHost(alias string, definitionFilePath string, stateFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
@@ -32,7 +32,7 @@ func (a Azure) ConfigureHost(alias string, definitionFilePath string, stateFileP
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)
-	return nil
+	return addProviderErr
 }
 
 func (a Azure) HostProviderDefinition() []byte {

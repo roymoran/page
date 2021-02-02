@@ -42,7 +42,7 @@ func (aws AmazonWebServices) Deploy() bool {
 	return true
 }
 
-func (aws AmazonWebServices) ConfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
+func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string, stateFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
