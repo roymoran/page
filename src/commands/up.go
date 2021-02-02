@@ -2,9 +2,12 @@ package commands
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 
 	"builtonpage.com/main/definition"
+	"github.com/go-git/go-git/v5"
 )
 
 type Up struct {
@@ -49,15 +52,34 @@ func (u Up) UsageCategory() int {
 	return 1
 }
 
+func (u Up) BindArgs() {
+	if !up.ExecutionOk {
+		return
+	}
+}
+
 func (u Up) Execute() {
 	if !up.ExecutionOk {
 		return
 	}
 
-	_, message, err := definition.ReadDefinitionFile()
+	pageDefinition, message, err := definition.ReadDefinitionFile()
 	if err != nil {
 		log.Fatalln("error:" + err.Error())
 		up.ExecutionOutput += message
+		return
+	}
+
+	tempDir, _ := ioutil.TempDir("", "template")
+	defer os.RemoveAll(tempDir)
+
+	_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
+		URL:      pageDefinition.Template,
+		Progress: os.Stdout,
+	})
+
+	if err != nil {
+		OutputChannel <- "Error fetching template at " + pageDefinition.Template + ". (details: " + err.Error() + ")"
 		return
 	}
 
@@ -84,12 +106,6 @@ func (u Up) Execute() {
 	// Take assets from deploy directory, and execute depoyment via host
 	// cli
 	up.ExecutionOutput += fmt.Sprintln("deployed")
-}
-
-func (u Up) BindArgs() {
-	if !up.ExecutionOk {
-		return
-	}
 }
 
 func (u Up) Output() string {
