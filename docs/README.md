@@ -1,5 +1,22 @@
 # Docs
-
+## Development
+### Dependencies
+- [Golang v1.15.6](https://golang.org/)
+### Build, Test, and Run
+```bash
+# from src directory
+# install dependencies
+$ go install
+# build and output executable to user programs directories
+# once built you can execute the command using the executable name
+# 'page' from you command line
+$ go build -o /usr/local/bin/page
+# run tests
+$ cd tests
+$ go test
+# run without building executable
+$ go run main.go
+```
 ## Page Definition File
 The goal of the definition file is to describe only the essential information required to create and deploy a page with the cli. The simplest form of the definition file is what is generated when running `page init`. We should use smart defaults for any key that isn't included or isn't expanded on. Any modifications to the definition file should aim to be compatible with current versions of the definition file. If there is an incompatible change made to the definition file, the value of `version` must reflect that by incrementing it like so - 0, 1, 2, etcetera.
 
