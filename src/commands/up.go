@@ -119,6 +119,10 @@ func (u Up) Execute() {
 	// or maybe copy these one by one into a deploy directory (zip if needed)?
 	// maintaining a flag that signals deploy step once assets are ready.
 
+	// TODO: Must figure out how to split up terraform template to have
+	// multiple tf files per host directory. Will allow to add/remove sites
+	// by simply deleting the tf config that contains the site resource.
+
 	// Get default host for host_value on yaml file. Does infrastructure
 	// exist to deploy assets? If not create infrastructure with message
 	// 'Creating infrastructure on [host_value]...'

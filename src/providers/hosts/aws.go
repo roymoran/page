@@ -26,20 +26,37 @@ var AwsProviderDefinition TerraformTemplate = TerraformTemplate{
 			Region:  "us-east-2",
 		},
 	},
-	Resource: map[string]interface{}{
-		"aws_s3_bucket": map[string]interface{}{
-			"b": map[string]interface{}{
-				"bucket": "pagecli-2827005964",
-				"website": map[string]interface{}{
-					"index_document": "index.html",
-					"error_document": "index.html",
-				},
-			},
-		},
-	},
+	// TODO: Only deploy resources on page up
+	//Resource: map[string]interface{}{
+	//	"aws_s3_bucket": map[string]interface{}{
+	//		"b": map[string]interface{}{
+	//			"bucket": "pagecli-2827005964",
+	//			"website": map[string]interface{}{
+	//				"index_document": "index.html",
+	//				"error_document": "index.html",
+	//			},
+	//		},
+	//	},
+	//},
 }
 
 func (aws AmazonWebServices) ConfigureHost() bool {
+	// TODO: Does the site bucket exist? domain.com_s3bucketobject.tf.json?
+	// if no then create it as follows ->
+	// TODO: Create s3 bucket object resource to upload site.
+	// ensure bucket value is set to output of tf state when
+	// bucket was created. Maybe can be done by finding bucket
+	// with alias tag?
+	// resource "aws_s3_bucket_object" "domain.com" each site
+	// under the same host alias should be hosted on the same
+	// bucket.
+	// TODO: Otherwise if bucket domain.com_s3bucketobject.tf.json exists
+	// we can be sure that resource exists on aws.
+
+	// Now create distribution on Cloudfront with output from
+	//
+
+	//
 	fmt.Println("configured aws host")
 	return true
 }

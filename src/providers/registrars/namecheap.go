@@ -11,6 +11,7 @@ type Namecheap struct {
 
 func (n Namecheap) ConfigureRegistrar() bool {
 	fmt.Println("configured page registrar")
+	// Does domain exist on registrar account? If not acquire.
 	return true
 }
 
