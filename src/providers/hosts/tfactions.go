@@ -15,7 +15,6 @@ func TfInit(initPath string) error {
 	tf, err := tfexec.NewTerraform(initPath, cliinit.TfExecPath)
 	if err != nil {
 		fmt.Println(tf.Output(context.Background()))
-		fmt.Println("error creating NewTerraform", initPath, cliinit.TfInstallPath)
 		return err
 	}
 
@@ -23,15 +22,29 @@ func TfInit(initPath string) error {
 
 	if err != nil {
 		fmt.Println(tf.Output(context.Background()))
-		fmt.Println("error initializing tf directory", initPath, cliinit.TfInstallPath, err)
+		fmt.Println(err)
 		return err
 	}
 
 	return nil
 }
 
-// TfApply runs the apply command in the specified
+// TfApply runs the terraform apply command in the specified
 // applyPath
 func TfApply(applyPath string) error {
+	tf, err := tfexec.NewTerraform(applyPath, cliinit.TfExecPath)
+	if err != nil {
+		fmt.Println(tf.Output(context.Background()))
+		return err
+	}
+
+	err = tf.Apply(context.Background())
+
+	if err != nil {
+		fmt.Println(tf.Output(context.Background()))
+		fmt.Println(err)
+		return err
+	}
+
 	return nil
 }
