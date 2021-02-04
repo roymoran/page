@@ -95,11 +95,35 @@ var AwsTerraformDefinition string = `terraform {
   }
 `
 
-type TerraformTemplate struct {
-	Terraform RequiredProviders         `json:"terraform,omitempty"`
-	Provider  map[string]ProviderConfig `json:"provider,omitempty"`
-	// TODO: Adjust definition to allow arbitrary number
-	// of resource blocks
+// ProviderTemplate defines minimum fields required to
+// create a new terraform host directory. This data is
+// written to disk as a json file and 'terraform init'
+// is used to initialize the directory and dowload the
+// provider plugin
+// More info on terraform providers can found at link
+// https://registry.terraform.io/browse/providers
+type ProviderTemplate struct {
+	Terraform RequiredProviders `json:"terraform,omitempty"`
+}
+
+// ProviderConfigTemplate defines configuration for
+// a provider such as the region resources will be
+// deployed to.
+// https://registry.terraform.io/browse/providers
+type ProviderConfigTemplate struct {
+	Provider map[string]ProviderConfig `json:"provider,omitempty"`
+}
+
+// BaseInfraTemplate defines the resources required to
+// create the infrastructure on which all sites
+// will be hosted.
+type BaseInfraTemplate struct {
+	Resource map[string]interface{} `json:"resource,omitempty"`
+}
+
+// SiteTemplate defines the resources required to
+// create a site on existing infrastructure
+type SiteTemplate struct {
 	Resource map[string]interface{} `json:"resource,omitempty"`
 }
 
