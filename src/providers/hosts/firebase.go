@@ -9,9 +9,9 @@ import (
 type Firebase struct {
 }
 
-func (f Firebase) ConfigureHost() bool {
+func (f Firebase) ConfigureHost(alias string) error {
 	fmt.Println("configured firebase host")
-	return true
+	return nil
 }
 
 func (f Firebase) CoAddHostnfigureHost(alias string, definitionFilePath string, stateFilePath string) error {

@@ -27,7 +27,7 @@ func AddProvider(provider ProviderConfig) error {
 
 func ReadConfigFile() (PageConfig, error) {
 	var config PageConfig
-	configData, err := ioutil.ReadFile(ConfigPath)
+	configData, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.Fatal("error reading cli config file", err)
 		return PageConfig{}, err
@@ -48,7 +48,7 @@ func WriteConfigFile(config PageConfig) error {
 		return err
 	}
 	// TODO: perm os.FileMode? 0644?
-	err = ioutil.WriteFile(ConfigPath, []byte(file), 0644)
+	err = ioutil.WriteFile(configPath, []byte(file), 0644)
 
 	if err != nil {
 		log.Fatal("error writing config file", err)

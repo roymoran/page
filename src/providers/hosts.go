@@ -1,7 +1,6 @@
 package providers
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,11 +8,11 @@ import (
 	"path/filepath"
 
 	"builtonpage.com/main/cliinit"
-	"github.com/hashicorp/terraform-exec/tfexec"
+	providers "builtonpage.com/main/providers/hosts"
 )
 
 type IHost interface {
-	ConfigureHost() bool
+	ConfigureHost(alias string) error
 	AddHost(alias string, definitionPath string, statePath string) error
 	ProviderTemplate() []byte
 	ProviderConfigTemplate() []byte
@@ -25,7 +24,7 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	alias := "alias"
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
-	hostPath := filepath.Join(cliinit.TfInstallPath, name)
+	hostPath := cliinit.HostPath(name)
 	providerTemplatePath := filepath.Join(hostPath, "provider.tf.json")
 	providerConfigTemplatePath := filepath.Join(hostPath, alias+"_providerconfig.tf.json")
 	stateDefinitionPath := filepath.Join(hostPath, alias+".tfstate")
@@ -76,16 +75,10 @@ func InstallTerraformProvider(providerId string, hostPath string, host IHost, pr
 		fmt.Println("failed ioutil.WriteFile for provider template", err)
 	}
 
-	tf, err := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
+	err = providers.TfInit(hostPath)
 	if err != nil {
-		fmt.Println(tf.Output(context.Background()))
-		fmt.Println("error creating NewTerraform", hostPath, cliinit.TfInstallPath)
-	}
-
-	err = tf.Init(context.Background(), tfexec.Upgrade(true), tfexec.LockTimeout("60s"))
-
-	if err != nil {
-		fmt.Println(tf.Output(context.Background()))
-		fmt.Println("error initializing tf directory", hostPath, cliinit.TfInstallPath, err)
+		os.Remove(providerTemplatePath)
+		os.Remove(providerConfigTemplatePath)
+		fmt.Println("failed init on new terraform directory", hostPath)
 	}
 }

@@ -20,9 +20,9 @@ terraform {
 }
 `
 
-func (a Azure) ConfigureHost() bool {
+func (a Azure) ConfigureHost(alias string) error {
 	fmt.Println("configured azure host")
-	return true
+	return nil
 }
 
 func (a Azure) AddHost(alias string, definitionFilePath string, stateFilePath string) error {

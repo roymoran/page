@@ -109,7 +109,7 @@ func (u Up) Execute() {
 		return
 	}
 
-	host.ConfigureHost()
+	host.ConfigureHost("alias")
 	registrar.ConfigureRegistrar()
 
 	// Resolve template url, is it valid?

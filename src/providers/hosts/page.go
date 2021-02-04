@@ -9,9 +9,9 @@ import (
 type PageHost struct {
 }
 
-func (p PageHost) ConfigureHost() bool {
+func (p PageHost) ConfigureHost(alias string) error {
 	fmt.Println("configured page host")
-	return true
+	return nil
 }
 
 func (p PageHost) AddHost(alias string, definitionFilePath string, stateFilePath string) error {

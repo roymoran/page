@@ -3,17 +3,29 @@ package providers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"path/filepath"
+	"time"
 
 	"builtonpage.com/main/cliinit"
 )
 
 type AmazonWebServices struct {
+	HostName string
 }
+
+var hostName string = "aws"
+
+// func NewAwsHost() AmazonWebServices {
+// 	return awsHost{HostName: "aws"}
+// }
 
 var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 	Terraform: RequiredProviders{
 		RequiredProvider: map[string]Provider{
-			"aws": {
+			hostName: {
 				Source:  "hashicorp/aws",
 				Version: "3.25.0",
 			},
@@ -23,14 +35,17 @@ var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 
 var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
 	Provider: map[string]ProviderConfig{
-		"aws": {
+		hostName: {
 			Profile: "default",
 			Region:  "us-east-2",
 		},
 	},
 }
 
-func (aws AmazonWebServices) ConfigureHost() bool {
+func (aws AmazonWebServices) ConfigureHost(alias string) error {
+	if !baseInfraConfigured() {
+		configureBaseInfra(alias)
+	}
 	// TODO: Does the site bucket exist? domain.com_s3bucketobject.tf.json?
 	// if no then create it as follows ->
 	// TODO: Create s3 bucket object resource to upload site.
@@ -48,7 +63,7 @@ func (aws AmazonWebServices) ConfigureHost() bool {
 
 	//
 	fmt.Println("configured aws host")
-	return true
+	return nil
 }
 
 // AddHost creates a new ProviderConfig and writes it
@@ -57,7 +72,7 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string, st
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
-		Name:             "aws",
+		Name:             hostName,
 		Auth:             "tbd",
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
@@ -68,14 +83,14 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string, st
 	return addProviderErr
 }
 
-// HostProviderTemplate returns a byte slice that represents
+// ProviderTemplate returns a byte slice that represents
 // a template for creating an aws host
 func (aws AmazonWebServices) ProviderTemplate() []byte {
 	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
 	return file
 }
 
-// HostProviderConfigTemplate returns a byte slice that represents
+// ProviderConfigTemplate returns a byte slice that represents
 // configuration settings for the aws provider.
 func (aws AmazonWebServices) ProviderConfigTemplate() []byte {
 	file, _ := json.MarshalIndent(awsProviderConfigTemplate, "", " ")
@@ -84,12 +99,13 @@ func (aws AmazonWebServices) ProviderConfigTemplate() []byte {
 
 // baseInfraTemplate returns a byte slice that represents the base
 // infrastructure to be deployed on the aws host
-func (aws AmazonWebServices) baseInfraTemplate(terraformResourceName string) []byte {
-	bucketName := "pagecli-2827005964"
+func baseInfraTemplate() []byte {
+	randstr := randSeq(10)
+	bucketName := "pagecli-" + randstr
 	var awsBaseInfraDefinition BaseInfraTemplate = BaseInfraTemplate{
 		Resource: map[string]interface{}{
 			"aws_s3_bucket": map[string]interface{}{
-				terraformResourceName: map[string]interface{}{
+				randstr: map[string]interface{}{
 					"bucket": bucketName,
 					"website": map[string]interface{}{
 						"index_document": "index.html",
@@ -106,7 +122,7 @@ func (aws AmazonWebServices) baseInfraTemplate(terraformResourceName string) []b
 
 // siteTemplate returns a byte slice that represents a site
 // on the aws host
-func (aws AmazonWebServices) siteTemplate() []byte {
+func siteTemplate() []byte {
 	var awsSiteDefinition SiteTemplate = SiteTemplate{
 		Resource: map[string]interface{}{
 			"aws_s3_bucket": map[string]interface{}{
@@ -123,4 +139,37 @@ func (aws AmazonWebServices) siteTemplate() []byte {
 
 	file, _ := json.MarshalIndent(awsSiteDefinition, "", " ")
 	return file
+}
+
+func baseInfraConfigured() bool {
+	return false
+}
+
+func configureBaseInfra(alias string) error {
+	baseInfraFile := filepath.Join(cliinit.HostPath(hostName), alias+"_base.tf.json")
+	err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(), 0644)
+
+	if err != nil {
+		fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
+		return err
+	}
+
+	err = TfApply(cliinit.HostPath(hostName))
+	if err != nil {
+		fmt.Println("error configureBaseInfra TfApply for host", hostName)
+		os.Remove(baseInfraFile)
+		return err
+	}
+
+	return nil
+}
+
+func randSeq(n int) string {
+	rand.Seed(time.Now().UnixNano())
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }

@@ -17,17 +17,32 @@ import (
 	"github.com/hashicorp/terraform-exec/tfinstall"
 )
 
-var InstallDir, _ = os.UserHomeDir()
-var PageCliPath string = filepath.Join(InstallDir, ".pagecli")
-var TfInstallPath string = filepath.Join(PageCliPath, "tf")
+var installDir, _ = os.UserHomeDir()
+var pageCliPath string = filepath.Join(installDir, ".pagecli")
+
+// TfInstallPath returns the path to the
+// directory containing terraform binary
+var TfInstallPath string = filepath.Join(pageCliPath, "tf")
+
+// TfExecPath returns the path to the
+// terraform binary
 var TfExecPath string = filepath.Join(TfInstallPath, "terraform")
-var ConfigPath string = filepath.Join(PageCliPath, "config.json")
-var ExactTfVersion string = "0.14.5"
+
+// ConfigPath returns the path to the
+// page cli config.json file. Which contains
+// configuration details for this cli tool
+var configPath string = filepath.Join(pageCliPath, "config.json")
+
+// HostPath returns the path to a specific host directory
+// with the given 'hostName' which contains terraform
+// configuration files
+var HostPath func(hostName string) string = func(hostName string) string { return filepath.Join(TfInstallPath, hostName) }
+var exactTfVersion string = "0.14.5"
 
 var initialPageConfig PageConfig = PageConfig{
 	TfPath:       TfInstallPath,
 	TfExecPath:   "",
-	TFVersion:    ExactTfVersion,
+	TFVersion:    exactTfVersion,
 	Providers:    []ProviderConfig{},
 	ConfigStatus: false,
 }
@@ -68,7 +83,7 @@ func CliInit() {
 // function properly
 func CliInitialized() bool {
 	initialized := false
-	configData, fileErr := ioutil.ReadFile(ConfigPath)
+	configData, fileErr := ioutil.ReadFile(configPath)
 
 	if fileErr != nil {
 		return initialized
@@ -84,8 +99,11 @@ func CliInitialized() bool {
 	return config.ConfigStatus
 }
 
+// InstallTerraform installs the terraform binary
+// with the version specified by 'exactTfVersion'
+// in the directory specified by 'TfInstallPath'
 func InstallTerraform() (string, error) {
-	execPath, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(ExactTfVersion, TfInstallPath))
+	execPath, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(exactTfVersion, TfInstallPath))
 
 	if installErr != nil {
 		log.Fatal("InstallTerraform error.", installErr)
