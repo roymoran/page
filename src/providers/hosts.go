@@ -15,15 +15,19 @@ import (
 type IHost interface {
 	ConfigureHost() bool
 	AddHost(alias string, definitionPath string, statePath string) error
-	HostProviderDefinition() []byte
+	ProviderTemplate() []byte
+	ProviderConfigTemplate() []byte
 }
 
 func (hp HostProvider) Add(name string, channel chan string) error {
+	// TODO Check if alias for host has already been added. if so return with
+	// error
 	alias := "alias"
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
 	hostPath := filepath.Join(cliinit.TfInstallPath, name)
-	definitionPath := filepath.Join(hostPath, alias+".tf.json")
+	providerTemplatePath := filepath.Join(hostPath, "provider.tf.json")
+	providerConfigTemplatePath := filepath.Join(hostPath, alias+"_providerconfig.tf.json")
 	stateDefinitionPath := filepath.Join(hostPath, alias+".tfstate")
 	if !HostDirectoryConfigured(hostPath) {
 		// TODO: This logic only allows for single host configured per host type e.g. aws, azure, etc.
@@ -38,12 +42,12 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 		if hostDirErr != nil {
 			log.Fatalln("error creating host config directory for", hostPath, hostDirErr)
 		}
-		InstallTerraformPlugin(alias, hostPath, host, definitionPath, stateDefinitionPath)
+		InstallTerraformProvider(alias, hostPath, host, providerTemplatePath, providerConfigTemplatePath, stateDefinitionPath)
 	}
 
 	// TODO: Get host alias from stdin
 	channel <- fmt.Sprint("Adding ", name, " host configuration...")
-	host.AddHost(alias, definitionPath, stateDefinitionPath)
+	host.AddHost(alias, providerTemplatePath, stateDefinitionPath)
 
 	return nil
 }
@@ -65,11 +69,11 @@ func HostDirectoryConfigured(hostPath string) bool {
 	return result
 }
 
-func InstallTerraformPlugin(providerId string, hostPath string, host IHost, definitionPath string, stateDefinitionPath string) {
-	// TODO: Check fr and validate apply did not error
-	err := ioutil.WriteFile(definitionPath, host.HostProviderDefinition(), 0644)
+func InstallTerraformProvider(providerId string, hostPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, stateDefinitionPath string) {
+	err := ioutil.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
+	err = ioutil.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
 	if err != nil {
-		fmt.Println("failed ioutil.WriteFile for definition file", err)
+		fmt.Println("failed ioutil.WriteFile for provider template", err)
 	}
 
 	tf, err := tfexec.NewTerraform(hostPath, cliinit.TfExecPath)
@@ -83,11 +87,5 @@ func InstallTerraformPlugin(providerId string, hostPath string, host IHost, defi
 	if err != nil {
 		fmt.Println(tf.Output(context.Background()))
 		fmt.Println("error initializing tf directory", hostPath, cliinit.TfInstallPath, err)
-	}
-
-	applyErr := tf.Apply(context.Background(), tfexec.State(stateDefinitionPath))
-	if applyErr != nil {
-		fmt.Println(tf.Output(context.Background()))
-		fmt.Println("failed tf.Apply", applyErr)
 	}
 }

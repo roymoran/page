@@ -29,6 +29,10 @@ func (p PageHost) AddHost(alias string, definitionFilePath string, stateFilePath
 	return addProviderErr
 }
 
-func (p PageHost) HostProviderDefinition() []byte {
+func (p PageHost) ProviderTemplate() []byte {
+	return []byte{}
+}
+
+func (p PageHost) ProviderConfigTemplate() []byte {
 	return []byte{}
 }

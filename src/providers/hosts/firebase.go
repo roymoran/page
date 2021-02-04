@@ -29,6 +29,10 @@ func (f Firebase) CoAddHostnfigureHost(alias string, definitionFilePath string, 
 	return addProviderErr
 }
 
-func (f Firebase) HostProviderDefinition() []byte {
+func (f Firebase) ProviderTemplate() []byte {
+	return []byte{}
+}
+
+func (f Firebase) ProviderConfigTemplate() []byte {
 	return []byte{}
 }

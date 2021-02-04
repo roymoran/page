@@ -8,10 +8,9 @@ import (
 )
 
 type AmazonWebServices struct {
-	Infrastructure string
 }
 
-var AwsProviderDefinition TerraformTemplate = TerraformTemplate{
+var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 	Terraform: RequiredProviders{
 		RequiredProvider: map[string]Provider{
 			"aws": {
@@ -20,24 +19,15 @@ var AwsProviderDefinition TerraformTemplate = TerraformTemplate{
 			},
 		},
 	},
+}
+
+var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
 	Provider: map[string]ProviderConfig{
 		"aws": {
 			Profile: "default",
 			Region:  "us-east-2",
 		},
 	},
-	// TODO: Only deploy resources on page up
-	//Resource: map[string]interface{}{
-	//	"aws_s3_bucket": map[string]interface{}{
-	//		"b": map[string]interface{}{
-	//			"bucket": "pagecli-2827005964",
-	//			"website": map[string]interface{}{
-	//				"index_document": "index.html",
-	//				"error_document": "index.html",
-	//			},
-	//		},
-	//	},
-	//},
 }
 
 func (aws AmazonWebServices) ConfigureHost() bool {
@@ -61,6 +51,8 @@ func (aws AmazonWebServices) ConfigureHost() bool {
 	return true
 }
 
+// AddHost creates a new ProviderConfig and writes it
+// to the existing config.json
 func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string, stateFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
@@ -76,7 +68,59 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string, st
 	return addProviderErr
 }
 
-func (aws AmazonWebServices) HostProviderDefinition() []byte {
-	file, _ := json.MarshalIndent(AwsProviderDefinition, "", " ")
+// HostProviderTemplate returns a byte slice that represents
+// a template for creating an aws host
+func (aws AmazonWebServices) ProviderTemplate() []byte {
+	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
+	return file
+}
+
+// HostProviderConfigTemplate returns a byte slice that represents
+// configuration settings for the aws provider.
+func (aws AmazonWebServices) ProviderConfigTemplate() []byte {
+	file, _ := json.MarshalIndent(awsProviderConfigTemplate, "", " ")
+	return file
+}
+
+// baseInfraTemplate returns a byte slice that represents the base
+// infrastructure to be deployed on the aws host
+func (aws AmazonWebServices) baseInfraTemplate(terraformResourceName string) []byte {
+	bucketName := "pagecli-2827005964"
+	var awsBaseInfraDefinition BaseInfraTemplate = BaseInfraTemplate{
+		Resource: map[string]interface{}{
+			"aws_s3_bucket": map[string]interface{}{
+				terraformResourceName: map[string]interface{}{
+					"bucket": bucketName,
+					"website": map[string]interface{}{
+						"index_document": "index.html",
+						"error_document": "index.html",
+					},
+				},
+			},
+		},
+	}
+
+	file, _ := json.MarshalIndent(awsBaseInfraDefinition, "", " ")
+	return file
+}
+
+// siteTemplate returns a byte slice that represents a site
+// on the aws host
+func (aws AmazonWebServices) siteTemplate() []byte {
+	var awsSiteDefinition SiteTemplate = SiteTemplate{
+		Resource: map[string]interface{}{
+			"aws_s3_bucket": map[string]interface{}{
+				"b": map[string]interface{}{
+					"bucket": "pagecli-2827005964",
+					"website": map[string]interface{}{
+						"index_document": "index.html",
+						"error_document": "index.html",
+					},
+				},
+			},
+		},
+	}
+
+	file, _ := json.MarshalIndent(awsSiteDefinition, "", " ")
 	return file
 }

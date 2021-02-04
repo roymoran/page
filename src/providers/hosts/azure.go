@@ -40,6 +40,10 @@ func (a Azure) AddHost(alias string, definitionFilePath string, stateFilePath st
 	return addProviderErr
 }
 
-func (a Azure) HostProviderDefinition() []byte {
+func (a Azure) ProviderTemplate() []byte {
+	return []byte{}
+}
+
+func (a Azure) ProviderConfigTemplate() []byte {
 	return []byte{}
 }
