@@ -52,11 +52,10 @@ var SupportedProviders = Provider{
 // have conf.go/handler.go communicate that over the channel
 func AddProvider(provider IProvider, providerName string, channel chan string) error {
 	if !cliinit.CliInitialized() {
-		channel <- fmt.Sprint("Performing one time cli configuration...")
+		channel <- fmt.Sprintln("Performing one time cli configuration...")
 		cliinit.CliInit()
 	}
 
-	// TODO: Consider removing bool, string return values
 	err := provider.Add(providerName, channel)
 	return err
 }

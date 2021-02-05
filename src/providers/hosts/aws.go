@@ -22,6 +22,9 @@ type AmazonWebServices struct {
 }
 
 var hostName string = "aws"
+var accessKey string
+var secretKey string
+
 var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 	Terraform: RequiredProviders{
 		RequiredProvider: map[string]Provider{
@@ -33,13 +36,23 @@ var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 	},
 }
 
-var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
-	Provider: map[string]ProviderConfig{
-		hostName: {
-			Profile: "default",
-			Region:  "us-east-2",
-		},
-	},
+// ConfigureAuth reads user input to request
+// the accessKey and secretKey that will be
+// stored with this host provider. These
+// credentails are used to deploy infrastructure
+func (aws AmazonWebServices) ConfigureAuth() error {
+	fmt.Print("Enter your IAM Access Key: ")
+	_, err := fmt.Scanln(&accessKey)
+	if err != nil {
+		return err
+	}
+	fmt.Print("Enter your IAM Secret Key: ")
+	_, err = fmt.Scanln(&secretKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (aws AmazonWebServices) ConfigureHost(alias string) error {
@@ -96,8 +109,24 @@ func (aws AmazonWebServices) ProviderTemplate() []byte {
 // ProviderConfigTemplate returns a byte slice that represents
 // configuration settings for the aws provider.
 func (aws AmazonWebServices) ProviderConfigTemplate() []byte {
-	file, _ := json.MarshalIndent(awsProviderConfigTemplate, "", " ")
+	file, _ := json.MarshalIndent(providerConfigTemplate(accessKey, secretKey), "", " ")
 	return file
+}
+
+// providerConfigTemplate returns a ProviderConfigTemplate struct
+// which contains info about the provider configuration including
+// authentication fields.
+func providerConfigTemplate(accessKey string, secretKey string) ProviderConfigTemplate {
+	var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
+		Provider: map[string]interface{}{
+			hostName: map[string]interface{}{
+				"region":     "us-east-2",
+				"access_key": accessKey,
+				"secret_key": secretKey,
+			},
+		},
+	}
+	return awsProviderConfigTemplate
 }
 
 // baseInfraTemplate returns a byte slice that represents the base

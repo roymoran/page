@@ -20,6 +20,10 @@ terraform {
 }
 `
 
+func (a Azure) ConfigureAuth() error {
+	return nil
+}
+
 func (a Azure) ConfigureHost(alias string) error {
 	fmt.Println("configured azure host")
 	return nil

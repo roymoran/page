@@ -9,6 +9,10 @@ import (
 type Firebase struct {
 }
 
+func (f Firebase) ConfigureAuth() error {
+	return nil
+}
+
 func (f Firebase) ConfigureHost(alias string) error {
 	fmt.Println("configured firebase host")
 	return nil

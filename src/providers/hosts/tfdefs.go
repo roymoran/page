@@ -116,7 +116,7 @@ type ProviderTemplate struct {
 // deployed to.
 // https://registry.terraform.io/browse/providers
 type ProviderConfigTemplate struct {
-	Provider map[string]ProviderConfig `json:"provider,omitempty"`
+	Provider map[string]interface{} `json:"provider,omitempty"`
 }
 
 // BaseInfraTemplate defines the resources required to

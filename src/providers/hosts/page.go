@@ -9,6 +9,10 @@ import (
 type PageHost struct {
 }
 
+func (p PageHost) ConfigureAuth() error {
+	return nil
+}
+
 func (p PageHost) ConfigureHost(alias string) error {
 	fmt.Println("configured page host")
 	return nil

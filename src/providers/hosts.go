@@ -12,6 +12,7 @@ import (
 )
 
 type IHost interface {
+	ConfigureAuth() error
 	ConfigureHost(alias string) error
 	AddHost(alias string, definitionPath string, statePath string) error
 	ProviderTemplate() []byte
@@ -21,22 +22,22 @@ type IHost interface {
 func (hp HostProvider) Add(name string, channel chan string) error {
 	// TODO Check if alias for host has already been added. if so return with
 	// error
-	alias := "alias"
+	var alias string
+	fmt.Print("Give your host an alias: ")
+	_, err := fmt.Scanln(&alias)
+	if err != nil {
+		return err
+	}
+
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
+	host.ConfigureAuth()
 	hostPath := cliinit.HostPath(name)
 	providerTemplatePath := filepath.Join(hostPath, "provider.tf.json")
 	providerConfigTemplatePath := filepath.Join(hostPath, alias+"_providerconfig.tf.json")
 	stateDefinitionPath := filepath.Join(hostPath, alias+".tfstate")
 	if !HostDirectoryConfigured(hostPath) {
-		// TODO: This logic only allows for single host configured per host type e.g. aws, azure, etc.
-		// please allow for user to configure multilple aws hosts (so there would be a single provider
-		// tf file per directlry that contains provider details and the multiple tf files per host
-		// configuration). This implies that each host config must be uniquely identified by a unique
-		// alias. The alias will have be unique among all host configurations.
-		// Once this is implemented the tf apply command would have to be run per host config so this
-		// logic must be modified to
-		channel <- fmt.Sprint("Applying ", name, " resource changes...")
+		channel <- fmt.Sprint("Configuring ", name, " host...")
 		hostDirErr := os.MkdirAll(hostPath, os.ModePerm)
 		if hostDirErr != nil {
 			log.Fatalln("error creating host config directory for", hostPath, hostDirErr)
@@ -45,7 +46,7 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	}
 
 	// TODO: Get host alias from stdin
-	channel <- fmt.Sprint("Adding ", name, " host configuration...")
+	channel <- fmt.Sprint("Saving ", name, " host configuration...")
 	host.AddHost(alias, providerTemplatePath, stateDefinitionPath)
 
 	return nil
