@@ -80,3 +80,6 @@ Definition file format in **Yaml** or JSON?
 
 Best approach for setting up infrastructure for initial configuration? Terraform, Pulumi, or directly using cloud SDKs? This question applies to self-hosted options (deploying on platforms that require standing up your own infrastructure) as opposed to hosting on platforms like GitHub Pages where they offer hosting as a service.
 - TBD
+
+Serving static assets over storage accounts (S3, Azure Storage Account, etc) versus throwing static assets on a VM behind webserver on VM? Cost difference? Difference in technical complexity? Would adding new supported hosts be easier with VM route? 
+- TBD

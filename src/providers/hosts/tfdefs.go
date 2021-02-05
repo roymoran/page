@@ -1,5 +1,10 @@
 package providers
 
+// TODO: Add logic so that there are character restrictions
+// to resource names for terraform resources. Ensure these are
+// enforced to avoid errors when tf files are programatiically
+// created
+
 // Terraform definition required to deployed
 // necessary resources to host a static site on
 // AWS. Includes creation of S3, S3 Bucket, CloudFront,

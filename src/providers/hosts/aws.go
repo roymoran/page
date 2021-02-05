@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -12,12 +13,15 @@ import (
 	"builtonpage.com/main/cliinit"
 )
 
+// TODO: Add logic so that there are character restrictions
+// to resource names for aws resources like S3.
+// ensure these are enforced accord
+// S3 Bucket Name Rules: https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html#bucketnamingrules
 type AmazonWebServices struct {
 	HostName string
 }
 
 var hostName string = "aws"
-
 var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 	Terraform: RequiredProviders{
 		RequiredProvider: map[string]Provider{
@@ -39,8 +43,10 @@ var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
 }
 
 func (aws AmazonWebServices) ConfigureHost(alias string) error {
-	if !baseInfraConfigured() {
-		err := configureBaseInfra(alias)
+	var baseInfraFile string = filepath.Join(cliinit.HostPath(hostName), alias+"_base.tf.json")
+
+	if !baseInfraConfigured(baseInfraFile) {
+		err := configureBaseInfra(baseInfraFile)
 		return err
 	}
 	// TODO: Does the site bucket exist? domain.com_s3bucketobject.tf.json?
@@ -97,7 +103,7 @@ func (aws AmazonWebServices) ProviderConfigTemplate() []byte {
 // baseInfraTemplate returns a byte slice that represents the base
 // infrastructure to be deployed on the aws host
 func baseInfraTemplate() []byte {
-	randstr := randSeq(10)
+	randstr := randSeq(12)
 	bucketName := "pagecli-" + randstr
 	var awsBaseInfraDefinition BaseInfraTemplate = BaseInfraTemplate{
 		Resource: map[string]interface{}{
@@ -138,12 +144,16 @@ func siteTemplate() []byte {
 	return file
 }
 
-func baseInfraConfigured() bool {
-	return false
+func baseInfraConfigured(baseInfraFile string) bool {
+	exists := true
+	_, err := os.Stat(baseInfraFile)
+	if err != nil {
+		return !exists
+	}
+	return exists
 }
 
-func configureBaseInfra(alias string) error {
-	baseInfraFile := filepath.Join(cliinit.HostPath(hostName), alias+"_base.tf.json")
+func configureBaseInfra(baseInfraFile string) error {
 	err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(), 0644)
 
 	if err != nil {
@@ -153,8 +163,13 @@ func configureBaseInfra(alias string) error {
 
 	err = TfApply(cliinit.HostPath(hostName))
 	if err != nil {
+		os.Remove(baseInfraFile)
 		if strings.Contains(err.Error(), "NoCredentialProviders") {
-			return fmt.Errorf("Error: missing %v host credentials for %v.\nMake sure you have installed the %v cli and it is configured with your aws credentials", hostName, alias, hostName)
+			return fmt.Errorf("error: missing credentials for %v host", hostName)
+		} else if strings.Contains(err.Error(), "InvalidClientTokenId") {
+			return fmt.Errorf("error: invalid access_key for %v host", hostName)
+		} else if strings.Contains(err.Error(), "SignatureDoesNotMatch") {
+			return fmt.Errorf("error: invalid secret_key for %v host", hostName)
 		}
 	}
 
@@ -163,7 +178,7 @@ func configureBaseInfra(alias string) error {
 
 func randSeq(n int) string {
 	rand.Seed(time.Now().UnixNano())
-	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	var letters = []rune("abcdefghijklmnopqrstuvwxyz")
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]

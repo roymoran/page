@@ -59,13 +59,12 @@ func (hp HostProvider) List(name string, channel chan string) error {
 }
 
 func HostDirectoryConfigured(hostPath string) bool {
-	result := true
+	exists := true
 	_, err := os.Stat(hostPath)
 	if err != nil {
-		result = false
-		return result
+		return !exists
 	}
-	return result
+	return exists
 }
 
 func InstallTerraformProvider(providerId string, hostPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, stateDefinitionPath string) {

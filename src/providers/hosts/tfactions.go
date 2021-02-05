@@ -40,9 +40,20 @@ func TfApply(applyPath string) error {
 	err = tf.Apply(context.Background())
 
 	if err != nil {
-		// fmt.Println(err)
+		// TODO: Log TF error
+		fmt.Println(err)
 		return err
 	}
 
 	return nil
+}
+
+// TFResourceNameGenerator generates a string which is used
+// as the name for a resource defined in a terraform template
+// improper naming of a resource inside a terraform template
+// will throw an error.
+func TFResourceNameGenerator(n int) string {
+	// A name must start with a letter or underscore and may contain only letters,
+	// digits, underscores, and dashes.
+	return ""
 }
