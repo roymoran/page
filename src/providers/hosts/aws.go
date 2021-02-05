@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"builtonpage.com/main/cliinit"
@@ -17,10 +17,6 @@ type AmazonWebServices struct {
 }
 
 var hostName string = "aws"
-
-// func NewAwsHost() AmazonWebServices {
-// 	return awsHost{HostName: "aws"}
-// }
 
 var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 	Terraform: RequiredProviders{
@@ -44,7 +40,8 @@ var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
 
 func (aws AmazonWebServices) ConfigureHost(alias string) error {
 	if !baseInfraConfigured() {
-		configureBaseInfra(alias)
+		err := configureBaseInfra(alias)
+		return err
 	}
 	// TODO: Does the site bucket exist? domain.com_s3bucketobject.tf.json?
 	// if no then create it as follows ->
@@ -156,9 +153,9 @@ func configureBaseInfra(alias string) error {
 
 	err = TfApply(cliinit.HostPath(hostName))
 	if err != nil {
-		fmt.Println("error configureBaseInfra TfApply for host", hostName)
-		os.Remove(baseInfraFile)
-		return err
+		if strings.Contains(err.Error(), "NoCredentialProviders") {
+			return fmt.Errorf("Error: missing %v host credentials for %v.\nMake sure you have installed the %v cli and it is configured with your aws credentials", hostName, alias, hostName)
+		}
 	}
 
 	return nil

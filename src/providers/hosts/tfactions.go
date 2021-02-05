@@ -14,14 +14,13 @@ import (
 func TfInit(initPath string) error {
 	tf, err := tfexec.NewTerraform(initPath, cliinit.TfExecPath)
 	if err != nil {
-		fmt.Println(tf.Output(context.Background()))
+		fmt.Println(err)
 		return err
 	}
 
 	err = tf.Init(context.Background(), tfexec.Upgrade(true), tfexec.LockTimeout("60s"))
 
 	if err != nil {
-		fmt.Println(tf.Output(context.Background()))
 		fmt.Println(err)
 		return err
 	}
@@ -34,15 +33,14 @@ func TfInit(initPath string) error {
 func TfApply(applyPath string) error {
 	tf, err := tfexec.NewTerraform(applyPath, cliinit.TfExecPath)
 	if err != nil {
-		fmt.Println(tf.Output(context.Background()))
+		fmt.Println(err)
 		return err
 	}
 
 	err = tf.Apply(context.Background())
 
 	if err != nil {
-		fmt.Println(tf.Output(context.Background()))
-		fmt.Println(err)
+		// fmt.Println(err)
 		return err
 	}
 
