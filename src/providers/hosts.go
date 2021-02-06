@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"builtonpage.com/main/cliinit"
 	providers "builtonpage.com/main/providers/hosts"
@@ -22,13 +23,7 @@ type IHost interface {
 func (hp HostProvider) Add(name string, channel chan string) error {
 	// TODO Check if alias for host has already been added. if so return with
 	// error
-	var alias string
-	fmt.Print("Give your host an alias: ")
-	_, err := fmt.Scanln(&alias)
-	if err != nil {
-		return err
-	}
-
+	var alias string = assignAliasName()
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
 	host.ConfigureAuth()
@@ -81,4 +76,32 @@ func InstallTerraformProvider(providerId string, hostPath string, host IHost, pr
 		os.Remove(providerConfigTemplatePath)
 		fmt.Println("failed init on new terraform directory", hostPath)
 	}
+}
+
+func assignAliasName() string {
+	var alias string
+	for {
+		valid := true
+		fmt.Print("Give your host an alias: ")
+		fmt.Scanln(&alias)
+		for _, hostName := range SupportedHosts {
+			if hostName == alias {
+				valid = !valid
+				// TODO: WHAT IF AN ALIAS IS ADDED THAT BECOMES AN IVALID NAME IN THE FUTURE?
+				// for example cli currently does not support firebase host so user can use 'firebase'
+				// as their alias. Once firebase is supported this alias may become unsupported.
+
+				// TODO: We'll need to provide a mechanism to rename an alias
+				fmt.Println("alias cannot be the same as the name of a host provider (" + strings.Join(SupportedHosts[:], ", ") + ")")
+
+				break
+			}
+		}
+
+		if valid {
+			break
+		}
+	}
+	return alias
+
 }

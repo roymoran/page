@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
 	"builtonpage.com/main/providers"
 	"github.com/go-git/go-git/v5"
@@ -90,13 +91,25 @@ func (u Up) Execute() {
 		return
 	}
 
+	var host providers.IHost = nil
+	var alias string = pageDefinition.Host
 	hostProviderConcrete = hostProvider.(providers.HostProvider)
-	host, providerSupported := hostProviderConcrete.Supported[pageDefinition.Host]
+	hostName, err := cliinit.FindHostByAlias(alias)
+	host, providerSupported = hostProviderConcrete.Supported[hostName]
 
-	if !providerSupported {
-		up.ExecutionOk = false
-		OutputChannel <- "Provided unsupported host (" + pageDefinition.Host + "). See 'page conf host list' for supported registrars."
-		return
+	// alias may not exist, in which case assume
+	// name of host was provided. Retrieve the default
+	// alias for that host.
+	if err != nil {
+		host, providerSupported = hostProviderConcrete.Supported[pageDefinition.Host]
+		alias, _ = cliinit.FindDefaultAliasForHost(pageDefinition.Host)
+
+		if !providerSupported {
+			up.ExecutionOk = false
+			// TODO: List a way to show alias
+			OutputChannel <- "Provided unsupported host or non-existing alias (" + pageDefinition.Host + "). See 'page conf host list' for supported hosts."
+			return
+		}
 	}
 
 	// TODO: Consider cloning to in-memory storage
@@ -109,7 +122,7 @@ func (u Up) Execute() {
 		return
 	}
 
-	err = host.ConfigureHost("alias")
+	err = host.ConfigureHost(alias)
 	if err != nil {
 		up.ExecutionOutput += err.Error()
 		return
