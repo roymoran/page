@@ -14,12 +14,13 @@ func AddProvider(provider ProviderConfig) error {
 		return readErr
 	}
 
+	ShouldChangeDefaultField(config.Providers, &provider)
 	providers := append(config.Providers, provider)
 	config.Providers = providers
 	writeErr := WriteConfigFile(config)
 
 	if writeErr != nil {
-		log.Fatal("error reading cli config file", writeErr)
+		log.Fatal("error writing cli config file", writeErr)
 		return writeErr
 	}
 
@@ -93,4 +94,17 @@ func WriteConfigFile(config PageConfig) error {
 	}
 
 	return nil
+}
+
+// IsDefault changes the 'Default' field of ProviderConfig
+// to false if there already exists a default provider
+// for the host
+func ShouldChangeDefaultField(providers []ProviderConfig, provider *ProviderConfig) {
+	for _, p := range providers {
+		if p.Name == provider.Name && p.Default {
+			// there already exists a default provider
+			// for host
+			provider.Default = false
+		}
+	}
 }

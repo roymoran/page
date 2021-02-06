@@ -29,7 +29,11 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	host.ConfigureAuth()
 	hostPath := cliinit.HostPath(name)
 	providerTemplatePath := filepath.Join(hostPath, "provider.tf.json")
+	// This doesn't work with multiple aliases since
+	// provider config file is created only once on host dir configuration
 	providerConfigTemplatePath := filepath.Join(hostPath, alias+"_providerconfig.tf.json")
+	// TODO: Should each alias have its own tf state file?
+	// TODO: Consider leaving state file path as default name
 	stateDefinitionPath := filepath.Join(hostPath, alias+".tfstate")
 	if !HostDirectoryConfigured(hostPath) {
 		channel <- fmt.Sprint("Configuring ", name, " host...")
