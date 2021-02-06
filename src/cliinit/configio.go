@@ -45,7 +45,7 @@ func FindHostByAlias(alias string) (string, error) {
 }
 
 // FindDefaultAliasForHost returns the alias for the default
-// host
+// host provider
 func FindDefaultAliasForHost(hostName string) (string, error) {
 	pageConfig, _ := ReadConfigFile()
 
