@@ -7,6 +7,7 @@ in from root directory at docs/README.md
 package definition
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -60,17 +61,17 @@ func WriteDefinitionFile() bool {
 // from the current path given the filename. If
 // no file is found in the current path it returns
 // a file not found error.
-func ReadDefinitionFile() (PageDefinition, string, error) {
+func ReadDefinitionFile() (PageDefinition, error) {
 	t := PageDefinition{}
 	data, err := ioutil.ReadFile("page.yml")
 	if err != nil {
-		return t, "unable to find page.yml in current directory.", err
+		return t, fmt.Errorf("unable to find page.yml in current directory")
 	}
 
 	err = yaml.Unmarshal([]byte(data), &t)
 	if err != nil {
-		return t, "error parsing page.yml. " + err.Error(), err
+		return t, fmt.Errorf("error parsing page.yml. " + err.Error())
 	}
 
-	return t, "", nil
+	return t, nil
 }

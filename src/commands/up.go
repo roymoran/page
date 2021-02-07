@@ -65,10 +65,10 @@ func (u Up) Execute() {
 		return
 	}
 
-	pageDefinition, message, err := definition.ReadDefinitionFile()
+	pageDefinition, err := definition.ReadDefinitionFile()
 	if err != nil {
 		log.Fatalln("error:" + err.Error())
-		up.ExecutionOutput += message
+		up.ExecutionOutput += err.Error()
 		return
 	}
 
@@ -112,7 +112,6 @@ func (u Up) Execute() {
 		}
 	}
 
-	// TODO: Consider cloning to in-memory storage
 	_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
 		URL: pageDefinition.Template,
 	})

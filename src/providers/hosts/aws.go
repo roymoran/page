@@ -62,6 +62,7 @@ func (aws AmazonWebServices) ConfigureHost(alias string) error {
 		err := configureBaseInfra(baseInfraFile)
 		return err
 	}
+
 	// TODO: Does the site bucket exist? domain.com_s3bucketobject.tf.json?
 	// if no then create it as follows ->
 	// TODO: Create s3 bucket object resource to upload site.
@@ -77,7 +78,6 @@ func (aws AmazonWebServices) ConfigureHost(alias string) error {
 	// Now create distribution on Cloudfront with output from
 	//
 
-	//
 	fmt.Println("configured aws host")
 	return nil
 }
@@ -133,11 +133,12 @@ func providerConfigTemplate(accessKey string, secretKey string) ProviderConfigTe
 // infrastructure to be deployed on the aws host
 func baseInfraTemplate() []byte {
 	randstr := randSeq(12)
-	bucketName := "pagecli-" + randstr
+	bucketName := "pagecli" + randstr
+	resourceName := bucketName
 	var awsBaseInfraDefinition BaseInfraTemplate = BaseInfraTemplate{
 		Resource: map[string]interface{}{
 			"aws_s3_bucket": map[string]interface{}{
-				randstr: map[string]interface{}{
+				resourceName: map[string]interface{}{
 					"bucket": bucketName,
 					"website": map[string]interface{}{
 						"index_document": "index.html",
@@ -154,16 +155,61 @@ func baseInfraTemplate() []byte {
 
 // siteTemplate returns a byte slice that represents a site
 // on the aws host
-func siteTemplate() []byte {
+func siteTemplate(siteDomain string, bucketName string, templatePath string) []byte {
 	var awsSiteDefinition SiteTemplate = SiteTemplate{
-		Resource: map[string]interface{}{
-			"aws_s3_bucket": map[string]interface{}{
-				"b": map[string]interface{}{
-					"bucket": "pagecli-2827005964",
-					"website": map[string]interface{}{
-						"index_document": "index.html",
-						"error_document": "index.html",
+		Site: map[string]interface{}{
+			"aws_s3_bucket_object": map[string]interface{}{
+				siteDomain: map[string]interface{}{
+					"bucket":       bucketName,
+					"key":          siteDomain + "/index.html",
+					"source":       templatePath,
+					"acl":          "public-read",
+					"content_type": "text/html",
+					"depends_on":   []string{"aws_s3_bucket." + bucketName},
+				},
+			},
+		},
+		CDN: map[string]interface{}{
+			"aws_cloudfront_distribution": map[string]interface{}{
+				siteDomain: map[string]interface{}{
+					"origin": map[string]interface{}{
+						"domain_name": "",
+						"origin_path": "/" + siteDomain,
+						"origin_id":   "",
 					},
+
+					"enabled":             true,
+					"is_ipv6_enabled":     true,
+					"default_root_object": "index.html",
+					//	# TODO: ADD CNAMES
+					//	# aliases = ["mysite.example.com", "yoursite.example.com"]
+
+					"default_cache_behavior": map[string]interface{}{
+						"allowed_methods":  []string{"GET", "HEAD"},
+						"cached_methods":   []string{"GET", "HEAD"},
+						"target_origin_id": "pagecli-2827005964",
+
+						"forwarded_values": map[string]interface{}{
+							"query_string": true,
+
+							"cookies": map[string]interface{}{
+								"forward": "none",
+							},
+						},
+						"viewer_protocol_policy": "redirect-to-https",
+						"min_ttl":                0,
+						"default_ttl":            3600,
+						"max_ttl":                86400,
+					},
+					"restrictions": map[string]interface{}{
+						"geo_restriction": map[string]interface{}{
+							"restriction_type": "none",
+						},
+					},
+					"viewer_certificate": map[string]interface{}{
+						"cloudfront_default_certificate": true,
+					},
+					"depends_on": []string{"aws_s3_bucket." + bucketName},
 				},
 			},
 		},
@@ -184,6 +230,29 @@ func baseInfraConfigured(baseInfraFile string) bool {
 
 func configureBaseInfra(baseInfraFile string) error {
 	err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(), 0644)
+
+	if err != nil {
+		fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
+		return err
+	}
+
+	err = TfApply(cliinit.HostPath(hostName))
+	if err != nil {
+		os.Remove(baseInfraFile)
+		if strings.Contains(err.Error(), "NoCredentialProviders") {
+			return fmt.Errorf("error: missing credentials for %v host", hostName)
+		} else if strings.Contains(err.Error(), "InvalidClientTokenId") {
+			return fmt.Errorf("error: invalid access_key for %v host", hostName)
+		} else if strings.Contains(err.Error(), "SignatureDoesNotMatch") {
+			return fmt.Errorf("error: invalid secret_key for %v host", hostName)
+		}
+	}
+
+	return nil
+}
+
+func configureSite(baseInfraFile string) error {
+	err := ioutil.WriteFile(baseInfraFile, siteTemplate("placeholder.com", "placholder", "github_path"), 0644)
 
 	if err != nil {
 		fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
