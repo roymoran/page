@@ -77,9 +77,7 @@ func InstallTerraformProvider(alias string, hostPath string, hostAliasPath strin
 
 	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
-		os.Remove(providerTemplatePath)
-		os.Remove(providerConfigTemplatePath)
-		os.Remove(hostAliasPath)
+		os.RemoveAll(hostAliasPath)
 		fmt.Println("failed ioutil.WriteFile for provider template")
 		return fmt.Errorf("failed ioutil.WriteFile for provider template")
 	}
@@ -87,9 +85,7 @@ func InstallTerraformProvider(alias string, hostPath string, hostAliasPath strin
 	err := providers.TfInit(hostPath)
 	if err != nil {
 		os.Remove(moduleTemplatePath)
-		os.Remove(providerTemplatePath)
-		os.Remove(providerConfigTemplatePath)
-		os.Remove(hostPath)
+		os.RemoveAll(hostAliasPath)
 		fmt.Println("failed init on new terraform directory", hostPath)
 		return err
 	}
