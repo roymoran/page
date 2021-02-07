@@ -145,3 +145,7 @@ type ProviderConfig struct {
 	Profile string `json:"profile"`
 	Region  string `json:"region"`
 }
+
+type ModuleTemplate struct {
+	Module map[string]interface{} `json:"module,omitempty"`
+}

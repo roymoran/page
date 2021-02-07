@@ -37,6 +37,10 @@ var configPath string = filepath.Join(pageCliPath, "config.json")
 // with the given 'hostName' which contains terraform
 // configuration files
 var HostPath func(hostName string) string = func(hostName string) string { return filepath.Join(TfInstallPath, hostName) }
+
+// HostAliasPath returns the path to a specific alias
+// directory for a host
+var HostAliasPath func(hostName string, alias string) string = func(hostName string, alias string) string { return filepath.Join(TfInstallPath, hostName, alias) }
 var exactTfVersion string = "0.14.5"
 
 var initialPageConfig PageConfig = PageConfig{

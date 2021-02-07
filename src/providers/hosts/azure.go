@@ -29,7 +29,7 @@ func (a Azure) ConfigureHost(alias string) error {
 	return nil
 }
 
-func (a Azure) AddHost(alias string, definitionFilePath string, stateFilePath string) error {
+func (a Azure) AddHost(alias string, definitionFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
@@ -37,7 +37,7 @@ func (a Azure) AddHost(alias string, definitionFilePath string, stateFilePath st
 		Auth:             "tbd",
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
-		TfStatePath:      stateFilePath,
+		TfStatePath:      "",
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)

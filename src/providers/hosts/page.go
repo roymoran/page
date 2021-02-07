@@ -18,7 +18,7 @@ func (p PageHost) ConfigureHost(alias string) error {
 	return nil
 }
 
-func (p PageHost) AddHost(alias string, definitionFilePath string, stateFilePath string) error {
+func (p PageHost) AddHost(alias string, definitionFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
@@ -26,7 +26,7 @@ func (p PageHost) AddHost(alias string, definitionFilePath string, stateFilePath
 		Auth:             "tbd",
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
-		TfStatePath:      stateFilePath,
+		TfStatePath:      "",
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)

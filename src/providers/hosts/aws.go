@@ -41,12 +41,12 @@ var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 // stored with this host provider. These
 // credentails are used to deploy infrastructure
 func (aws AmazonWebServices) ConfigureAuth() error {
-	fmt.Print("Enter your IAM Access Key: ")
+	fmt.Print("IAM Access Key: ")
 	_, err := fmt.Scanln(&accessKey)
 	if err != nil {
 		return err
 	}
-	fmt.Print("Enter your IAM Secret Key: ")
+	fmt.Print("IAM Secret Key: ")
 	_, err = fmt.Scanln(&secretKey)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (aws AmazonWebServices) ConfigureAuth() error {
 }
 
 func (aws AmazonWebServices) ConfigureHost(alias string) error {
-	var baseInfraFile string = filepath.Join(cliinit.HostPath(hostName), alias+"_base.tf.json")
+	var baseInfraFile string = filepath.Join(cliinit.HostAliasPath(hostName, alias), "base.tf.json")
 
 	if !baseInfraConfigured(baseInfraFile) {
 		err := configureBaseInfra(baseInfraFile)
@@ -84,7 +84,7 @@ func (aws AmazonWebServices) ConfigureHost(alias string) error {
 
 // AddHost creates a new ProviderConfig and writes it
 // to the existing config.json
-func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string, stateFilePath string) error {
+func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
@@ -92,7 +92,7 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string, st
 		Auth:             "tbd",
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
-		TfStatePath:      stateFilePath,
+		TfStatePath:      "",
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)

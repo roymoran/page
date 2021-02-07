@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -15,7 +16,7 @@ import (
 type IHost interface {
 	ConfigureAuth() error
 	ConfigureHost(alias string) error
-	AddHost(alias string, definitionPath string, statePath string) error
+	AddHost(alias string, definitionPath string) error
 	ProviderTemplate() []byte
 	ProviderConfigTemplate() []byte
 }
@@ -27,26 +28,21 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
 	host.ConfigureAuth()
-	hostPath := cliinit.HostPath(name)
-	providerTemplatePath := filepath.Join(hostPath, "provider.tf.json")
+	providerTemplatePath := filepath.Join(cliinit.HostAliasPath(name, alias), "provider.tf.json")
 	// This doesn't work with multiple aliases since
 	// provider config file is created only once on host dir configuration
-	providerConfigTemplatePath := filepath.Join(hostPath, alias+"_providerconfig.tf.json")
-	// TODO: Should each alias have its own tf state file?
-	// TODO: Consider leaving state file path as default name
-	stateDefinitionPath := filepath.Join(hostPath, alias+".tfstate")
-	if !HostDirectoryConfigured(hostPath) {
+	providerConfigTemplatePath := filepath.Join(cliinit.HostAliasPath(name, alias), "providerconfig.tf.json")
+	moduleTemplatePath := filepath.Join(cliinit.HostPath(name), alias+".tf.json")
+	if !HostDirectoryConfigured(cliinit.HostAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " host...")
-		hostDirErr := os.MkdirAll(hostPath, os.ModePerm)
-		if hostDirErr != nil {
-			log.Fatalln("error creating host config directory for", hostPath, hostDirErr)
+		err := InstallTerraformProvider(alias, cliinit.HostPath(name), cliinit.HostAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath)
+		if err != nil {
+			return err
 		}
-		InstallTerraformProvider(alias, hostPath, host, providerTemplatePath, providerConfigTemplatePath, stateDefinitionPath)
 	}
 
-	// TODO: Get host alias from stdin
 	channel <- fmt.Sprint("Saving ", name, " host configuration...")
-	host.AddHost(alias, providerTemplatePath, stateDefinitionPath)
+	host.AddHost(alias, providerTemplatePath)
 
 	return nil
 }
@@ -67,19 +63,52 @@ func HostDirectoryConfigured(hostPath string) bool {
 	return exists
 }
 
-func InstallTerraformProvider(providerId string, hostPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, stateDefinitionPath string) {
-	err := ioutil.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
-	err = ioutil.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
-	if err != nil {
-		fmt.Println("failed ioutil.WriteFile for provider template", err)
+func InstallTerraformProvider(alias string, hostPath string, hostAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string) error {
+	hostDirErr := os.MkdirAll(hostAliasPath, os.ModePerm)
+	if hostDirErr != nil {
+		os.Remove(hostAliasPath)
+		log.Fatalln("error creating host config directory for", hostAliasPath, hostDirErr)
+		return hostDirErr
 	}
 
-	err = providers.TfInit(hostPath)
-	if err != nil {
+	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, moduleTemplate(alias), 0644)
+	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
+	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
+
+	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil {
+		os.Remove(moduleTemplatePath)
 		os.Remove(providerTemplatePath)
 		os.Remove(providerConfigTemplatePath)
-		fmt.Println("failed init on new terraform directory", hostPath)
+		os.Remove(hostAliasPath)
+		fmt.Println("failed ioutil.WriteFile for provider template")
+		return fmt.Errorf("failed ioutil.WriteFile for provider template")
 	}
+
+	err := providers.TfInit(hostPath)
+	if err != nil {
+		os.Remove(moduleTemplatePath)
+		os.Remove(providerTemplatePath)
+		os.Remove(providerConfigTemplatePath)
+		os.Remove(hostPath)
+		fmt.Println("failed init on new terraform directory", hostPath)
+		return err
+	}
+
+	return nil
+}
+
+func moduleTemplate(alias string) []byte {
+
+	var awsProviderTemplate providers.ModuleTemplate = providers.ModuleTemplate{
+		Module: map[string]interface{}{
+			alias: map[string]interface{}{
+				"source": "./" + alias,
+			},
+		},
+	}
+
+	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
+	return file
 }
 
 func assignAliasName() string {
