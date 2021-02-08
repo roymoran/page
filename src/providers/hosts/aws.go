@@ -181,7 +181,7 @@ func siteTemplate(siteDomain string, bucketName string, templatePath string) []b
 					"enabled":             true,
 					"is_ipv6_enabled":     true,
 					"default_root_object": "index.html",
-					//	# TODO: ADD CNAMESS
+					//	# TODO: ADD CNAMES
 					//	# aliases = ["mysite.example.com", "yoursite.example.com"]
 
 					"default_cache_behavior": map[string]interface{}{
