@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/definition"
 )
 
 type Firebase struct {
@@ -13,7 +14,7 @@ func (f Firebase) ConfigureAuth() error {
 	return nil
 }
 
-func (f Firebase) ConfigureHost(alias string) error {
+func (f Firebase) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
 	fmt.Println("configured firebase host")
 	return nil
 }

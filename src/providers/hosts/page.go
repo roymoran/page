@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/definition"
 )
 
 type PageHost struct {
@@ -13,7 +14,7 @@ func (p PageHost) ConfigureAuth() error {
 	return nil
 }
 
-func (p PageHost) ConfigureHost(alias string) error {
+func (p PageHost) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
 	fmt.Println("configured page host")
 	return nil
 }

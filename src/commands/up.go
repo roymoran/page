@@ -121,7 +121,7 @@ func (u Up) Execute() {
 		return
 	}
 
-	err = host.ConfigureHost(alias)
+	err = host.ConfigureHost(alias, tempDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOutput += err.Error()
 		return

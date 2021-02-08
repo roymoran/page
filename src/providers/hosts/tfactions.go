@@ -38,7 +38,7 @@ func TfApply(applyPath string) error {
 	}
 
 	err = tf.Apply(context.Background())
-
+	fmt.Println(tf.Output(context.Background()))
 	if err != nil {
 		// TODO: Log TF error
 		fmt.Println(err)

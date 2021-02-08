@@ -124,6 +124,7 @@ type ProviderConfigTemplate struct {
 // will be hosted.
 type BaseInfraTemplate struct {
 	Resource map[string]interface{} `json:"resource,omitempty"`
+	Output   map[string]interface{} `json:"output,omitempty"`
 }
 
 // SiteTemplate defines the resources required to
@@ -149,4 +150,5 @@ type ProviderConfig struct {
 
 type ModuleTemplate struct {
 	Module map[string]interface{} `json:"module,omitempty"`
+	Output map[string]interface{} `json:"output,omitempty"`
 }

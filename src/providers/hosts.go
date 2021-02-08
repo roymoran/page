@@ -10,12 +10,13 @@ import (
 	"strings"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/definition"
 	providers "builtonpage.com/main/providers/hosts"
 )
 
 type IHost interface {
 	ConfigureAuth() error
-	ConfigureHost(alias string) error
+	ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error
 	AddHost(alias string, definitionPath string) error
 	ProviderTemplate() []byte
 	ProviderConfigTemplate() []byte
@@ -99,6 +100,11 @@ func moduleTemplate(alias string) []byte {
 		Module: map[string]interface{}{
 			alias: map[string]interface{}{
 				"source": "./" + alias,
+			},
+		},
+		Output: map[string]interface{}{
+			alias + "_bucket_name": map[string]interface{}{
+				"value": "${module.alias1.bucket_name}",
 			},
 		},
 	}

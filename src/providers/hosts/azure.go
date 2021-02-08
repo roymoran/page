@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/definition"
 )
 
 type Azure struct {
@@ -24,7 +25,7 @@ func (a Azure) ConfigureAuth() error {
 	return nil
 }
 
-func (a Azure) ConfigureHost(alias string) error {
+func (a Azure) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
 	fmt.Println("configured azure host")
 	return nil
 }
