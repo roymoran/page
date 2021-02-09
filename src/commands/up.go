@@ -126,7 +126,7 @@ func (u Up) Execute() {
 		up.ExecutionOutput += err.Error()
 		return
 	}
-	registrar.ConfigureRegistrar()
+	registrar.ConfigureRegistrar(pageDefinition)
 
 	// Resolve template url, is it valid?
 	// Download template from url, build static assets as needed,

@@ -4,14 +4,16 @@ import (
 	"fmt"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/definition"
 )
 
 type Namecheap struct {
 }
 
-func (n Namecheap) ConfigureRegistrar() bool {
+func (n Namecheap) ConfigureRegistrar(pageConfig definition.PageDefinition) bool {
 	fmt.Println("configured page registrar")
-	// Does domain exist on registrar account? If not acquire.
+	// TODO: Generate SSL cert and validate against domain
+	// with DNS validation
 	return true
 }
 

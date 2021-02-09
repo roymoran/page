@@ -1,9 +1,13 @@
 package providers
 
-import "fmt"
+import (
+	"fmt"
+
+	"builtonpage.com/main/definition"
+)
 
 type IRegistrar interface {
-	ConfigureRegistrar() bool
+	ConfigureRegistrar(definition.PageDefinition) bool
 	ConfigureDns() bool
 	AddRegistrar(string) error
 }

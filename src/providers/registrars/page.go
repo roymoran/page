@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/definition"
 )
 
 type Page struct {
 }
 
-func (p Page) ConfigureRegistrar() bool {
+func (p Page) ConfigureRegistrar(pageConfig definition.PageDefinition) bool {
 	fmt.Println("configured page registrar")
 	return true
 }
