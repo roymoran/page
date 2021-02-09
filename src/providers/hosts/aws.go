@@ -57,15 +57,15 @@ func (aws AmazonWebServices) ConfigureAuth() error {
 }
 
 func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
-	var baseInfraFile string = filepath.Join(cliinit.HostAliasPath(hostName, alias), "base.tf.json")
-
-	if !baseInfraConfigured(baseInfraFile) {
+	// set up base infra for site to be hosted
+	// if not already created
+	if baseInfraFile := filepath.Join(cliinit.HostAliasPath(hostName, alias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
 		err := configureBaseInfra(baseInfraFile)
 		return err
 	}
 
 	var siteFile string = filepath.Join(cliinit.HostAliasPath(hostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
-	createSite(siteFile, page, templatePath)
+	createSite(siteFile, page, templatePath, alias)
 
 	// TODO: Does the site bucket exist? domain.com_s3bucketobject.tf.json?
 	// if no then create it as follows ->
@@ -151,8 +151,11 @@ func baseInfraTemplate() []byte {
 			},
 		},
 		Output: map[string]interface{}{
-			"bucket_name": map[string]interface{}{
+			"bucket": map[string]interface{}{
 				"value": "${aws_s3_bucket.pages_storage.bucket}",
+			},
+			"bucket_regional_domain_name": map[string]interface{}{
+				"value": "${aws_s3_bucket.pages_storage.bucket_regional_domain_name}",
 			},
 		},
 	}
@@ -163,27 +166,26 @@ func baseInfraTemplate() []byte {
 
 // siteTemplate returns a byte slice that represents a site
 // on the aws host
-func siteTemplate(siteDomain string, bucketName string, templatePath string) []byte {
+func siteTemplate(siteDomain string, bucketName string, templatePath string, bucketDomain string) []byte {
+	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 	var awsSiteDefinition SiteTemplate = SiteTemplate{
 		Site: map[string]interface{}{
 			"aws_s3_bucket_object": map[string]interface{}{
-				strings.Replace(siteDomain, ".", "_", -1): map[string]interface{}{
+				"site_files": map[string]interface{}{
 					"bucket":       bucketName,
 					"key":          siteDomain + "/index.html",
 					"source":       filepath.Join(templatePath, "index.html"),
 					"acl":          "public-read",
 					"content_type": "text/html",
-					"depends_on":   []string{"aws_s3_bucket." + bucketName},
+					"depends_on":   []string{"aws_s3_bucket.pages_storage"},
 				},
 			},
-		},
-		CDN: map[string]interface{}{
 			"aws_cloudfront_distribution": map[string]interface{}{
-				siteDomain: map[string]interface{}{
+				"s3_cdn": map[string]interface{}{
 					"origin": map[string]interface{}{
-						"domain_name": "",
+						"domain_name": bucketDomain,
 						"origin_path": "/" + siteDomain,
-						"origin_id":   "",
+						"origin_id":   formattedDomain,
 					},
 
 					"enabled":             true,
@@ -195,7 +197,7 @@ func siteTemplate(siteDomain string, bucketName string, templatePath string) []b
 					"default_cache_behavior": map[string]interface{}{
 						"allowed_methods":  []string{"GET", "HEAD"},
 						"cached_methods":   []string{"GET", "HEAD"},
-						"target_origin_id": "pagecli-2827005964",
+						"target_origin_id": formattedDomain,
 
 						"forwarded_values": map[string]interface{}{
 							"query_string": true,
@@ -217,7 +219,7 @@ func siteTemplate(siteDomain string, bucketName string, templatePath string) []b
 					"viewer_certificate": map[string]interface{}{
 						"cloudfront_default_certificate": true,
 					},
-					"depends_on": []string{"aws_s3_bucket." + bucketName},
+					"depends_on": []string{"aws_s3_bucket.pages_storage"},
 				},
 			},
 		},
@@ -263,48 +265,25 @@ func configureBaseInfra(baseInfraFile string) error {
 	return nil
 }
 
-func createSite(siteFile string, page definition.PageDefinition, templatePath string) error {
-
-	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, "bucketName", templatePath), 0644)
+func createSite(siteFile string, page definition.PageDefinition, templatePath string, alias string) error {
+	bucketName, err := TfOutput(cliinit.HostPath(hostName), alias+"_bucket")
+	bucketDomain, err := TfOutput(cliinit.HostPath(hostName), alias+"_bucket_regional_domain_name")
 
 	if err != nil {
-		fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
+		fmt.Println("error createSite TfOutput ", alias+"_bucket_name")
+		return err
+	}
+
+	err = ioutil.WriteFile(siteFile, siteTemplate(page.Domain, bucketName, templatePath, bucketDomain), 0644)
+
+	if err != nil {
+		fmt.Println("error createSite writing site template", templatePath)
 		return err
 	}
 
 	err = TfApply(cliinit.HostPath(hostName))
 	if err != nil {
-		os.Remove(siteFile)
-		if strings.Contains(err.Error(), "NoCredentialProviders") {
-			return fmt.Errorf("error: missing credentials for %v host", hostName)
-		} else if strings.Contains(err.Error(), "InvalidClientTokenId") {
-			return fmt.Errorf("error: invalid access_key for %v host", hostName)
-		} else if strings.Contains(err.Error(), "SignatureDoesNotMatch") {
-			return fmt.Errorf("error: invalid secret_key for %v host", hostName)
-		}
-	}
-
-	return nil
-}
-
-func configureSite(baseInfraFile string) error {
-	err := ioutil.WriteFile(baseInfraFile, siteTemplate("placeholder.com", "placholder", "github_path"), 0644)
-
-	if err != nil {
-		fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
-		return err
-	}
-
-	err = TfApply(cliinit.HostPath(hostName))
-	if err != nil {
-		os.Remove(baseInfraFile)
-		if strings.Contains(err.Error(), "NoCredentialProviders") {
-			return fmt.Errorf("error: missing credentials for %v host", hostName)
-		} else if strings.Contains(err.Error(), "InvalidClientTokenId") {
-			return fmt.Errorf("error: invalid access_key for %v host", hostName)
-		} else if strings.Contains(err.Error(), "SignatureDoesNotMatch") {
-			return fmt.Errorf("error: invalid secret_key for %v host", hostName)
-		}
+		fmt.Println("error createSite TFApply")
 	}
 
 	return nil

@@ -103,8 +103,11 @@ func moduleTemplate(alias string) []byte {
 			},
 		},
 		Output: map[string]interface{}{
-			alias + "_bucket_name": map[string]interface{}{
-				"value": "${module.alias1.bucket_name}",
+			alias + "_bucket": map[string]interface{}{
+				"value": "${module.alias1.bucket}",
+			},
+			alias + "_bucket_regional_domain_name": map[string]interface{}{
+				"value": "${module.alias1.bucket_regional_domain_name}",
 			},
 		},
 	}

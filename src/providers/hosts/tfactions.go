@@ -38,7 +38,6 @@ func TfApply(applyPath string) error {
 	}
 
 	err = tf.Apply(context.Background())
-	fmt.Println(tf.Output(context.Background()))
 	if err != nil {
 		// TODO: Log TF error
 		fmt.Println(err)
@@ -46,6 +45,26 @@ func TfApply(applyPath string) error {
 	}
 
 	return nil
+}
+
+// TfOutput returns the output for the variable
+// given the 'name'
+func TfOutput(path string, identifier string) (string, error) {
+	tf, err := tfexec.NewTerraform(path, cliinit.TfExecPath)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+
+	outMeta, err := tf.Output(context.Background())
+
+	if err != nil {
+		// TODO: Log TF error
+		fmt.Println(err)
+		return "", err
+	}
+
+	return string(outMeta[identifier].Value), nil
 }
 
 // TFResourceNameGenerator generates a string which is used

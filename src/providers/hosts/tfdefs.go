@@ -131,7 +131,6 @@ type BaseInfraTemplate struct {
 // create a site on existing infrastructure
 type SiteTemplate struct {
 	Site map[string]interface{} `json:"resource,omitempty"`
-	CDN  map[string]interface{} `json:"resource,omitempty"`
 }
 
 type RequiredProviders struct {
