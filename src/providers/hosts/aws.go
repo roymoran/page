@@ -60,13 +60,26 @@ func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, pa
 	// set up base infra for site to be hosted
 	// if not already created
 	if baseInfraFile := filepath.Join(cliinit.HostAliasPath(hostName, alias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
-		err := configureBaseInfra(baseInfraFile)
+		fmt.Println("creating s3 storage")
+		randstr := randSeq(12)
+		bucketName := "pagecli" + randstr
+
+		err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(bucketName), 0644)
+
+		if err != nil {
+			fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
+			return err
+		}
+	}
+	fmt.Println("creating site")
+	// TODO: Add case if site is already live and active?
+	// maybe show list of sites that are currently live
+	// via cli command
+	var siteFile string = filepath.Join(cliinit.HostAliasPath(hostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
+	err := createSite(siteFile, page, templatePath, alias)
+	if err != nil {
 		return err
 	}
-
-	var siteFile string = filepath.Join(cliinit.HostAliasPath(hostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
-	createSite(siteFile, page, templatePath, alias)
-
 	// TODO: Does the site bucket exist? domain.com_s3bucketobject.tf.json?
 	// if no then create it as follows ->
 	// TODO: Create s3 bucket object resource to upload site.
@@ -135,9 +148,7 @@ func providerConfigTemplate(accessKey string, secretKey string) ProviderConfigTe
 
 // baseInfraTemplate returns a byte slice that represents the base
 // infrastructure to be deployed on the aws host
-func baseInfraTemplate() []byte {
-	randstr := randSeq(12)
-	bucketName := "pagecli" + randstr
+func baseInfraTemplate(bucketName string) []byte {
 	var awsBaseInfraDefinition BaseInfraTemplate = BaseInfraTemplate{
 		Resource: map[string]interface{}{
 			"aws_s3_bucket": map[string]interface{}{
@@ -166,13 +177,13 @@ func baseInfraTemplate() []byte {
 
 // siteTemplate returns a byte slice that represents a site
 // on the aws host
-func siteTemplate(siteDomain string, bucketName string, templatePath string, bucketDomain string) []byte {
+func siteTemplate(siteDomain string, templatePath string) []byte {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 	var awsSiteDefinition SiteTemplate = SiteTemplate{
 		Site: map[string]interface{}{
 			"aws_s3_bucket_object": map[string]interface{}{
-				"site_files": map[string]interface{}{
-					"bucket":       bucketName,
+				formattedDomain + "_site_files": map[string]interface{}{
+					"bucket":       "${aws_s3_bucket.pages_storage.bucket}",
 					"key":          siteDomain + "/index.html",
 					"source":       filepath.Join(templatePath, "index.html"),
 					"acl":          "public-read",
@@ -181,9 +192,9 @@ func siteTemplate(siteDomain string, bucketName string, templatePath string, buc
 				},
 			},
 			"aws_cloudfront_distribution": map[string]interface{}{
-				"s3_cdn": map[string]interface{}{
+				formattedDomain + "s3_cdn": map[string]interface{}{
 					"origin": map[string]interface{}{
-						"domain_name": bucketDomain,
+						"domain_name": "${aws_s3_bucket.pages_storage.bucket_regional_domain_name}",
 						"origin_path": "/" + siteDomain,
 						"origin_id":   formattedDomain,
 					},
@@ -238,11 +249,11 @@ func baseInfraConfigured(baseInfraFile string) bool {
 	return exists
 }
 
-func configureBaseInfra(baseInfraFile string) error {
-	err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(), 0644)
+func createSite(siteFile string, page definition.PageDefinition, templatePath string, alias string) error {
+	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, templatePath), 0644)
 
 	if err != nil {
-		fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
+		fmt.Println("error createSite writing site template", templatePath)
 		return err
 	}
 
@@ -260,30 +271,6 @@ func configureBaseInfra(baseInfraFile string) error {
 			// TODO: Log this
 			return err
 		}
-	}
-
-	return nil
-}
-
-func createSite(siteFile string, page definition.PageDefinition, templatePath string, alias string) error {
-	bucketName, err := TfOutput(cliinit.HostPath(hostName), alias+"_bucket")
-	bucketDomain, err := TfOutput(cliinit.HostPath(hostName), alias+"_bucket_regional_domain_name")
-
-	if err != nil {
-		fmt.Println("error createSite TfOutput ", alias+"_bucket_name")
-		return err
-	}
-
-	err = ioutil.WriteFile(siteFile, siteTemplate(page.Domain, bucketName, templatePath, bucketDomain), 0644)
-
-	if err != nil {
-		fmt.Println("error createSite writing site template", templatePath)
-		return err
-	}
-
-	err = TfApply(cliinit.HostPath(hostName))
-	if err != nil {
-		fmt.Println("error createSite TFApply")
 	}
 
 	return nil
