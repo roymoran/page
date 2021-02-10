@@ -202,8 +202,7 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 					"enabled":             true,
 					"is_ipv6_enabled":     true,
 					"default_root_object": "index.html",
-					//	# TODO: ADD CNAMES
-					//	# aliases = ["mysite.example.com", "yoursite.example.com"]
+					"aliases":             []string{siteDomain},
 
 					"default_cache_behavior": map[string]interface{}{
 						"allowed_methods":  []string{"GET", "HEAD"},
@@ -274,6 +273,11 @@ func createSite(siteFile string, page definition.PageDefinition, templatePath st
 	}
 
 	return nil
+}
+
+// TODO implement method for importing generated ssl cert
+func importCertificateTemplate() []byte {
+	return []byte{}
 }
 
 func randSeq(n int) string {
