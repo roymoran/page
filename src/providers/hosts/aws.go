@@ -14,28 +14,12 @@ import (
 	"builtonpage.com/main/definition"
 )
 
-// TODO: Add logic so that there are character restrictions
-// to resource names for aws resources like S3.
-// ensure these are enforced accord
-// S3 Bucket Name Rules: https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html#bucketnamingrules
 type AmazonWebServices struct {
 	HostName string
 }
 
-var hostName string = "aws"
 var accessKey string
 var secretKey string
-
-var awsProviderTemplate ProviderTemplate = ProviderTemplate{
-	Terraform: RequiredProviders{
-		RequiredProvider: map[string]Provider{
-			hostName: {
-				Source:  "hashicorp/aws",
-				Version: "3.25.0",
-			},
-		},
-	},
-}
 
 // ConfigureAuth reads user input to request
 // the accessKey and secretKey that will be
@@ -59,7 +43,7 @@ func (aws AmazonWebServices) ConfigureAuth() error {
 func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
 	// set up base infra for site to be hosted
 	// if not already created
-	if baseInfraFile := filepath.Join(cliinit.HostAliasPath(hostName, alias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
+	if baseInfraFile := filepath.Join(cliinit.HostAliasPath(aws.HostName, alias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
 		fmt.Println("creating s3 storage")
 		randstr := randSeq(12)
 		bucketName := "pagecli" + randstr
@@ -67,7 +51,7 @@ func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, pa
 		err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(bucketName), 0644)
 
 		if err != nil {
-			fmt.Println("error configureBaseInfra writing provider.tf.json for host", hostName)
+			fmt.Println("error configureBaseInfra writing provider.tf.json for host", aws.HostName)
 			return err
 		}
 	}
@@ -75,8 +59,8 @@ func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, pa
 	// TODO: Add case if site is already live and active?
 	// maybe show list of sites that are currently live
 	// via cli command
-	var siteFile string = filepath.Join(cliinit.HostAliasPath(hostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
-	err := createSite(siteFile, page, templatePath, alias)
+	var siteFile string = filepath.Join(cliinit.HostAliasPath(aws.HostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
+	err := aws.createSite(siteFile, page, templatePath, alias)
 	if err != nil {
 		return err
 	}
@@ -105,7 +89,7 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string) er
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
-		Name:             hostName,
+		Name:             aws.HostName,
 		Auth:             "tbd",
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
@@ -116,27 +100,29 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string) er
 	return addProviderErr
 }
 
-// ProviderTemplate returns a byte slice that represents
+// ProviderInfo returns a byte slice that represents
 // a template for creating an aws host
-func (aws AmazonWebServices) ProviderTemplate() []byte {
-	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
-	return file
+func (aws AmazonWebServices) ProviderInfo() Provider {
+	return Provider{
+		Source:  "hashicorp/aws",
+		Version: "3.25.0",
+	}
 }
 
 // ProviderConfigTemplate returns a byte slice that represents
 // configuration settings for the aws provider.
 func (aws AmazonWebServices) ProviderConfigTemplate() []byte {
-	file, _ := json.MarshalIndent(providerConfigTemplate(accessKey, secretKey), "", " ")
+	file, _ := json.MarshalIndent(aws.providerConfigTemplate(accessKey, secretKey), "", " ")
 	return file
 }
 
 // providerConfigTemplate returns a ProviderConfigTemplate struct
 // which contains info about the provider configuration including
 // authentication fields.
-func providerConfigTemplate(accessKey string, secretKey string) ProviderConfigTemplate {
+func (aws AmazonWebServices) providerConfigTemplate(accessKey string, secretKey string) ProviderConfigTemplate {
 	var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
 		Provider: map[string]interface{}{
-			hostName: map[string]interface{}{
+			aws.HostName: map[string]interface{}{
 				"region":     "us-east-2",
 				"access_key": accessKey,
 				"secret_key": secretKey,
@@ -248,7 +234,7 @@ func baseInfraConfigured(baseInfraFile string) bool {
 	return exists
 }
 
-func createSite(siteFile string, page definition.PageDefinition, templatePath string, alias string) error {
+func (aws AmazonWebServices) createSite(siteFile string, page definition.PageDefinition, templatePath string, alias string) error {
 	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, templatePath), 0644)
 
 	if err != nil {
@@ -256,15 +242,15 @@ func createSite(siteFile string, page definition.PageDefinition, templatePath st
 		return err
 	}
 
-	err = TfApply(cliinit.HostPath(hostName))
+	err = TfApply(cliinit.HostPath(aws.HostName))
 	if err != nil {
 		//os.Remove(baseInfraFile)
 		if strings.Contains(err.Error(), "NoCredentialProviders") {
-			return fmt.Errorf("error: missing credentials for %v host", hostName)
+			return fmt.Errorf("error: missing credentials for %v host", aws.HostName)
 		} else if strings.Contains(err.Error(), "InvalidClientTokenId") {
-			return fmt.Errorf("error: invalid access_key for %v host", hostName)
+			return fmt.Errorf("error: invalid access_key for %v host", aws.HostName)
 		} else if strings.Contains(err.Error(), "SignatureDoesNotMatch") {
-			return fmt.Errorf("error: invalid secret_key for %v host", hostName)
+			return fmt.Errorf("error: invalid secret_key for %v host", aws.HostName)
 		} else {
 			// unknown error
 			// TODO: Log this

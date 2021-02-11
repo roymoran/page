@@ -121,12 +121,13 @@ func (u Up) Execute() {
 		return
 	}
 
+	registrar.ConfigureRegistrar(pageDefinition)
+
 	err = host.ConfigureHost(alias, tempDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOutput += err.Error()
 		return
 	}
-	registrar.ConfigureRegistrar(pageDefinition)
 
 	// Resolve template url, is it valid?
 	// Download template from url, build static assets as needed,

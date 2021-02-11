@@ -7,6 +7,7 @@ import (
 )
 
 type IRegistrar interface {
+	ConfigureAuth() error
 	ConfigureRegistrar(definition.PageDefinition) bool
 	ConfigureDns() bool
 	AddRegistrar(string) error

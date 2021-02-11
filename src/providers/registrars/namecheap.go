@@ -10,8 +10,13 @@ import (
 type Namecheap struct {
 }
 
+func (n Namecheap) ConfigureAuth() error {
+	fmt.Println("configured namecheap registrar auth")
+	return nil
+}
+
 func (n Namecheap) ConfigureRegistrar(pageConfig definition.PageDefinition) bool {
-	fmt.Println("configured page registrar")
+	fmt.Println("configured namecheap registrar")
 	// TODO: Generate SSL cert and validate against domain
 	// with DNS validation
 	return true

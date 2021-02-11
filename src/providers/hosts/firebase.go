@@ -8,6 +8,7 @@ import (
 )
 
 type Firebase struct {
+	HostName string
 }
 
 func (f Firebase) ConfigureAuth() error {
@@ -34,8 +35,14 @@ func (f Firebase) CoAddHostnfigureHost(alias string, definitionFilePath string, 
 	return addProviderErr
 }
 
-func (f Firebase) ProviderTemplate() []byte {
-	return []byte{}
+// ProviderInfo returns the provider info
+// needed to download the terraform plugin
+// for firebase
+func (f Firebase) ProviderInfo() Provider {
+	return Provider{
+		Source:  "hashicorp/google",
+		Version: "3.56.0",
+	}
 }
 
 func (f Firebase) ProviderConfigTemplate() []byte {

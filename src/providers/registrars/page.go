@@ -10,6 +10,10 @@ import (
 type Page struct {
 }
 
+func (p Page) ConfigureAuth() error {
+	fmt.Println("configured namecheap registrar auth")
+	return nil
+}
 func (p Page) ConfigureRegistrar(pageConfig definition.PageDefinition) bool {
 	fmt.Println("configured page registrar")
 	return true

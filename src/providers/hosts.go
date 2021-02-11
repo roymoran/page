@@ -14,11 +14,22 @@ import (
 	providers "builtonpage.com/main/providers/hosts"
 )
 
+var providerTemplate providers.ProviderTemplate = providers.ProviderTemplate{
+	Terraform: providers.RequiredProviders{
+		RequiredProvider: map[string]providers.Provider{
+			"acme": {
+				Source:  "vancluever/acme",
+				Version: "2.0.0",
+			},
+		},
+	},
+}
+
 type IHost interface {
 	ConfigureAuth() error
 	ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error
 	AddHost(alias string, definitionPath string) error
-	ProviderTemplate() []byte
+	ProviderInfo() providers.Provider
 	ProviderConfigTemplate() []byte
 }
 
@@ -36,7 +47,7 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	moduleTemplatePath := filepath.Join(cliinit.HostPath(name), alias+".tf.json")
 	if !HostDirectoryConfigured(cliinit.HostAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " host...")
-		err := InstallTerraformProvider(alias, cliinit.HostPath(name), cliinit.HostAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath)
+		err := InstallTerraformProvider(name, alias, cliinit.HostPath(name), cliinit.HostAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath)
 		if err != nil {
 			return err
 		}
@@ -64,7 +75,7 @@ func HostDirectoryConfigured(hostPath string) bool {
 	return exists
 }
 
-func InstallTerraformProvider(alias string, hostPath string, hostAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string) error {
+func InstallTerraformProvider(name string, alias string, hostPath string, hostAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string) error {
 	hostDirErr := os.MkdirAll(hostAliasPath, os.ModePerm)
 	if hostDirErr != nil {
 		os.Remove(hostAliasPath)
@@ -72,8 +83,10 @@ func InstallTerraformProvider(alias string, hostPath string, hostAliasPath strin
 		return hostDirErr
 	}
 
+	providerTemplate.Terraform.RequiredProvider[name] = host.ProviderInfo()
+	file, _ := json.MarshalIndent(providerTemplate, "", " ")
 	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, moduleTemplate(alias), 0644)
-	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
+	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, file, 0644)
 	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
 
 	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil {

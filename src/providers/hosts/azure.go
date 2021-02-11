@@ -8,6 +8,7 @@ import (
 )
 
 type Azure struct {
+	HostName string
 }
 
 var AzureTerraformProvider = `
@@ -45,8 +46,14 @@ func (a Azure) AddHost(alias string, definitionFilePath string) error {
 	return addProviderErr
 }
 
-func (a Azure) ProviderTemplate() []byte {
-	return []byte{}
+// ProviderInfo returns the provider info
+// needed to download the terraform plugin
+// for azure
+func (a Azure) ProviderInfo() Provider {
+	return Provider{
+		Source:  "hashicorp/azurerm",
+		Version: "=2.47.0",
+	}
 }
 
 func (a Azure) ProviderConfigTemplate() []byte {

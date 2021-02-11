@@ -32,9 +32,15 @@ var SupportedProviders = Provider{
 	Providers: map[string]IProvider{
 		"host": HostProvider{
 			Supported: map[string]IHost{
-				"page":  hosts.PageHost{},
-				"azure": hosts.Azure{},
-				"aws":   hosts.AmazonWebServices{},
+				"page": hosts.PageHost{
+					HostName: "page",
+				},
+				"azure": hosts.Azure{
+					HostName: "azure",
+				},
+				"aws": hosts.AmazonWebServices{
+					HostName: "aws",
+				},
 			},
 		},
 		"registrar": RegistrarProvider{
