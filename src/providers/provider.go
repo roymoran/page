@@ -3,6 +3,7 @@ package providers
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"builtonpage.com/main/cliinit"
 	hosts "builtonpage.com/main/providers/hosts"
@@ -123,4 +124,42 @@ func BuildSupportedProviderTypes() []string {
 	sort.Strings(providerTypes)
 
 	return providerTypes
+}
+
+// AssignAliasName allows user to enter an alternate
+// name for their provider either host or registrar
+func AssignAliasName(providerType string) string {
+	var alias string
+	var supportedProviders []string = []string{}
+
+	if providerType == "registrar" {
+		supportedProviders = BuildSupportedRegistrars()
+	} else if providerType == "host" {
+		supportedProviders = BuildSupportedHosts()
+	}
+
+	for {
+		valid := true
+		fmt.Print("Give your " + providerType + " an alias: ")
+		fmt.Scanln(&alias)
+		for _, providerName := range supportedProviders {
+			if providerName == alias {
+				valid = !valid
+				// TODO: WHAT IF AN ALIAS IS ADDED THAT BECOMES AN IVALID NAME IN THE FUTURE?
+				// for example cli currently does not support firebase host so user can use 'firebase'
+				// as their alias. Once firebase is supported this alias may become unsupported.
+
+				// TODO: We'll need to provide a mechanism to rename an alias
+				fmt.Println("alias should not be the same as the name of a " + providerType + " provider (" + strings.Join(supportedProviders[:], ", ") + ")")
+
+				break
+			}
+		}
+
+		if valid {
+			break
+		}
+	}
+	return alias
+
 }

@@ -8,39 +8,39 @@ import (
 	"builtonpage.com/main/definition"
 )
 
-type Azure struct {
+type Google struct {
 	HostName string
 }
 
-var azureProviderTemplate ProviderTemplate = ProviderTemplate{
+var googleProviderTemplate ProviderTemplate = ProviderTemplate{
 	Terraform: RequiredProviders{
 		RequiredProvider: map[string]Provider{
-			"azurerm": {
-				Source:  "hashicorp/azurerm",
-				Version: "=2.44.0",
+			"google": {
+				Source:  "hashicorp/google",
+				Version: "3.56.0",
 			},
 		},
 	},
 }
 
-func (a Azure) ConfigureAuth() error {
+func (g Google) ConfigureAuth() error {
 	return nil
 }
 
-func (a Azure) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
-	fmt.Println("configured azure host")
+func (g Google) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
+	fmt.Println("configured firebase host")
 	return nil
 }
 
-func (a Azure) AddHost(alias string, definitionFilePath string) error {
+func (g Google) CoAddHostnfigureHost(alias string, definitionFilePath string, stateFilePath string) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "host",
 		Alias:            alias,
-		Name:             "azure",
+		Name:             "google",
 		Auth:             "tbd",
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
-		TfStatePath:      "",
+		TfStatePath:      stateFilePath,
 	}
 
 	addProviderErr := cliinit.AddProvider(provider)
@@ -48,14 +48,14 @@ func (a Azure) AddHost(alias string, definitionFilePath string) error {
 }
 
 // ProviderTemplate returns a byte slice that represents
-// a template for creating an azure host
-func (a Azure) ProviderTemplate() []byte {
+// a template for creating an google host
+func (g Google) ProviderTemplate() []byte {
 	file, _ := json.MarshalIndent(azureProviderTemplate, "", " ")
 	return file
 }
 
 // ProviderConfigTemplate returns a byte slice that represents
-// configuration settings for the azure provider.
-func (a Azure) ProviderConfigTemplate() []byte {
+// configuration settings for the google provider.
+func (g Google) ProviderConfigTemplate() []byte {
 	return []byte{}
 }

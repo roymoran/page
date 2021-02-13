@@ -38,9 +38,11 @@ var configPath string = filepath.Join(pageCliPath, "config.json")
 // configuration files
 var HostPath func(hostName string) string = func(hostName string) string { return filepath.Join(TfInstallPath, hostName) }
 
-// HostAliasPath returns the path to a specific alias
-// directory for a host
-var HostAliasPath func(hostName string, alias string) string = func(hostName string, alias string) string { return filepath.Join(TfInstallPath, hostName, alias) }
+// ProviderAliasPath returns the path to a specific alias
+// directory for a provider
+var ProviderAliasPath func(hostName string, alias string) string = func(providerName string, alias string) string {
+	return filepath.Join(TfInstallPath, providerName, alias)
+}
 var exactTfVersion string = "0.14.5"
 
 var initialPageConfig PageConfig = PageConfig{

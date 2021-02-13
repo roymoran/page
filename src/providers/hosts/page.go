@@ -35,6 +35,18 @@ func (p PageHost) AddHost(alias string, definitionFilePath string) error {
 	return addProviderErr
 }
 
+// ProviderConfigInfo returns a mapping representing configuration
+// settings for the page terraform provider
+func (p PageHost) ProviderConfigInfo() interface{} {
+	return map[string]interface{}{
+		p.HostName: map[string]interface{}{
+			"region":     "us-east-2",
+			"access_key": accessKey,
+			"secret_key": secretKey,
+		},
+	}
+}
+
 // ProviderInfo returns a byte slice that represents
 // a template for creating an aws host
 func (p PageHost) ProviderInfo() Provider {
@@ -44,6 +56,14 @@ func (p PageHost) ProviderInfo() Provider {
 	}
 }
 
+// ProviderTemplate returns a byte slice that represents
+// a template for creating an google host
+func (p PageHost) ProviderTemplate() []byte {
+	return []byte{}
+}
+
+// ProviderConfigTemplate returns a byte slice that represents
+// configuration settings for the google provider.
 func (p PageHost) ProviderConfigTemplate() []byte {
 	return []byte{}
 }

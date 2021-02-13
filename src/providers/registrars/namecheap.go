@@ -10,8 +10,14 @@ import (
 type Namecheap struct {
 }
 
+var apiKey string
+
 func (n Namecheap) ConfigureAuth() error {
-	fmt.Println("configured namecheap registrar auth")
+	fmt.Print("Namecheap API Key: ")
+	_, err := fmt.Scanln(&apiKey)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

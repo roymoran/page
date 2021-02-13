@@ -21,6 +21,17 @@ type AmazonWebServices struct {
 var accessKey string
 var secretKey string
 
+var awsProviderTemplate ProviderTemplate = ProviderTemplate{
+	Terraform: RequiredProviders{
+		RequiredProvider: map[string]Provider{
+			"aws": {
+				Source:  "hashicorp/aws",
+				Version: "3.25.0",
+			},
+		},
+	},
+}
+
 // ConfigureAuth reads user input to request
 // the accessKey and secretKey that will be
 // stored with this host provider. These
@@ -43,7 +54,7 @@ func (aws AmazonWebServices) ConfigureAuth() error {
 func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
 	// set up base infra for site to be hosted
 	// if not already created
-	if baseInfraFile := filepath.Join(cliinit.HostAliasPath(aws.HostName, alias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
+	if baseInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, alias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
 		fmt.Println("creating s3 storage")
 		randstr := randSeq(12)
 		bucketName := "pagecli" + randstr
@@ -59,7 +70,7 @@ func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, pa
 	// TODO: Add case if site is already live and active?
 	// maybe show list of sites that are currently live
 	// via cli command
-	var siteFile string = filepath.Join(cliinit.HostAliasPath(aws.HostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
+	var siteFile string = filepath.Join(cliinit.ProviderAliasPath(aws.HostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
 	err := aws.createSite(siteFile, page, templatePath, alias)
 	if err != nil {
 		return err
@@ -100,13 +111,11 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string) er
 	return addProviderErr
 }
 
-// ProviderInfo returns a byte slice that represents
+// ProviderTemplate returns a byte slice that represents
 // a template for creating an aws host
-func (aws AmazonWebServices) ProviderInfo() Provider {
-	return Provider{
-		Source:  "hashicorp/aws",
-		Version: "3.25.0",
-	}
+func (aws AmazonWebServices) ProviderTemplate() []byte {
+	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
+	return file
 }
 
 // ProviderConfigTemplate returns a byte slice that represents
@@ -188,7 +197,7 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 					"enabled":             true,
 					"is_ipv6_enabled":     true,
 					"default_root_object": "index.html",
-					"aliases":             []string{siteDomain},
+					"aliases":             []string{siteDomain, "*." + siteDomain},
 
 					"default_cache_behavior": map[string]interface{}{
 						"allowed_methods":  []string{"GET", "HEAD"},
@@ -216,6 +225,39 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 						"cloudfront_default_certificate": true,
 					},
 					"depends_on": []string{"aws_s3_bucket.pages_storage"},
+				},
+			},
+
+			"tls_private_key": map[string]interface{}{
+				formattedDomain + "_tls_private_key": map[string]interface{}{
+					"algorithm": "RSA",
+				},
+			},
+
+			"tls_self_signed_cert": map[string]interface{}{
+				formattedDomain + "_tls_self_signed_cert": map[string]interface{}{
+					"key_algorithm":   "RSA",
+					"private_key_pem": "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
+
+					"subject": map[string]interface{}{
+						"common_name":  siteDomain,
+						"organization": "ACME Examples, Inc",
+					},
+
+					"validity_period_hours": 12,
+
+					"allowed_uses": []string{
+						"key_encipherment",
+						"digital_signature",
+						"server_auth",
+					},
+				},
+			},
+
+			"aws_acm_certificate": map[string]interface{}{
+				formattedDomain + "_cert": map[string]interface{}{
+					"private_key":      "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
+					"certificate_body": "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
 				},
 			},
 		},
