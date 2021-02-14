@@ -62,7 +62,7 @@ func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, pa
 		err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(bucketName), 0644)
 
 		if err != nil {
-			fmt.Println("error configureBaseInfra writing provider.tf.json for host", aws.HostName)
+			fmt.Println("error configureBaseInfra writing base.tf.json for host", aws.HostName)
 			return err
 		}
 	}
@@ -224,9 +224,10 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 					"viewer_certificate": map[string]interface{}{
 						"cloudfront_default_certificate": false,
 					},
-					"depends_on": []string{"aws_s3_bucket.pages_storage"},
+					"depends_on": []string{"aws_s3_bucket.pages_storage", "aws_acm_certificate." + formattedDomain + "_cert"},
 				},
 			},
+
 			"tls_private_key": map[string]interface{}{
 				formattedDomain + "_tls_private_key": map[string]interface{}{
 					"algorithm": "RSA",
@@ -250,6 +251,8 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 						"digital_signature",
 						"server_auth",
 					},
+
+					"depends_on": []string{"acme_certificate." + formattedDomain + "_certificate"},
 				},
 			},
 
@@ -257,6 +260,8 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 				formattedDomain + "_cert": map[string]interface{}{
 					"private_key":      "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
 					"certificate_body": "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
+
+					"depends_on": []string{"acme_certificate." + formattedDomain + "_certificate"},
 				},
 			},
 		},

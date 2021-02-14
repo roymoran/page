@@ -95,10 +95,10 @@ func hostModuleTemplate(providerName string, alias string) []byte {
 		},
 		Output: map[string]interface{}{
 			alias + "_bucket": map[string]interface{}{
-				"value": "${module.alias1.bucket}",
+				"value": "${module.host_" + alias + ".bucket}",
 			},
 			alias + "_bucket_regional_domain_name": map[string]interface{}{
-				"value": "${module.alias1.bucket_regional_domain_name}",
+				"value": "${module.host_" + alias + ".bucket_regional_domain_name}",
 			},
 		},
 	}

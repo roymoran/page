@@ -92,9 +92,9 @@ func (u Up) Execute() {
 	}
 
 	var host providers.IHost = nil
-	var alias string = pageDefinition.Host
+	var hostAlias string = pageDefinition.Host
 	hostProviderConcrete = hostProvider.(providers.HostProvider)
-	hostName, err := cliinit.FindHostByAlias(alias)
+	hostName, err := cliinit.FindHostByAlias(hostAlias)
 	host, providerSupported = hostProviderConcrete.Supported[hostName]
 
 	// alias may not exist, in which case assume
@@ -102,7 +102,7 @@ func (u Up) Execute() {
 	// alias for that host.
 	if err != nil {
 		host, providerSupported = hostProviderConcrete.Supported[pageDefinition.Host]
-		alias, _ = cliinit.FindDefaultAliasForHost(pageDefinition.Host)
+		hostAlias, _ = cliinit.FindDefaultAliasForHost(pageDefinition.Host)
 
 		if !providerSupported {
 			up.ExecutionOk = false
@@ -121,9 +121,10 @@ func (u Up) Execute() {
 		return
 	}
 
-	registrar.ConfigureRegistrar(pageDefinition)
+	// TODO: Change to read registrar alias
+	registrar.ConfigureRegistrar(hostAlias, pageDefinition)
 
-	err = host.ConfigureHost(alias, tempDir, pageDefinition)
+	err = host.ConfigureHost(hostAlias, tempDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOutput += err.Error()
 		return

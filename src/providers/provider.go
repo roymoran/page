@@ -47,8 +47,10 @@ var SupportedProviders = Provider{
 		},
 		"registrar": RegistrarProvider{
 			Supported: map[string]IRegistrar{
-				"namecheap": registrars.Namecheap{},
-				"page":      registrars.Page{},
+				"namecheap": registrars.Namecheap{
+					RegistrarName: "namecheap",
+				},
+				"page": registrars.Page{},
 			},
 		},
 	},

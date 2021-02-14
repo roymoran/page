@@ -46,7 +46,7 @@ var HostPath func(hostName string) string = func(hostName string) string { retur
 
 // ProviderAliasPath returns the path to a specific alias
 // directory for a provider
-var ProviderAliasPath func(hostName string, alias string) string = func(providerName string, alias string) string {
+var ProviderAliasPath func(providerName string, alias string) string = func(providerName string, alias string) string {
 	return filepath.Join(ProvidersPath, providerName, alias)
 }
 var exactTfVersion string = "0.14.5"
