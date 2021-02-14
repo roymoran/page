@@ -2,6 +2,7 @@ package providers
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -162,4 +163,15 @@ func AssignAliasName(providerType string) string {
 	}
 	return alias
 
+}
+
+// ProviderDirectoryConfigured is utility function that
+// check if a directory already exists given a path
+func AliasDirectoryConfigured(aliasPath string) bool {
+	exists := true
+	_, err := os.Stat(aliasPath)
+	if err != nil {
+		return !exists
+	}
+	return exists
 }

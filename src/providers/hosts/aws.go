@@ -222,12 +222,11 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 						},
 					},
 					"viewer_certificate": map[string]interface{}{
-						"cloudfront_default_certificate": true,
+						"cloudfront_default_certificate": false,
 					},
 					"depends_on": []string{"aws_s3_bucket.pages_storage"},
 				},
 			},
-
 			"tls_private_key": map[string]interface{}{
 				formattedDomain + "_tls_private_key": map[string]interface{}{
 					"algorithm": "RSA",
@@ -284,9 +283,9 @@ func (aws AmazonWebServices) createSite(siteFile string, page definition.PageDef
 		return err
 	}
 
-	err = TfApply(cliinit.HostPath(aws.HostName))
+	err = TfApply(cliinit.ProvidersPath)
 	if err != nil {
-		//os.Remove(baseInfraFile)
+		os.Remove(siteFile)
 		if strings.Contains(err.Error(), "NoCredentialProviders") {
 			return fmt.Errorf("error: missing credentials for %v host", aws.HostName)
 		} else if strings.Contains(err.Error(), "InvalidClientTokenId") {

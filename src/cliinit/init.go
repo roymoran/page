@@ -33,15 +33,21 @@ var TfExecPath string = filepath.Join(TfInstallPath, "terraform")
 // configuration details for this cli tool
 var configPath string = filepath.Join(pageCliPath, "config.json")
 
+// ProvidersPath returns the path to the
+// 'provider' directory a nested directory
+// inside .pagecli which is the root to all
+// hosts/registrars
+var ProvidersPath string = filepath.Join(TfInstallPath, "providers")
+
 // HostPath returns the path to a specific host directory
 // with the given 'hostName' which contains terraform
 // configuration files
-var HostPath func(hostName string) string = func(hostName string) string { return filepath.Join(TfInstallPath, hostName) }
+var HostPath func(hostName string) string = func(hostName string) string { return filepath.Join(ProvidersPath, hostName) }
 
 // ProviderAliasPath returns the path to a specific alias
 // directory for a provider
 var ProviderAliasPath func(hostName string, alias string) string = func(providerName string, alias string) string {
-	return filepath.Join(TfInstallPath, providerName, alias)
+	return filepath.Join(ProvidersPath, providerName, alias)
 }
 var exactTfVersion string = "0.14.5"
 

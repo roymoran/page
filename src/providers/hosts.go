@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
@@ -34,10 +33,10 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	// provider config file is created only once on host dir configuration
 	providerConfigTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "providerconfig.tf.json")
 
-	moduleTemplatePath := filepath.Join(cliinit.HostPath(name), alias+".tf.json")
-	if !HostDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
+	moduleTemplatePath := filepath.Join(cliinit.ProvidersPath, name+"_"+alias+".tf.json")
+	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " host...")
-		err := InstallTerraformProvider(name, alias, cliinit.HostPath(name), cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath)
+		err := InstallHostTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath)
 		if err != nil {
 			return err
 		}
@@ -56,51 +55,42 @@ func (hp HostProvider) List(name string, channel chan string) error {
 	return nil
 }
 
-func HostDirectoryConfigured(hostPath string) bool {
-	exists := true
-	_, err := os.Stat(hostPath)
-	if err != nil {
-		return !exists
-	}
-	return exists
-}
-
-func InstallTerraformProvider(name string, alias string, hostPath string, hostAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string) error {
-	hostDirErr := os.MkdirAll(hostAliasPath, os.ModePerm)
+func InstallHostTerraformProvider(name string, alias string, providerAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string) error {
+	hostDirErr := os.MkdirAll(providerAliasPath, os.ModePerm)
 	if hostDirErr != nil {
-		os.Remove(hostAliasPath)
-		log.Fatalln("error creating host config directory for", hostAliasPath, hostDirErr)
+		os.Remove(providerAliasPath)
+		log.Fatalln("error creating host config directory for", providerAliasPath, hostDirErr)
 		return hostDirErr
 	}
 
-	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, moduleTemplate(alias), 0644)
+	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, hostModuleTemplate(name, alias), 0644)
 	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
 	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
 
 	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
-		os.RemoveAll(hostAliasPath)
+		os.RemoveAll(providerAliasPath)
 		fmt.Println("failed ioutil.WriteFile for provider template")
 		return fmt.Errorf("failed ioutil.WriteFile for provider template")
 	}
 
-	err := providers.TfInit(hostPath)
+	err := providers.TfInit(cliinit.ProvidersPath)
 	if err != nil {
 		os.Remove(moduleTemplatePath)
-		os.RemoveAll(hostAliasPath)
-		fmt.Println("failed init on new terraform directory", hostPath)
+		os.RemoveAll(providerAliasPath)
+		fmt.Println("failed init on new terraform directory", cliinit.ProvidersPath)
 		return err
 	}
 
 	return nil
 }
 
-func moduleTemplate(alias string) []byte {
+func hostModuleTemplate(providerName string, alias string) []byte {
 
 	var awsProviderTemplate providers.ModuleTemplate = providers.ModuleTemplate{
 		Module: map[string]interface{}{
-			alias: map[string]interface{}{
-				"source": "./" + alias,
+			"host_" + alias: map[string]interface{}{
+				"source": "./" + providerName + "/" + alias,
 			},
 		},
 		Output: map[string]interface{}{
@@ -115,28 +105,4 @@ func moduleTemplate(alias string) []byte {
 
 	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
 	return file
-}
-
-// AcmeCertificateResourceTemplate returns the resource definition
-// for generating an ssl certificate with ACME using the provided
-// DNS, Domain, and DNS configuration (required credentials)
-func AcmeCertificateResourceTemplate(dnsProvider string, dnsProviderConfig map[string]interface{}, siteDomain string) map[string]interface{} {
-	wildcardSubdomain := "*." + siteDomain
-	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
-	return map[string]interface{}{
-		"resource": map[string]interface{}{
-			"acme_certificate": map[string]interface{}{
-				formattedDomain + "_certificate": map[string]interface{}{
-					"account_key_pem":           "${acme_registration.reg.account_key_pem}",
-					"common_name":               siteDomain,
-					"subject_alternative_names": []string{wildcardSubdomain},
-
-					"dns_challenge": map[string]interface{}{
-						"provider": dnsProvider,
-						"config":   dnsProviderConfig,
-					},
-				},
-			},
-		},
-	}
 }
