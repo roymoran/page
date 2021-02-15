@@ -45,6 +45,24 @@ func FindHostByAlias(alias string) (string, error) {
 	return "", errors.New("err")
 }
 
+// FindRegistrarByAlias returns the name of the host given
+// an alias
+func FindRegistrarByAlias(alias string) (string, error) {
+	pageConfig, _ := ReadConfigFile()
+
+	for _, provider := range pageConfig.Providers {
+		if provider.Type != "registrar" {
+			continue
+		}
+
+		if provider.Alias == alias {
+			return provider.Name, nil
+		}
+	}
+
+	return "", errors.New("err")
+}
+
 // FindDefaultAliasForHost returns the alias for the default
 // host provider
 func FindDefaultAliasForHost(hostName string) (string, error) {
@@ -56,6 +74,24 @@ func FindDefaultAliasForHost(hostName string) (string, error) {
 		}
 
 		if provider.Name == hostName && provider.Default {
+			return provider.Alias, nil
+		}
+	}
+
+	return "", errors.New("err")
+}
+
+// FindDefaultAliasForRegistrar returns the alias for the default
+// registrar provider
+func FindDefaultAliasForRegistrar(registrarName string) (string, error) {
+	pageConfig, _ := ReadConfigFile()
+
+	for _, provider := range pageConfig.Providers {
+		if provider.Type != "registrar" {
+			continue
+		}
+
+		if provider.Name == registrarName && provider.Default {
 			return provider.Alias, nil
 		}
 	}

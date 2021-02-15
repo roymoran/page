@@ -15,7 +15,7 @@ import (
 
 type IHost interface {
 	ConfigureAuth() error
-	ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error
+	ConfigureHost(hostAlias string, registrarAlias string, templatePath string, page definition.PageDefinition) error
 	AddHost(alias string, definitionPath string) error
 	ProviderTemplate() []byte
 	ProviderConfigTemplate() []byte
@@ -76,8 +76,6 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 
 	err := providers.TfInit(cliinit.ProvidersPath)
 	if err != nil {
-		os.Remove(moduleTemplatePath)
-		os.RemoveAll(providerAliasPath)
 		fmt.Println("failed init on new terraform directory", cliinit.ProvidersPath)
 		return err
 	}
@@ -87,18 +85,10 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 
 func hostModuleTemplate(providerName string, alias string) []byte {
 
-	var awsProviderTemplate providers.ModuleTemplate = providers.ModuleTemplate{
-		Module: map[string]interface{}{
+	var awsProviderTemplate map[string]interface{} = map[string]interface{}{
+		"module": map[string]interface{}{
 			"host_" + alias: map[string]interface{}{
 				"source": "./" + providerName + "/" + alias,
-			},
-		},
-		Output: map[string]interface{}{
-			alias + "_bucket": map[string]interface{}{
-				"value": "${module.host_" + alias + ".bucket}",
-			},
-			alias + "_bucket_regional_domain_name": map[string]interface{}{
-				"value": "${module.host_" + alias + ".bucket_regional_domain_name}",
 			},
 		},
 	}

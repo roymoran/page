@@ -51,10 +51,10 @@ func (aws AmazonWebServices) ConfigureAuth() error {
 	return nil
 }
 
-func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
+func (aws AmazonWebServices) ConfigureHost(hostAlias string, registrarAlias string, templatePath string, page definition.PageDefinition) error {
 	// set up base infra for site to be hosted
 	// if not already created
-	if baseInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, alias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
+	if baseInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
 		fmt.Println("creating s3 storage")
 		randstr := randSeq(12)
 		bucketName := "pagecli" + randstr
@@ -70,8 +70,8 @@ func (aws AmazonWebServices) ConfigureHost(alias string, templatePath string, pa
 	// TODO: Add case if site is already live and active?
 	// maybe show list of sites that are currently live
 	// via cli command
-	var siteFile string = filepath.Join(cliinit.ProviderAliasPath(aws.HostName, alias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
-	err := aws.createSite(siteFile, page, templatePath, alias)
+	var siteFile string = filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
+	err := aws.createSite(siteFile, page, templatePath, registrarAlias)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func (aws AmazonWebServices) providerConfigTemplate(accessKey string, secretKey 
 	var awsProviderConfigTemplate ProviderConfigTemplate = ProviderConfigTemplate{
 		Provider: map[string]interface{}{
 			aws.HostName: map[string]interface{}{
-				"region":     "us-east-2",
+				"region":     "us-east-1",
 				"access_key": accessKey,
 				"secret_key": secretKey,
 			},
@@ -172,7 +172,7 @@ func baseInfraTemplate(bucketName string) []byte {
 
 // siteTemplate returns a byte slice that represents a site
 // on the aws host
-func siteTemplate(siteDomain string, templatePath string) []byte {
+func siteTemplate(siteDomain string, templatePath string, registrarAlias string) []byte {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 	var awsSiteDefinition SiteTemplate = SiteTemplate{
 		Site: map[string]interface{}{
@@ -222,9 +222,11 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 						},
 					},
 					"viewer_certificate": map[string]interface{}{
-						"cloudfront_default_certificate": false,
+						"acm_certificate_arn":      "${aws_acm_certificate." + formattedDomain + "_cert.arn}",
+						"ssl_support_method":       "sni-only",
+						"minimum_protocol_version": "TLSv1.2_2019",
 					},
-					"depends_on": []string{"aws_s3_bucket.pages_storage", "aws_acm_certificate." + formattedDomain + "_cert"},
+					"depends_on": []string{"aws_s3_bucket.pages_storage"},
 				},
 			},
 
@@ -251,17 +253,14 @@ func siteTemplate(siteDomain string, templatePath string) []byte {
 						"digital_signature",
 						"server_auth",
 					},
-
-					"depends_on": []string{"acme_certificate." + formattedDomain + "_certificate"},
 				},
 			},
 
 			"aws_acm_certificate": map[string]interface{}{
 				formattedDomain + "_cert": map[string]interface{}{
-					"private_key":      "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
-					"certificate_body": "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
-
-					"depends_on": []string{"acme_certificate." + formattedDomain + "_certificate"},
+					"certificate_body":  "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
+					"private_key":       "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
+					"certificate_chain": "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}${acme_certificate." + formattedDomain + "_certificate.issuer_pem}",
 				},
 			},
 		},
@@ -280,8 +279,8 @@ func baseInfraConfigured(baseInfraFile string) bool {
 	return exists
 }
 
-func (aws AmazonWebServices) createSite(siteFile string, page definition.PageDefinition, templatePath string, alias string) error {
-	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, templatePath), 0644)
+func (aws AmazonWebServices) createSite(siteFile string, page definition.PageDefinition, templatePath string, registrarAlias string) error {
+	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, templatePath, registrarAlias), 0644)
 
 	if err != nil {
 		fmt.Println("error createSite writing site template", templatePath)

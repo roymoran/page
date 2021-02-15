@@ -15,7 +15,7 @@ func (p PageHost) ConfigureAuth() error {
 	return nil
 }
 
-func (p PageHost) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
+func (p PageHost) ConfigureHost(hostAlias string, registrarAlias string, templatePath string, page definition.PageDefinition) error {
 	fmt.Println("configured page host")
 	return nil
 }
@@ -40,7 +40,7 @@ func (p PageHost) AddHost(alias string, definitionFilePath string) error {
 func (p PageHost) ProviderConfigInfo() interface{} {
 	return map[string]interface{}{
 		p.HostName: map[string]interface{}{
-			"region":     "us-east-2",
+			"region":     "us-east-1",
 			"access_key": accessKey,
 			"secret_key": secretKey,
 		},

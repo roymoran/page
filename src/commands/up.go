@@ -82,13 +82,23 @@ func (u Up) Execute() {
 	var registrarProviderConcrete providers.RegistrarProvider
 	var providerSupported bool
 
+	var registrar providers.IRegistrar = nil
+	var registrarAlias string = pageDefinition.Registrar
 	registrarProviderConcrete = registrarProvider.(providers.RegistrarProvider)
-	registrar, providerSupported := registrarProviderConcrete.Supported[pageDefinition.Registrar]
+	registrarName, err := cliinit.FindRegistrarByAlias(registrarAlias)
+	registrar, providerSupported = registrarProviderConcrete.Supported[registrarName]
 
-	if !providerSupported {
-		up.ExecutionOk = false
-		OutputChannel <- "Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars."
-		return
+	// alias may not exist, in which case assume
+	// name of registrar povider was provided.
+	// Retrieve the default alias for that registrar.
+	if err != nil {
+		registrar, providerSupported = registrarProviderConcrete.Supported[pageDefinition.Registrar]
+		registrarAlias, _ = cliinit.FindDefaultAliasForRegistrar(pageDefinition.Registrar)
+		if !providerSupported {
+			up.ExecutionOk = false
+			OutputChannel <- "Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars."
+			return
+		}
 	}
 
 	var host providers.IHost = nil
@@ -98,8 +108,8 @@ func (u Up) Execute() {
 	host, providerSupported = hostProviderConcrete.Supported[hostName]
 
 	// alias may not exist, in which case assume
-	// name of host was provided. Retrieve the default
-	// alias for that host.
+	// name of host provider was provided. Retrieve
+	// the default alias for that host.
 	if err != nil {
 		host, providerSupported = hostProviderConcrete.Supported[pageDefinition.Host]
 		hostAlias, _ = cliinit.FindDefaultAliasForHost(pageDefinition.Host)
@@ -122,9 +132,9 @@ func (u Up) Execute() {
 	}
 
 	// TODO: Change to read registrar alias
-	registrar.ConfigureRegistrar(hostAlias, pageDefinition)
+	registrar.ConfigureRegistrar(registrarAlias, pageDefinition)
 
-	err = host.ConfigureHost(hostAlias, tempDir, pageDefinition)
+	err = host.ConfigureHost(hostAlias, registrarAlias, tempDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOutput += err.Error()
 		return

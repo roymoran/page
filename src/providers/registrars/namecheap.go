@@ -28,7 +28,8 @@ func (n Namecheap) ConfigureAuth() error {
 
 func (n Namecheap) ConfigureRegistrar(alias string, pageConfig definition.PageDefinition) error {
 	fmt.Println("configured namecheap registrar")
-	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, alias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
+	// TODO: "aws" hardcoded for testing purpose, change
+	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath("aws", alias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
 	// TODO: Use dns config values collected on initial adding of registrar
 	acmeCertificateResourceTemplate := AcmeCertificateResourceTemplate(n.RegistrarName, "rmoran20", "decc1ef18be94299b37e786d95c40dc7", pageConfig.Domain)
 	acmeCertificateResourceFile, _ := json.MarshalIndent(acmeCertificateResourceTemplate, "", " ")

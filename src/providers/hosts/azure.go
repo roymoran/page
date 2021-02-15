@@ -27,7 +27,7 @@ func (a Azure) ConfigureAuth() error {
 	return nil
 }
 
-func (a Azure) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
+func (a Azure) ConfigureHost(hostAlias string, registrarAlias string, templatePath string, page definition.PageDefinition) error {
 	fmt.Println("configured azure host")
 	return nil
 }
