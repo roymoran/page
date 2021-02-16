@@ -70,7 +70,7 @@ func (aws AmazonWebServices) ConfigureHost(hostAlias string, registrarAlias stri
 	// TODO: Add case if site is already live and active?
 	// maybe show list of sites that are currently live
 	// via cli command
-	var siteFile string = filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), strings.Replace(page.Domain, ".", "_", -1)+".tf.json")
+	var siteFile string = filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), strings.Replace(page.Domain, ".", "_", -1)+"_site.tf.json")
 	err := aws.createSite(siteFile, page, templatePath, registrarAlias)
 	if err != nil {
 		return err
@@ -156,14 +156,6 @@ func baseInfraTemplate(bucketName string) []byte {
 				},
 			},
 		},
-		Output: map[string]interface{}{
-			"bucket": map[string]interface{}{
-				"value": "${aws_s3_bucket.pages_storage.bucket}",
-			},
-			"bucket_regional_domain_name": map[string]interface{}{
-				"value": "${aws_s3_bucket.pages_storage.bucket_regional_domain_name}",
-			},
-		},
 	}
 
 	file, _ := json.MarshalIndent(awsBaseInfraDefinition, "", " ")
@@ -239,7 +231,7 @@ func siteTemplate(siteDomain string, templatePath string, registrarAlias string)
 			"tls_self_signed_cert": map[string]interface{}{
 				formattedDomain + "_tls_self_signed_cert": map[string]interface{}{
 					"key_algorithm":   "RSA",
-					"private_key_pem": "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
+					"private_key_pem": "${var." + formattedDomain + "_certificate.private_key_pem}",
 
 					"subject": map[string]interface{}{
 						"common_name":  siteDomain,
@@ -258,9 +250,9 @@ func siteTemplate(siteDomain string, templatePath string, registrarAlias string)
 
 			"aws_acm_certificate": map[string]interface{}{
 				formattedDomain + "_cert": map[string]interface{}{
-					"certificate_body":  "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
-					"private_key":       "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
-					"certificate_chain": "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}${acme_certificate." + formattedDomain + "_certificate.issuer_pem}",
+					"certificate_body":  "${var." + formattedDomain + "_certificate.certificate_pem}",
+					"private_key":       "${var." + formattedDomain + "_certificate.private_key_pem}",
+					"certificate_chain": "${var." + formattedDomain + "_certificate.certificate_chain}",
 				},
 			},
 		},

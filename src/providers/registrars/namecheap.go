@@ -28,9 +28,7 @@ func (n Namecheap) ConfigureAuth() error {
 
 func (n Namecheap) ConfigureRegistrar(alias string, pageConfig definition.PageDefinition) error {
 	fmt.Println("configured namecheap registrar")
-	// TODO: "aws" hardcoded for testing purpose, change
-	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath("aws", alias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
-	// TODO: Use dns config values collected on initial adding of registrar
+	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, alias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
 	acmeCertificateResourceTemplate := AcmeCertificateResourceTemplate(n.RegistrarName, "rmoran20", "decc1ef18be94299b37e786d95c40dc7", pageConfig.Domain)
 	acmeCertificateResourceFile, _ := json.MarshalIndent(acmeCertificateResourceTemplate, "", " ")
 	err := ioutil.WriteFile(certificateFilePath, acmeCertificateResourceFile, 0644)
@@ -83,6 +81,15 @@ func AcmeCertificateResourceTemplate(dnsProvider string, namecheapApiUser string
 							"NAMECHEAP_API_KEY":  namecheapApiKey,
 						},
 					},
+				},
+			},
+		},
+		"output": map[string]interface{}{
+			formattedDomain + "_certificate": map[string]interface{}{
+				"value": map[string]interface{}{
+					"certificate_pem":   "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
+					"private_key_pem":   "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
+					"certificate_chain": "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}${acme_certificate." + formattedDomain + "_certificate.issuer_pem}",
 				},
 			},
 		},
