@@ -71,7 +71,7 @@ func (aws AmazonWebServices) ConfigureHost(hostAlias string, registrarAlias stri
 	// maybe show list of sites that are currently live
 	// via cli command
 	var siteFile string = filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), strings.Replace(page.Domain, ".", "_", -1)+"_site.tf.json")
-	err := aws.createSite(siteFile, page, templatePath, registrarAlias)
+	err := aws.createSite(siteFile, page, templatePath, hostAlias)
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func baseInfraTemplate(bucketName string) []byte {
 
 // siteTemplate returns a byte slice that represents a site
 // on the aws host
-func siteTemplate(siteDomain string, templatePath string, registrarAlias string) []byte {
+func siteTemplate(siteDomain string, templatePath string, hostAlias string) []byte {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 	var awsSiteDefinition SiteTemplate = SiteTemplate{
 		Site: map[string]interface{}{
@@ -231,7 +231,7 @@ func siteTemplate(siteDomain string, templatePath string, registrarAlias string)
 			"tls_self_signed_cert": map[string]interface{}{
 				formattedDomain + "_tls_self_signed_cert": map[string]interface{}{
 					"key_algorithm":   "RSA",
-					"private_key_pem": "${var." + formattedDomain + "_certificate.private_key_pem}",
+					"private_key_pem": "${lookup(var.host_" + hostAlias + "_certificates, " + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
 
 					"subject": map[string]interface{}{
 						"common_name":  siteDomain,
@@ -250,9 +250,9 @@ func siteTemplate(siteDomain string, templatePath string, registrarAlias string)
 
 			"aws_acm_certificate": map[string]interface{}{
 				formattedDomain + "_cert": map[string]interface{}{
-					"certificate_body":  "${var." + formattedDomain + "_certificate.certificate_pem}",
-					"private_key":       "${var." + formattedDomain + "_certificate.private_key_pem}",
-					"certificate_chain": "${var." + formattedDomain + "_certificate.certificate_chain}",
+					"certificate_body":  "${lookup(var.host_" + hostAlias + "_certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").certificate_pem}",
+					"private_key":       "${lookup(var.host_" + hostAlias + "_certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
+					"certificate_chain": "${lookup(var.host_" + hostAlias + "_certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").certificate_chain}",
 				},
 			},
 		},
@@ -271,8 +271,8 @@ func baseInfraConfigured(baseInfraFile string) bool {
 	return exists
 }
 
-func (aws AmazonWebServices) createSite(siteFile string, page definition.PageDefinition, templatePath string, registrarAlias string) error {
-	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, templatePath, registrarAlias), 0644)
+func (aws AmazonWebServices) createSite(siteFile string, page definition.PageDefinition, templatePath string, hostAlias string) error {
+	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, templatePath, hostAlias), 0644)
 
 	if err != nil {
 		fmt.Println("error createSite writing site template", templatePath)
