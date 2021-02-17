@@ -32,11 +32,12 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	// This doesn't work with multiple aliases since
 	// provider config file is created only once on host dir configuration
 	providerConfigTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "providerconfig.tf.json")
+	certificatesVariableTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "certificatesvar.tf.json")
 
 	moduleTemplatePath := filepath.Join(cliinit.ProvidersPath, name+"_"+alias+".tf.json")
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " host...")
-		err := InstallHostTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath)
+		err := InstallHostTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, certificatesVariableTemplatePath)
 		if err != nil {
 			return err
 		}
@@ -55,7 +56,7 @@ func (hp HostProvider) List(name string, channel chan string) error {
 	return nil
 }
 
-func InstallHostTerraformProvider(name string, alias string, providerAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string) error {
+func InstallHostTerraformProvider(name string, alias string, providerAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, certificatesVariableTemplatePath string) error {
 	hostDirErr := os.MkdirAll(providerAliasPath, os.ModePerm)
 	if hostDirErr != nil {
 		os.Remove(providerAliasPath)
@@ -66,8 +67,12 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, hostModuleTemplate(name, alias), 0644)
 	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
 	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
+	hostCertificatesVariableTemplatePathErr := ioutil.WriteFile(certificatesVariableTemplatePath, hostCertificatesVariableTemplate(alias), 0644)
 
-	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil {
+	if moduleTemplatePathErr != nil ||
+		providerTemplatePathErr != nil ||
+		providerConfigTemplatePathErr != nil ||
+		hostCertificatesVariableTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
 		os.RemoveAll(providerAliasPath)
 		fmt.Println("failed ioutil.WriteFile for provider template")
@@ -85,7 +90,7 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 
 func hostModuleTemplate(providerName string, alias string) []byte {
 
-	var awsProviderTemplate map[string]interface{} = map[string]interface{}{
+	var hostProviderTemplate map[string]interface{} = map[string]interface{}{
 		"module": map[string]interface{}{
 			"host_" + alias: map[string]interface{}{
 				"source": "./" + providerName + "/" + alias,
@@ -93,6 +98,20 @@ func hostModuleTemplate(providerName string, alias string) []byte {
 		},
 	}
 
-	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
+	file, _ := json.MarshalIndent(hostProviderTemplate, "", " ")
+	return file
+}
+
+func hostCertificatesVariableTemplate(alias string) []byte {
+
+	var hostCertificatesVariableTemplate map[string]interface{} = map[string]interface{}{
+		"variable": map[string]interface{}{
+			"host_" + alias + "_certificates": map[string]interface{}{
+				"type": "map(object({certificate_pem = string, private_key_pem = string, certificate_chain = string}))",
+			},
+		},
+	}
+
+	file, _ := json.MarshalIndent(hostCertificatesVariableTemplate, "", " ")
 	return file
 }
