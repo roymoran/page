@@ -14,7 +14,7 @@ func (p Page) ConfigureAuth() error {
 	fmt.Println("configured namecheap registrar auth")
 	return nil
 }
-func (p Page) ConfigureRegistrar(alias string, pageConfig definition.PageDefinition) error {
+func (p Page) ConfigureRegistrar(registrarAlias string, hostAlias string, pageConfig definition.PageDefinition) error {
 	fmt.Println("configured page registrar")
 	return nil
 }

@@ -49,6 +49,10 @@ var HostPath func(hostName string) string = func(hostName string) string { retur
 var ProviderAliasPath func(providerName string, alias string) string = func(providerName string, alias string) string {
 	return filepath.Join(ProvidersPath, providerName, alias)
 }
+
+var ModuleTemplatePath func(providerType string, alias string) string = func(providerType string, alias string) string {
+	return filepath.Join(ProvidersPath, providerType+"_"+alias+".tf.json")
+}
 var exactTfVersion string = "0.14.5"
 
 var initialPageConfig PageConfig = PageConfig{

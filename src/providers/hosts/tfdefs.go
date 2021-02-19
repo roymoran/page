@@ -57,3 +57,17 @@ type ModuleTemplate struct {
 	Output map[string]interface{} `json:"output,omitempty"`
 	Input  map[string]interface{} `json:"input,omitempty"`
 }
+
+type HostModuleTemplate struct {
+	Module map[string]HostModuleProperties `json:"module,omitempty"`
+}
+
+type HostModuleProperties struct {
+	Certificates map[string]Certificate `json:"certificates,omitempty"`
+	Source       string                 `json:"source,omitempty"`
+}
+type Certificate struct {
+	CertificateChain string `json:"certificate_chain,omitempty"`
+	CertificatePem   string `json:"certificate_pem,omitempty"`
+	PrivateKeyPem    string `json:"private_key_pem,omitempty"`
+}

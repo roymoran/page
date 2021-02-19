@@ -231,7 +231,7 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 			"tls_self_signed_cert": map[string]interface{}{
 				formattedDomain + "_tls_self_signed_cert": map[string]interface{}{
 					"key_algorithm":   "RSA",
-					"private_key_pem": "${lookup(var.host_" + hostAlias + "_certificates, " + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
+					"private_key_pem": "${lookup(var.certificates, " + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
 
 					"subject": map[string]interface{}{
 						"common_name":  siteDomain,
@@ -250,9 +250,9 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 
 			"aws_acm_certificate": map[string]interface{}{
 				formattedDomain + "_cert": map[string]interface{}{
-					"certificate_body":  "${lookup(var.host_" + hostAlias + "_certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").certificate_pem}",
-					"private_key":       "${lookup(var.host_" + hostAlias + "_certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
-					"certificate_chain": "${lookup(var.host_" + hostAlias + "_certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").certificate_chain}",
+					"certificate_body":  "${lookup(var.certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").certificate_pem}",
+					"private_key":       "${lookup(var.certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
+					"certificate_chain": "${lookup(var.certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").certificate_chain}",
 				},
 			},
 		},

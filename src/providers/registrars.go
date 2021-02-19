@@ -15,7 +15,7 @@ import (
 
 type IRegistrar interface {
 	ConfigureAuth() error
-	ConfigureRegistrar(string, definition.PageDefinition) error
+	ConfigureRegistrar(string, string, definition.PageDefinition) error
 	ConfigureDns() bool
 	AddRegistrar(string) error
 }
@@ -33,7 +33,7 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 	providerConfigTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "providerconfig.tf.json")
 	acmeRegistrationTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "acmeregistration.tf.json")
 
-	moduleTemplatePath := filepath.Join(cliinit.ProvidersPath, name+"_"+alias+".tf.json")
+	moduleTemplatePath := cliinit.ModuleTemplatePath("registrar", alias)
 
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " registrar...")
@@ -67,7 +67,7 @@ func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath s
 	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, acmeProviderTemplate(), 0644)
 	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, acmeProviderConfigTemplate(), 0644)
 	// TODO: Read registrartion email from user
-	acmeRegistrationTemplatePathErr := ioutil.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate("romoran1@outlook.com"), 0644)
+	acmeRegistrationTemplatePathErr := ioutil.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate("roymoran20@gmail.com"), 0644)
 
 	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil || acmeRegistrationTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)

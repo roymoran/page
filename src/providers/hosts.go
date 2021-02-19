@@ -34,7 +34,7 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	providerConfigTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "providerconfig.tf.json")
 	certificatesVariableTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "certificatesvar.tf.json")
 
-	moduleTemplatePath := filepath.Join(cliinit.ProvidersPath, name+"_"+alias+".tf.json")
+	moduleTemplatePath := cliinit.ModuleTemplatePath("host", alias)
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " host...")
 		err := InstallHostTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, certificatesVariableTemplatePath)
@@ -93,7 +93,8 @@ func hostModuleTemplate(providerName string, alias string) []byte {
 	var hostProviderTemplate map[string]interface{} = map[string]interface{}{
 		"module": map[string]interface{}{
 			"host_" + alias: map[string]interface{}{
-				"source": "./" + providerName + "/" + alias,
+				"source":       "./" + providerName + "/" + alias,
+				"certificates": map[string]string{},
 			},
 		},
 	}
@@ -106,7 +107,7 @@ func hostCertificatesVariableTemplate(alias string) []byte {
 
 	var hostCertificatesVariableTemplate map[string]interface{} = map[string]interface{}{
 		"variable": map[string]interface{}{
-			"host_" + alias + "_certificates": map[string]interface{}{
+			"certificates": map[string]interface{}{
 				"type": "map(object({certificate_pem = string, private_key_pem = string, certificate_chain = string}))",
 			},
 		},

@@ -132,7 +132,7 @@ func (u Up) Execute() {
 	}
 
 	// TODO: Change to read registrar alias
-	registrar.ConfigureRegistrar(registrarAlias, pageDefinition)
+	registrar.ConfigureRegistrar(registrarAlias, hostAlias, pageDefinition)
 
 	err = host.ConfigureHost(hostAlias, registrarAlias, tempDir, pageDefinition)
 	if err != nil {
