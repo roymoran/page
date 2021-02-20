@@ -41,8 +41,6 @@ func (n Namecheap) ConfigureAuth() (cliinit.Credentials, error) {
 func (n Namecheap) ConfigureRegistrar(registrarAlias string, hostAlias string, pageConfig definition.PageDefinition) error {
 	fmt.Println("configured namecheap registrar")
 	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
-	// TODO: AcmeCertificateResourceTemplate should exist where it
-	// is accessible by any registrar implementation
 	credentials, readCredentialsErr := cliinit.FindRegistrarCredentials(registrarAlias)
 
 	if readCredentialsErr != nil {

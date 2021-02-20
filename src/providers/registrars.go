@@ -22,9 +22,17 @@ type IRegistrar interface {
 
 func (rp RegistrarProvider) Add(name string, channel chan string) error {
 	var alias string = AssignAliasName("registrar")
+	var acmeEmail string
 
 	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
 	registrar := registrarProvider.Supported[name]
+
+	fmt.Print("ACME registration email: ")
+	_, err := fmt.Scanln(&acmeEmail)
+	if err != nil {
+		return err
+	}
+
 	credentials, authErr := registrar.ConfigureAuth()
 
 	if authErr != nil {
@@ -41,7 +49,7 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " registrar...")
-		err := InstallAcmeTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, acmeRegistrationTemplatePath)
+		err := InstallAcmeTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, acmeRegistrationTemplatePath, acmeEmail)
 		if err != nil {
 			return err
 		}
@@ -62,7 +70,7 @@ func (rp RegistrarProvider) List(name string, channel chan string) error {
 	return nil
 }
 
-func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath string, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, acmeRegistrationTemplatePath string) error {
+func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath string, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, acmeRegistrationTemplatePath string, acmeRegistrationEmail string) error {
 	hostDirErr := os.MkdirAll(providerAliasPath, os.ModePerm)
 	if hostDirErr != nil {
 		os.Remove(providerAliasPath)
@@ -74,7 +82,7 @@ func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath s
 	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, acmeProviderTemplate(), 0644)
 	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, acmeProviderConfigTemplate(), 0644)
 	// TODO: Read registrartion email from user
-	acmeRegistrationTemplatePathErr := ioutil.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate("roymoran20@gmail.com"), 0644)
+	acmeRegistrationTemplatePathErr := ioutil.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate(acmeRegistrationEmail), 0644)
 
 	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil || acmeRegistrationTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
