@@ -50,7 +50,6 @@ var SupportedProviders = Provider{
 				"namecheap": registrars.Namecheap{
 					RegistrarName: "namecheap",
 				},
-				"page": registrars.Page{},
 			},
 		},
 	},

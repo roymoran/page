@@ -62,10 +62,6 @@ func (n Namecheap) ConfigureRegistrar(registrarAlias string, hostAlias string, p
 	return nil
 }
 
-func (n Namecheap) ConfigureDns() bool {
-	return true
-}
-
 func (n Namecheap) AddRegistrar(alias string, credentials cliinit.Credentials) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "registrar",
@@ -79,6 +75,10 @@ func (n Namecheap) AddRegistrar(alias string, credentials cliinit.Credentials) e
 
 	addProviderErr := cliinit.AddProvider(provider)
 	return addProviderErr
+}
+
+func (n Namecheap) ProviderDefinition() (string, hosts.Provider) {
+	return "namecheap", hosts.Provider{Version: "1.7.0", Source: "robgmills/namecheap"}
 }
 
 // AcmeCertificateResourceTemplate returns the resource definition

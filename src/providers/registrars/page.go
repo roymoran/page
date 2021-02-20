@@ -5,6 +5,7 @@ import (
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
+	"builtonpage.com/main/providers/hosts"
 )
 
 type Page struct {
@@ -19,8 +20,9 @@ func (p Page) ConfigureRegistrar(registrarAlias string, hostAlias string, pageCo
 	return nil
 }
 
-func (p Page) ConfigureDns() bool {
-	return true
+func (p Page) ProviderDefinition() (string, hosts.Provider) {
+	// TODO: Modify this
+	return "page", hosts.Provider{Version: "1.7.0", Source: "robgmills/namecheap"}
 }
 
 func (p Page) AddRegistrar(alias string, credentials cliinit.Credentials) error {

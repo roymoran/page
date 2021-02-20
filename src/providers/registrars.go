@@ -16,8 +16,8 @@ import (
 type IRegistrar interface {
 	ConfigureAuth() (cliinit.Credentials, error)
 	ConfigureRegistrar(string, string, definition.PageDefinition) error
-	ConfigureDns() bool
 	AddRegistrar(string, cliinit.Credentials) error
+	ProviderDefinition() (string, hosts.Provider)
 }
 
 func (rp RegistrarProvider) Add(name string, channel chan string) error {
@@ -26,6 +26,7 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 
 	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
 	registrar := registrarProvider.Supported[name]
+	registrarProviderName, registrarProviderDefinition := registrar.ProviderDefinition()
 
 	fmt.Print("ACME registration email: ")
 	_, err := fmt.Scanln(&acmeEmail)
@@ -49,7 +50,7 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprint("Configuring ", name, " registrar...")
-		err := InstallAcmeTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, acmeRegistrationTemplatePath, acmeEmail)
+		err := InstallAcmeTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, acmeRegistrationTemplatePath, acmeEmail, registrarProviderName, registrarProviderDefinition)
 		if err != nil {
 			return err
 		}
@@ -70,7 +71,7 @@ func (rp RegistrarProvider) List(name string, channel chan string) error {
 	return nil
 }
 
-func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath string, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, acmeRegistrationTemplatePath string, acmeRegistrationEmail string) error {
+func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath string, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, acmeRegistrationTemplatePath string, acmeRegistrationEmail string, registrarProviderName string, registrarProviderDefinition hosts.Provider) error {
 	hostDirErr := os.MkdirAll(providerAliasPath, os.ModePerm)
 	if hostDirErr != nil {
 		os.Remove(providerAliasPath)
@@ -78,10 +79,10 @@ func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath s
 		return hostDirErr
 	}
 
+	registrarProviderTemplate := registrarProviderTemplate(registrarProviderName, registrarProviderDefinition)
 	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, registrarModuleTemplate(name, alias), 0644)
-	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, acmeProviderTemplate(), 0644)
+	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, registrarProviderTemplate, 0644)
 	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, acmeProviderConfigTemplate(), 0644)
-	// TODO: Read registrartion email from user
 	acmeRegistrationTemplatePathErr := ioutil.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate(acmeRegistrationEmail), 0644)
 
 	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil || acmeRegistrationTemplatePathErr != nil {
@@ -116,7 +117,7 @@ func registrarModuleTemplate(providerName string, alias string) []byte {
 	return file
 }
 
-func acmeProviderTemplate() []byte {
+func registrarProviderTemplate(registrarProviderName string, registrarProviderDefinition hosts.Provider) []byte {
 	var providerTemplate hosts.ProviderTemplate = hosts.ProviderTemplate{
 		Terraform: hosts.RequiredProviders{
 			RequiredProvider: map[string]hosts.Provider{
@@ -128,6 +129,7 @@ func acmeProviderTemplate() []byte {
 					Source:  "hashicorp/tls",
 					Version: "3.0.0",
 				},
+				registrarProviderName: registrarProviderDefinition,
 			},
 		},
 	}
