@@ -1,5 +1,9 @@
 package cliinit
 
+type Credentials struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+}
 type PageConfig struct {
 	// TODO: Is it worth storing these paths?
 	// Could we not access these programatically
@@ -14,11 +18,11 @@ type PageConfig struct {
 }
 
 type ProviderConfig struct {
-	Alias            string `json:"alias"`
-	Type             string `json:"type"` // 'registrar' or 'host'
-	Name             string `json:"name"`
-	Auth             string `json:"auth"`
-	Default          bool   `json:"default"`
-	TfDefinitionPath string `json:"tfDefinitionPath"`
-	TfStatePath      string `json:"tfStatePath"`
+	Alias            string      `json:"alias"`
+	Type             string      `json:"type"` // 'registrar' or 'host'
+	Name             string      `json:"name"`
+	Credentials      Credentials `json:"credentials"`
+	Default          bool        `json:"default"`
+	TfDefinitionPath string      `json:"tfDefinitionPath"`
+	TfStatePath      string      `json:"tfStatePath"`
 }

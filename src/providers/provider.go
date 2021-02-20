@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"builtonpage.com/main/cliinit"
-	hosts "builtonpage.com/main/providers/hosts"
-	registrars "builtonpage.com/main/providers/registrars"
+	"builtonpage.com/main/providers/hosts"
+	"builtonpage.com/main/providers/registrars"
 )
 
 type Provider struct {

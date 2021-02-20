@@ -1,4 +1,4 @@
-package providers
+package hosts
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func (p PageHost) AddHost(alias string, definitionFilePath string) error {
 		Type:             "host",
 		Alias:            alias,
 		Name:             "page",
-		Auth:             "tbd",
+		Credentials:      cliinit.Credentials{},
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
 		TfStatePath:      "",

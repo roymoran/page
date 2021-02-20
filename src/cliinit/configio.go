@@ -81,6 +81,24 @@ func FindDefaultAliasForHost(hostName string) (string, error) {
 	return "", errors.New("err")
 }
 
+// FindRegistrarCredentials returns the credentials for a registrar
+func FindRegistrarCredentials(alias string) (Credentials, error) {
+	pageConfig, _ := ReadConfigFile()
+	credentials := Credentials{}
+
+	for _, provider := range pageConfig.Providers {
+		if provider.Type != "registrar" {
+			continue
+		}
+
+		if provider.Alias == alias {
+			return provider.Credentials, nil
+		}
+	}
+
+	return credentials, errors.New("err")
+}
+
 // FindDefaultAliasForRegistrar returns the alias for the default
 // registrar provider
 func FindDefaultAliasForRegistrar(registrarName string) (string, error) {
@@ -101,7 +119,8 @@ func FindDefaultAliasForRegistrar(registrarName string) (string, error) {
 
 func ReadConfigFile() (PageConfig, error) {
 	var config PageConfig
-	configData, err := ioutil.ReadFile(configPath)
+	configData, err := ioutil.ReadFile(ConfigPath)
+
 	if err != nil {
 		log.Fatal("error reading cli config file", err)
 		return PageConfig{}, err
@@ -122,7 +141,7 @@ func WriteConfigFile(config PageConfig) error {
 		return err
 	}
 	// TODO: perm os.FileMode? 0644?
-	err = ioutil.WriteFile(configPath, []byte(file), 0644)
+	err = ioutil.WriteFile(ConfigPath, []byte(file), 0644)
 
 	if err != nil {
 		log.Fatal("error writing config file", err)

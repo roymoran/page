@@ -1,4 +1,4 @@
-package providers
+package hosts
 
 import (
 	"encoding/json"
@@ -35,7 +35,7 @@ var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 // ConfigureAuth reads user input to request
 // the accessKey and secretKey that will be
 // stored with this host provider. These
-// credentails are used to deploy infrastructure
+// credentials are used to deploy infrastructure
 func (aws AmazonWebServices) ConfigureAuth() error {
 	fmt.Print("IAM Access Key: ")
 	_, err := fmt.Scanln(&accessKey)
@@ -101,7 +101,7 @@ func (aws AmazonWebServices) AddHost(alias string, definitionFilePath string) er
 		Type:             "host",
 		Alias:            alias,
 		Name:             aws.HostName,
-		Auth:             "tbd",
+		Credentials:      cliinit.Credentials{},
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
 		TfStatePath:      "",

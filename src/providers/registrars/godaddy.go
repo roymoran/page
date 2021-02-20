@@ -1,1 +1,1 @@
-package providers
+package registrars

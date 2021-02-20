@@ -10,14 +10,14 @@ import (
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
-	providers "builtonpage.com/main/providers/hosts"
+	"builtonpage.com/main/providers/hosts"
 )
 
 type IRegistrar interface {
-	ConfigureAuth() error
+	ConfigureAuth() (cliinit.Credentials, error)
 	ConfigureRegistrar(string, string, definition.PageDefinition) error
 	ConfigureDns() bool
-	AddRegistrar(string) error
+	AddRegistrar(string, cliinit.Credentials) error
 }
 
 func (rp RegistrarProvider) Add(name string, channel chan string) error {
@@ -25,7 +25,11 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 
 	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
 	registrar := registrarProvider.Supported[name]
-	registrar.ConfigureAuth()
+	credentials, authErr := registrar.ConfigureAuth()
+
+	if authErr != nil {
+		return authErr
+	}
 
 	providerTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "provider.tf.json")
 	// This doesn't work with multiple aliases since
@@ -43,7 +47,10 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 		}
 	}
 
-	registrar.AddRegistrar(alias)
+	addRegistrarErr := registrar.AddRegistrar(alias, credentials)
+	if addRegistrarErr != nil {
+		return addRegistrarErr
+	}
 
 	return nil
 }
@@ -76,7 +83,7 @@ func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath s
 		return fmt.Errorf("failed ioutil.WriteFile for provider template")
 	}
 
-	err := providers.TfInit(cliinit.ProvidersPath)
+	err := hosts.TfInit(cliinit.ProvidersPath)
 	if err != nil {
 		os.Remove(moduleTemplatePath)
 		os.RemoveAll(providerAliasPath)
@@ -89,7 +96,7 @@ func InstallAcmeTerraformProvider(name string, alias string, providerAliasPath s
 
 func registrarModuleTemplate(providerName string, alias string) []byte {
 
-	var awsProviderTemplate providers.ModuleTemplate = providers.ModuleTemplate{
+	var awsProviderTemplate hosts.ModuleTemplate = hosts.ModuleTemplate{
 		Module: map[string]interface{}{
 			"registrar_" + alias: map[string]interface{}{
 				"source": "./" + providerName + "/" + alias,
@@ -102,9 +109,9 @@ func registrarModuleTemplate(providerName string, alias string) []byte {
 }
 
 func acmeProviderTemplate() []byte {
-	var providerTemplate providers.ProviderTemplate = providers.ProviderTemplate{
-		Terraform: providers.RequiredProviders{
-			RequiredProvider: map[string]providers.Provider{
+	var providerTemplate hosts.ProviderTemplate = hosts.ProviderTemplate{
+		Terraform: hosts.RequiredProviders{
+			RequiredProvider: map[string]hosts.Provider{
 				"acme": {
 					Source:  "vancluever/acme",
 					Version: "2.0.0",
@@ -122,7 +129,7 @@ func acmeProviderTemplate() []byte {
 }
 
 func acmeProviderConfigTemplate() []byte {
-	var providerConfigTemplate providers.ProviderConfigTemplate = providers.ProviderConfigTemplate{
+	var providerConfigTemplate hosts.ProviderConfigTemplate = hosts.ProviderConfigTemplate{
 		Provider: map[string]interface{}{
 			"acme": map[string]interface{}{
 				"server_url": "https://acme-staging-v02.api.letsencrypt.org/directory",

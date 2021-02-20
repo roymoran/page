@@ -10,7 +10,7 @@ import (
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
-	providers "builtonpage.com/main/providers/hosts"
+	"builtonpage.com/main/providers/hosts"
 )
 
 type IHost interface {
@@ -79,7 +79,7 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 		return fmt.Errorf("failed ioutil.WriteFile for provider template")
 	}
 
-	err := providers.TfInit(cliinit.ProvidersPath)
+	err := hosts.TfInit(cliinit.ProvidersPath)
 	if err != nil {
 		fmt.Println("failed init on new terraform directory", cliinit.ProvidersPath)
 		return err

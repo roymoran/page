@@ -1,4 +1,4 @@
-package providers
+package hosts
 
 import (
 	"encoding/json"
@@ -37,7 +37,7 @@ func (a Azure) AddHost(alias string, definitionFilePath string) error {
 		Type:             "host",
 		Alias:            alias,
 		Name:             "azure",
-		Auth:             "tbd",
+		Credentials:      cliinit.Credentials{},
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
 		TfStatePath:      "",

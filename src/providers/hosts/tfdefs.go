@@ -1,4 +1,4 @@
-package providers
+package hosts
 
 // TODO: Add logic so that there are character restrictions
 // to resource names for terraform resources. Ensure these are

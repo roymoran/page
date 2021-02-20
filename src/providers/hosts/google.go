@@ -1,4 +1,4 @@
-package providers
+package hosts
 
 import (
 	"encoding/json"
@@ -37,7 +37,7 @@ func (g Google) CoAddHostnfigureHost(alias string, definitionFilePath string, st
 		Type:             "host",
 		Alias:            alias,
 		Name:             "google",
-		Auth:             "tbd",
+		Credentials:      cliinit.Credentials{},
 		Default:          true,
 		TfDefinitionPath: definitionFilePath,
 		TfStatePath:      stateFilePath,

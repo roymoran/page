@@ -1,4 +1,4 @@
-package providers
+package registrars
 
 import (
 	"fmt"
@@ -10,9 +10,9 @@ import (
 type Page struct {
 }
 
-func (p Page) ConfigureAuth() error {
-	fmt.Println("configured namecheap registrar auth")
-	return nil
+func (p Page) ConfigureAuth() (cliinit.Credentials, error) {
+	fmt.Println("configured page registrar auth")
+	return cliinit.Credentials{}, nil
 }
 func (p Page) ConfigureRegistrar(registrarAlias string, hostAlias string, pageConfig definition.PageDefinition) error {
 	fmt.Println("configured page registrar")
@@ -23,12 +23,12 @@ func (p Page) ConfigureDns() bool {
 	return true
 }
 
-func (p Page) AddRegistrar(alias string) error {
+func (p Page) AddRegistrar(alias string, credentials cliinit.Credentials) error {
 	provider := cliinit.ProviderConfig{
 		Type:             "registrar",
 		Alias:            alias,
 		Name:             "page",
-		Auth:             "tbd",
+		Credentials:      credentials,
 		Default:          true,
 		TfDefinitionPath: "",
 		TfStatePath:      "",

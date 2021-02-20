@@ -31,7 +31,7 @@ var TfExecPath string = filepath.Join(TfInstallPath, "terraform")
 // ConfigPath returns the path to the
 // page cli config.json file. Which contains
 // configuration details for this cli tool
-var configPath string = filepath.Join(pageCliPath, "config.json")
+var ConfigPath string = filepath.Join(pageCliPath, "config.json")
 
 // ProvidersPath returns the path to the
 // 'provider' directory a nested directory
@@ -99,7 +99,7 @@ func CliInit() {
 // function properly
 func CliInitialized() bool {
 	initialized := false
-	configData, fileErr := ioutil.ReadFile(configPath)
+	configData, fileErr := ioutil.ReadFile(ConfigPath)
 
 	if fileErr != nil {
 		return initialized
