@@ -51,7 +51,7 @@ func (aws AmazonWebServices) ConfigureAuth() error {
 	return nil
 }
 
-func (aws AmazonWebServices) ConfigureHost(hostAlias string, registrarAlias string, templatePath string, page definition.PageDefinition) error {
+func (aws AmazonWebServices) ConfigureHost(hostAlias string, templatePath string, page definition.PageDefinition) error {
 	// set up base infra for site to be hosted
 	// if not already created
 	if baseInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
@@ -166,8 +166,8 @@ func baseInfraTemplate(bucketName string) []byte {
 // on the aws host
 func siteTemplate(siteDomain string, templatePath string, hostAlias string) []byte {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
-	var awsSiteDefinition SiteTemplate = SiteTemplate{
-		Site: map[string]interface{}{
+	var awsSiteDefinition map[string]interface{} = map[string]interface{}{
+		"resource": map[string]interface{}{
 			"aws_s3_bucket_object": map[string]interface{}{
 				formattedDomain + "_site_files": map[string]interface{}{
 					"bucket":       "${aws_s3_bucket.pages_storage.bucket}",
@@ -179,7 +179,7 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 				},
 			},
 			"aws_cloudfront_distribution": map[string]interface{}{
-				formattedDomain + "s3_cdn": map[string]interface{}{
+				formattedDomain + "_s3_cdn": map[string]interface{}{
 					"origin": map[string]interface{}{
 						"domain_name": "${aws_s3_bucket.pages_storage.bucket_regional_domain_name}",
 						"origin_path": "/" + siteDomain,
@@ -254,6 +254,11 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 					"private_key":       "${lookup(var.certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
 					"certificate_chain": "${lookup(var.certificates," + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").certificate_chain}",
 				},
+			},
+		},
+		"output": map[string]interface{}{
+			formattedDomain + "_domain": map[string]interface{}{
+				"value": "${aws_cloudfront_distribution." + formattedDomain + "_s3_cdn.domain_name}",
 			},
 		},
 	}

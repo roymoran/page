@@ -21,7 +21,7 @@ func (n Namecheap) ConfigureAuth() (cliinit.Credentials, error) {
 	var apiUsername string
 	var apiKey string
 
-	fmt.Print("Namecheap API Username: ")
+	fmt.Print("Namecheap Username: ")
 	_, err := fmt.Scanln(&apiUsername)
 	if err != nil {
 		return registrarCredentials, err
@@ -38,9 +38,10 @@ func (n Namecheap) ConfigureAuth() (cliinit.Credentials, error) {
 	return registrarCredentials, nil
 }
 
-func (n Namecheap) ConfigureRegistrar(registrarAlias string, hostAlias string, pageConfig definition.PageDefinition) error {
+func (n Namecheap) ConfigureRegistrar(registrarAlias string, pageConfig definition.PageDefinition) error {
 	fmt.Println("configured namecheap registrar")
 	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
+	var cnameFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_cname.tf.json")
 	credentials, readCredentialsErr := cliinit.FindRegistrarCredentials(registrarAlias)
 
 	if readCredentialsErr != nil {
@@ -50,9 +51,11 @@ func (n Namecheap) ConfigureRegistrar(registrarAlias string, hostAlias string, p
 	acmeCertificateResourceTemplate := AcmeCertificateResourceTemplate(n.RegistrarName, pageConfig.Domain, credentials)
 	acmeCertificateResourceFile, _ := json.MarshalIndent(acmeCertificateResourceTemplate, "", " ")
 
-	err := ioutil.WriteFile(certificateFilePath, acmeCertificateResourceFile, 0644)
+	registrarCnameResourceTemplate := cnameResourceTemplate(pageConfig.Domain)
+	cnameResourceFile, _ := json.MarshalIndent(registrarCnameResourceTemplate, "", " ")
 
-	writeCertificateToHostModule(hostAlias, registrarAlias, pageConfig.Domain)
+	err := ioutil.WriteFile(certificateFilePath, acmeCertificateResourceFile, 0644)
+	err = ioutil.WriteFile(cnameFilePath, cnameResourceFile, 0644)
 
 	if err != nil {
 		fmt.Println("error writing acme certificate resource template", err)
@@ -79,6 +82,16 @@ func (n Namecheap) AddRegistrar(alias string, credentials cliinit.Credentials) e
 
 func (n Namecheap) ProviderDefinition() (string, hosts.Provider) {
 	return "namecheap", hosts.Provider{Version: "1.7.0", Source: "robgmills/namecheap"}
+}
+
+func (n Namecheap) ProviderConfig(username string, password string) map[string]string {
+	return map[string]string{
+		"username":    username,
+		"api_user":    username,
+		"token":       password,
+		"ip":          "127.0.0.1",
+		"use_sandbox": "false",
+	}
 }
 
 // AcmeCertificateResourceTemplate returns the resource definition
@@ -128,19 +141,21 @@ func jsonCertificateProperties(siteDomain string, registrarAlias string) map[str
 	}
 }
 
-func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteDomain string) {
+func cnameResourceTemplate(siteDomain string) map[string]interface{} {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
-	var hostModuleTemplate hosts.HostModuleTemplate
-	templateData, _ := ioutil.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
-	_ = json.Unmarshal(templateData, &hostModuleTemplate)
-	newCert := hosts.Certificate{
-		CertificateChain: "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_chain}",
-		PrivateKeyPem:    "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.private_key_pem}",
-		CertificatePem:   "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_pem}",
+
+	var cnameResourceTemplate map[string]interface{} = map[string]interface{}{
+		"resource": map[string]interface{}{
+			"namecheap_record": map[string]interface{}{
+				formattedDomain + "_cname": map[string]interface{}{
+					"domain":  siteDomain,
+					"address": "${lookup(var.domains, " + fmt.Sprintf(`"`) + formattedDomain + "_domain" + fmt.Sprintf(`"`) + ").domain}.",
+					"name":    "@",
+					"type":    "CNAME",
+				},
+			},
+		},
 	}
 
-	hostModuleTemplate.Module["host_"+hostAlias].Certificates[formattedDomain+"_certificate"] = newCert
-
-	file, _ := json.MarshalIndent(hostModuleTemplate, "", " ")
-	_ = ioutil.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
+	return cnameResourceTemplate
 }

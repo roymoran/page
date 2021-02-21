@@ -15,7 +15,7 @@ import (
 
 type IHost interface {
 	ConfigureAuth() error
-	ConfigureHost(hostAlias string, registrarAlias string, templatePath string, page definition.PageDefinition) error
+	ConfigureHost(hostAlias string, templatePath string, page definition.PageDefinition) error
 	AddHost(alias string, definitionPath string) error
 	ProviderTemplate() []byte
 	ProviderConfigTemplate() []byte

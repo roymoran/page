@@ -15,7 +15,7 @@ func (p PageHost) ConfigureAuth() error {
 	return nil
 }
 
-func (p PageHost) ConfigureHost(hostAlias string, registrarAlias string, templatePath string, page definition.PageDefinition) error {
+func (p PageHost) ConfigureHost(hostAlias string, templatePath string, page definition.PageDefinition) error {
 	fmt.Println("configured page host")
 	return nil
 }

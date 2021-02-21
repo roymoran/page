@@ -71,3 +71,15 @@ type Certificate struct {
 	CertificatePem   string `json:"certificate_pem,omitempty"`
 	PrivateKeyPem    string `json:"private_key_pem,omitempty"`
 }
+
+type RegistrarModuleTemplate struct {
+	Module map[string]RegistrarModuleProperties `json:"module,omitempty"`
+}
+
+type RegistrarModuleProperties struct {
+	Domains map[string]Domain `json:"domains,omitempty"`
+	Source  string            `json:"source,omitempty"`
+}
+type Domain struct {
+	Domain string `json:"domain,omitempty"`
+}

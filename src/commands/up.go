@@ -1,14 +1,17 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
 	"builtonpage.com/main/providers"
+	"builtonpage.com/main/providers/hosts"
 	"github.com/go-git/go-git/v5"
 )
 
@@ -60,6 +63,7 @@ func (u Up) BindArgs() {
 	}
 }
 
+// TODO: What if the same site gets redeployed twice?
 func (u Up) Execute() {
 	if !up.ExecutionOk {
 		return
@@ -131,10 +135,13 @@ func (u Up) Execute() {
 		return
 	}
 
-	// TODO: Change to read registrar alias
-	registrar.ConfigureRegistrar(registrarAlias, hostAlias, pageDefinition)
+	writeCertificateToHostModule(hostAlias, registrarAlias, pageDefinition.Domain)
+	writeCnameDomainToRegistrarModule(hostAlias, registrarAlias, pageDefinition.Domain)
 
-	err = host.ConfigureHost(hostAlias, registrarAlias, tempDir, pageDefinition)
+	// TODO: Change to read registrar alias
+	registrar.ConfigureRegistrar(registrarAlias, pageDefinition)
+
+	err = host.ConfigureHost(hostAlias, tempDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOutput += err.Error()
 		return
@@ -171,4 +178,36 @@ func (u Up) Execute() {
 
 func (u Up) Output() string {
 	return up.ExecutionOutput
+}
+
+func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteDomain string) {
+	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
+	var hostModuleTemplate hosts.HostModuleTemplate
+	templateData, _ := ioutil.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
+	_ = json.Unmarshal(templateData, &hostModuleTemplate)
+	newCert := hosts.Certificate{
+		CertificateChain: "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_chain}",
+		PrivateKeyPem:    "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.private_key_pem}",
+		CertificatePem:   "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_pem}",
+	}
+
+	hostModuleTemplate.Module["host_"+hostAlias].Certificates[formattedDomain+"_certificate"] = newCert
+
+	file, _ := json.MarshalIndent(hostModuleTemplate, "", " ")
+	_ = ioutil.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
+}
+
+func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, siteDomain string) {
+	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
+	var registrarModuleTemplate hosts.RegistrarModuleTemplate
+	templateData, _ := ioutil.ReadFile(cliinit.ModuleTemplatePath("registrar", registrarAlias))
+	_ = json.Unmarshal(templateData, &registrarModuleTemplate)
+	cnameDomain := hosts.Domain{
+		Domain: "${module.host_" + hostAlias + "." + formattedDomain + "_domain}",
+	}
+
+	registrarModuleTemplate.Module["registrar_"+registrarAlias].Domains[formattedDomain+"_domain"] = cnameDomain
+
+	file, _ := json.MarshalIndent(registrarModuleTemplate, "", " ")
+	_ = ioutil.WriteFile(cliinit.ModuleTemplatePath("registrar", registrarAlias), []byte(file), 0644)
 }
