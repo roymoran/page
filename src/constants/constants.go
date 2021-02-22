@@ -5,7 +5,7 @@ type Consts struct {
 }
 
 var consts Consts = Consts{
-	appVersion: "v0.1.0",
+	appVersion: "v0.1.0-alpha.1",
 }
 
 func Constants() Consts {
