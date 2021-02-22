@@ -146,6 +146,8 @@ func baseInfraTemplate(bucketName string) []byte {
 			"aws_s3_bucket": map[string]interface{}{
 				"pages_storage": map[string]interface{}{
 					"bucket": bucketName,
+					// TODO: Consider that a template may not
+					// have index.html entry point.
 					"website": map[string]interface{}{
 						"index_document": "index.html",
 						"error_document": "index.html",
