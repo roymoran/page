@@ -2,7 +2,6 @@ package hosts
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
@@ -28,7 +27,6 @@ func (a Azure) ConfigureAuth() error {
 }
 
 func (a Azure) ConfigureHost(hostAlias string, templatePath string, page definition.PageDefinition) error {
-	fmt.Println("configured azure host")
 	return nil
 }
 

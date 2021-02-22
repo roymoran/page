@@ -1,8 +1,6 @@
 package registrars
 
 import (
-	"fmt"
-
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
 	"builtonpage.com/main/providers/hosts"
@@ -12,11 +10,9 @@ type Page struct {
 }
 
 func (p Page) ConfigureAuth() (cliinit.Credentials, error) {
-	fmt.Println("configured page registrar auth")
 	return cliinit.Credentials{}, nil
 }
 func (p Page) ConfigureRegistrar(registrarAlias string, hostAlias string, pageConfig definition.PageDefinition) error {
-	fmt.Println("configured page registrar")
 	return nil
 }
 

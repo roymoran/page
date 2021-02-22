@@ -55,7 +55,6 @@ func (aws AmazonWebServices) ConfigureHost(hostAlias string, templatePath string
 	// set up base infra for site to be hosted
 	// if not already created
 	if baseInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
-		fmt.Println("creating s3 storage")
 		randstr := randSeq(12)
 		bucketName := "pagecli" + randstr
 
@@ -66,7 +65,6 @@ func (aws AmazonWebServices) ConfigureHost(hostAlias string, templatePath string
 			return err
 		}
 	}
-	fmt.Println("creating site")
 	// TODO: Add case if site is already live and active?
 	// maybe show list of sites that are currently live
 	// via cli command
@@ -90,7 +88,6 @@ func (aws AmazonWebServices) ConfigureHost(hostAlias string, templatePath string
 	// Now create distribution on Cloudfront with output from
 	//
 
-	fmt.Println("configured aws host")
 	return nil
 }
 

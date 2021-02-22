@@ -2,7 +2,6 @@ package hosts
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
@@ -28,7 +27,6 @@ func (g Google) ConfigureAuth() error {
 }
 
 func (g Google) ConfigureHost(alias string, templatePath string, page definition.PageDefinition) error {
-	fmt.Println("configured firebase host")
 	return nil
 }
 

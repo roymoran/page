@@ -39,7 +39,6 @@ func (n Namecheap) ConfigureAuth() (cliinit.Credentials, error) {
 }
 
 func (n Namecheap) ConfigureRegistrar(registrarAlias string, pageConfig definition.PageDefinition) error {
-	fmt.Println("configured namecheap registrar")
 	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
 	var cnameFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_cname.tf.json")
 	credentials, readCredentialsErr := cliinit.FindRegistrarCredentials(registrarAlias)

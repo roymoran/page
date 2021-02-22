@@ -75,7 +75,6 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 		hostCertificatesVariableTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
 		os.RemoveAll(providerAliasPath)
-		fmt.Println("failed ioutil.WriteFile for provider template")
 		return fmt.Errorf("failed ioutil.WriteFile for provider template")
 	}
 
