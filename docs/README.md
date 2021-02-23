@@ -25,17 +25,19 @@ The goal of the definition file is to describe only the essential information re
 
 ### Examples
 ```yaml
-# version - Page config template version
-version: "v0"
-# unexpanded host uses default host info/config
+# version - page config template version
+version: "0"
+# specify a supported host name or an alias
 host: "aws"
-# unexpanded registrar uses default registrar info/config
+# specify a supported registrar name or an alias
 registrar: "namecheap"
-# unexpanded domain uses default registrar info/config
+# specify the domain name for your site. The registrar
+# specified above must own the domain name. Only specify
+# a top-level domain name. 
 domain: "example.com"
-# template - uniform resource locator where
-# page template is located and accessible
-# via git clone
+# template - a url of a git repo containing static assets
+# to be hosted. url should be accessible from machine running
+# 'page up'
 template: "https://github.com/roymoran/index"
 ```
 
