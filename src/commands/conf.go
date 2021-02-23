@@ -42,7 +42,7 @@ func (c Conf) BindArgs() {
 	provider, ok := providers.SupportedProviders.Providers[conf.ArgValues["providerType"]]
 	if !ok {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host\n")
+		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host\n\n")
 		return
 	}
 
@@ -52,7 +52,7 @@ func (c Conf) BindArgs() {
 
 	if !actionExists {
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list\n")
+		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list\n\n")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (c Conf) BindArgs() {
 
 		if !providerSupported {
 			conf.ExecutionOk = false
-			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s\n")
+			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s\n\n")
 			return
 		}
 	}

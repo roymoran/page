@@ -47,7 +47,7 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 
 func (hp HostProvider) List(name string, channel chan string) error {
 	for _, hostName := range SupportedHosts {
-		channel <- fmt.Sprint(hostName)
+		channel <- fmt.Sprintln(hostName)
 	}
 	return nil
 }

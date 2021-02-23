@@ -139,7 +139,7 @@ func AssignAliasName(providerType string) string {
 		fmt.Print("Give your " + providerType + " an alias: ")
 		fmt.Scanln(&alias)
 		if AliasForProviderExists(providerType, alias) {
-			fmt.Print("The alias should be unique across all aliases for your " + providerType + "s\n")
+			fmt.Print("The alias should be unique across all aliases for your " + providerType + "s\n\n")
 			continue
 		}
 		for _, providerName := range supportedProviders {

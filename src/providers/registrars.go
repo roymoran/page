@@ -70,7 +70,7 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 
 func (rp RegistrarProvider) List(name string, channel chan string) error {
 	for _, registrarName := range SupportedRegistrars {
-		channel <- fmt.Sprint(registrarName)
+		channel <- fmt.Sprintln(registrarName)
 	}
 	return nil
 }

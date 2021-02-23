@@ -122,7 +122,7 @@ func BuildUsageInfo() string {
 		}
 	}
 
-	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page help <command>'")
+	return fmt.Sprint(usageInfo, "\n\n", "For specific command usage use 'page help <command>'\n")
 }
 
 func ValidateArgs(commandInfo *CommandInfo, args []string) {

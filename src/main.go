@@ -15,6 +15,6 @@ func main() {
 	output := make(chan string)
 	go commands.Handle(os.Args, output)
 	for message := range output {
-		fmt.Println(message)
+		fmt.Print(message)
 	}
 }
