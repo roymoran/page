@@ -7,3 +7,6 @@
 7. Define local credential management mechanism for providers
 8. Impliment page init
 9. Impliment page up
+10. Upload all content from template path to storage account while
+preserving hierarchy.
+11. 
