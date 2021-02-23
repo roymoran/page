@@ -72,7 +72,7 @@ func CliInit() {
 		log.Fatal("CliInit error. Error creating tf install path.", dirErr)
 	}
 
-	configError := WriteConfigFile(initialPageConfig)
+	configError := writeConfigFile(initialPageConfig)
 
 	if configError != nil {
 		log.Fatal("CliInit error. Error creating config.json.", configError)
@@ -86,7 +86,7 @@ func CliInit() {
 
 	initialPageConfig.ConfigStatus = true
 	initialPageConfig.TfExecPath = execPath
-	configError = WriteConfigFile(initialPageConfig)
+	configError = writeConfigFile(initialPageConfig)
 
 	if configError != nil {
 		log.Fatal("CliInit error. Error setting InitialConfig to true.", configError)

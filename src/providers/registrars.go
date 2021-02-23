@@ -69,9 +69,17 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 }
 
 func (rp RegistrarProvider) List(name string, channel chan string) error {
+	channel <- fmt.Sprint("Supported\n")
 	for _, registrarName := range SupportedRegistrars {
 		channel <- fmt.Sprintln(registrarName)
 	}
+	channel <- fmt.Sprintln("")
+	channel <- fmt.Sprint("Configured\n")
+	configuredAliases, _ := cliinit.FindAllRegistrarAliases()
+	for _, alias := range configuredAliases {
+		channel <- fmt.Sprintln(alias)
+	}
+
 	return nil
 }
 

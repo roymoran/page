@@ -8,16 +8,16 @@ import (
 )
 
 func AddProvider(provider ProviderConfig) error {
-	config, readErr := ReadConfigFile()
+	config, readErr := readConfigFile()
 	if readErr != nil {
 		log.Fatal("error reading cli config file", readErr)
 		return readErr
 	}
 
-	ShouldChangeDefaultField(config.Providers, &provider)
+	shouldChangeDefaultField(config.Providers, &provider)
 	providers := append(config.Providers, provider)
 	config.Providers = providers
-	writeErr := WriteConfigFile(config)
+	writeErr := writeConfigFile(config)
 
 	if writeErr != nil {
 		log.Fatal("error writing cli config file", writeErr)
@@ -27,10 +27,64 @@ func AddProvider(provider ProviderConfig) error {
 	return nil
 }
 
+// FindAllHostAliases returns the name of the host given
+// an alias
+func FindAllHostAliases() ([]string, error) {
+	pageConfig, readConfigErr := readConfigFile()
+	aliases := []string{}
+	defaultMessage := ""
+
+	if readConfigErr != nil {
+		return aliases, readConfigErr
+	}
+
+	for _, provider := range pageConfig.Providers {
+		if provider.Type != "host" {
+			continue
+		}
+
+		if provider.Default {
+			defaultMessage = "*default"
+		}
+
+		aliases = append(aliases, provider.Alias+" "+"("+provider.Name+") "+defaultMessage)
+		defaultMessage = ""
+	}
+
+	return aliases, nil
+}
+
+// FindAllRegistrarAliases returns the name of the host given
+// an alias
+func FindAllRegistrarAliases() ([]string, error) {
+	pageConfig, readConfigErr := readConfigFile()
+	aliases := []string{}
+	defaultMessage := ""
+
+	if readConfigErr != nil {
+		return aliases, readConfigErr
+	}
+
+	for _, provider := range pageConfig.Providers {
+		if provider.Type != "registrar" {
+			continue
+		}
+
+		if provider.Default {
+			defaultMessage = "*default"
+		}
+
+		aliases = append(aliases, provider.Alias+" "+"("+provider.Name+") "+defaultMessage)
+		defaultMessage = ""
+	}
+
+	return aliases, nil
+}
+
 // FindHostByAlias returns the name of the host given
 // an alias
 func FindHostByAlias(alias string) (string, error) {
-	pageConfig, _ := ReadConfigFile()
+	pageConfig, _ := readConfigFile()
 
 	for _, provider := range pageConfig.Providers {
 		if provider.Type != "host" {
@@ -42,13 +96,13 @@ func FindHostByAlias(alias string) (string, error) {
 		}
 	}
 
-	return "", errors.New("err")
+	return "", errors.New("")
 }
 
 // FindRegistrarByAlias returns the name of the host given
 // an alias
 func FindRegistrarByAlias(alias string) (string, error) {
-	pageConfig, _ := ReadConfigFile()
+	pageConfig, _ := readConfigFile()
 
 	for _, provider := range pageConfig.Providers {
 		if provider.Type != "registrar" {
@@ -60,13 +114,13 @@ func FindRegistrarByAlias(alias string) (string, error) {
 		}
 	}
 
-	return "", errors.New("err")
+	return "", errors.New("")
 }
 
 // FindDefaultAliasForHost returns the alias for the default
 // host provider
 func FindDefaultAliasForHost(hostName string) (string, error) {
-	pageConfig, _ := ReadConfigFile()
+	pageConfig, _ := readConfigFile()
 
 	for _, provider := range pageConfig.Providers {
 		if provider.Type != "host" {
@@ -78,12 +132,12 @@ func FindDefaultAliasForHost(hostName string) (string, error) {
 		}
 	}
 
-	return "", errors.New("err")
+	return "", errors.New("")
 }
 
 // FindRegistrarCredentials returns the credentials for a registrar
 func FindRegistrarCredentials(alias string) (Credentials, error) {
-	pageConfig, _ := ReadConfigFile()
+	pageConfig, _ := readConfigFile()
 	credentials := Credentials{}
 
 	for _, provider := range pageConfig.Providers {
@@ -96,13 +150,13 @@ func FindRegistrarCredentials(alias string) (Credentials, error) {
 		}
 	}
 
-	return credentials, errors.New("err")
+	return credentials, errors.New("")
 }
 
 // FindDefaultAliasForRegistrar returns the alias for the default
 // registrar provider
 func FindDefaultAliasForRegistrar(registrarName string) (string, error) {
-	pageConfig, _ := ReadConfigFile()
+	pageConfig, _ := readConfigFile()
 
 	for _, provider := range pageConfig.Providers {
 		if provider.Type != "registrar" {
@@ -114,10 +168,10 @@ func FindDefaultAliasForRegistrar(registrarName string) (string, error) {
 		}
 	}
 
-	return "", errors.New("err")
+	return "", errors.New("")
 }
 
-func ReadConfigFile() (PageConfig, error) {
+func readConfigFile() (PageConfig, error) {
 	var config PageConfig
 	configData, err := ioutil.ReadFile(ConfigPath)
 
@@ -134,7 +188,7 @@ func ReadConfigFile() (PageConfig, error) {
 	return config, nil
 }
 
-func WriteConfigFile(config PageConfig) error {
+func writeConfigFile(config PageConfig) error {
 	file, err := json.MarshalIndent(config, "", " ")
 	if err != nil {
 		log.Fatal("error parsing config file", err)
@@ -154,7 +208,7 @@ func WriteConfigFile(config PageConfig) error {
 // IsDefault changes the 'Default' field of ProviderConfig
 // to false if there already exists a default provider
 // for the host
-func ShouldChangeDefaultField(providers []ProviderConfig, provider *ProviderConfig) {
+func shouldChangeDefaultField(providers []ProviderConfig, provider *ProviderConfig) {
 	for _, p := range providers {
 		if p.Name == provider.Name && p.Default {
 			// there already exists a default provider

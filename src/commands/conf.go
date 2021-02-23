@@ -93,7 +93,7 @@ func (c Conf) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln(conf.DisplayName, "-", c.UsageInfoShort())
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Description")
-	extendedUsage += fmt.Sprintln("Lets you configure the default host and domain name registrar for all page projects. You can also use the command to view currently supported hosts and registrars.")
+	extendedUsage += fmt.Sprintln("Lets you configure the default host and domain name registrar for all page projects. You can also use the command to view currently supported hosts/registrars and currently configured hosts/registrars.")
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Arguments")
 	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "[provider type] [action] [provider name]")

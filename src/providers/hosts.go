@@ -46,9 +46,18 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 }
 
 func (hp HostProvider) List(name string, channel chan string) error {
+	channel <- fmt.Sprint("Supported Hosts\n")
+
 	for _, hostName := range SupportedHosts {
 		channel <- fmt.Sprintln(hostName)
 	}
+	channel <- fmt.Sprintln("")
+	channel <- fmt.Sprint("Configured Hosts\n")
+	configuredAliases, _ := cliinit.FindAllHostAliases()
+	for _, alias := range configuredAliases {
+		channel <- fmt.Sprintln(alias)
+	}
+
 	return nil
 }
 
