@@ -36,8 +36,8 @@ registrar: "namecheap"
 # a top-level domain name. 
 domain: "example.com"
 # template - a url of a git repo containing static assets
-# to be hosted. url should be accessible from machine running
-# 'page up'
+# to be hosted. url should be accessible from the machine 
+# running 'page up'
 template: "https://github.com/roymoran/index"
 ```
 
@@ -45,9 +45,9 @@ The example definition file below uses expanded keys to provide extra flexibilit
 ```yaml
 # version - Page config template version
 version: "0"
-# template - uniform resource locator where
-# page template is located and accessible
-# via git clone
+# template - a url of a git repo containing static assets
+# to be hosted. url should be accessible from the machine 
+# running 'page up'
 template:
   url: "https://github.com/roymoran/page"
 

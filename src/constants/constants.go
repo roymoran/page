@@ -7,7 +7,7 @@ type Consts struct {
 
 var consts Consts = Consts{
 	appVersion:    "v0.1.0-alpha.1",
-	acmeServerUrl: "https://acme-v02.api.letsencrypt.org/directory",
+	acmeServerUrl: "https://acme-staging-v02.api.letsencrypt.org/directory",
 }
 
 func Constants() Consts {
