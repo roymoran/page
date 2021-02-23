@@ -1,10 +1,5 @@
 package hosts
 
-// TODO: Add logic so that there are character restrictions
-// to resource names for terraform resources. Ensure these are
-// enforced to avoid errors when tf files are programatiically
-// created
-
 // ProviderTemplate defines minimum fields required to
 // create a new terraform host directory. This data is
 // written to disk as a json file and 'terraform init'

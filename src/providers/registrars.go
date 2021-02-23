@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/constants"
 	"builtonpage.com/main/definition"
 	"builtonpage.com/main/providers/hosts"
 )
@@ -147,7 +148,7 @@ func registrarProviderConfigTemplate(registrarProviderName string, registrarProv
 	var providerConfigTemplate hosts.ProviderConfigTemplate = hosts.ProviderConfigTemplate{
 		Provider: map[string]interface{}{
 			"acme": map[string]interface{}{
-				"server_url": "https://acme-v02.api.letsencrypt.org/directory",
+				"server_url": constants.AcmeServerUrl(),
 			},
 			registrarProviderName: registrarProviderConfig,
 		},

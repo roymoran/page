@@ -138,6 +138,10 @@ func AssignAliasName(providerType string) string {
 		valid := true
 		fmt.Print("Give your " + providerType + " an alias: ")
 		fmt.Scanln(&alias)
+		if AliasForProviderExists(providerType, alias) {
+			fmt.Print("The alias should be unique across all aliases for your " + providerType + "s\n")
+			continue
+		}
 		for _, providerName := range supportedProviders {
 			if providerName == alias {
 				valid = !valid
@@ -145,7 +149,6 @@ func AssignAliasName(providerType string) string {
 				// for example cli currently does not support firebase host so user can use 'firebase'
 				// as their alias. Once firebase is supported this alias may become unsupported.
 
-				// TODO: We'll need to provide a mechanism to rename an alias
 				fmt.Println("alias should not be the same as the name of a " + providerType + " provider (" + strings.Join(supportedProviders[:], ", ") + ")")
 
 				break
@@ -157,7 +160,25 @@ func AssignAliasName(providerType string) string {
 		}
 	}
 	return alias
+}
 
+// AliasForProviderExists checks if the alias already
+// exists for the provider type,
+func AliasForProviderExists(providerType string, alias string) bool {
+	var providerExistsErr error
+
+	if providerType == "registrar" {
+		_, providerExistsErr = cliinit.FindRegistrarByAlias(alias)
+	} else if providerType == "host" {
+		_, providerExistsErr = cliinit.FindHostByAlias(alias)
+	}
+
+	// alias already exists for provider
+	if providerExistsErr == nil {
+		return true
+	}
+
+	return false
 }
 
 // ProviderDirectoryConfigured is utility function that
