@@ -22,15 +22,11 @@ type IHost interface {
 }
 
 func (hp HostProvider) Add(name string, channel chan string) error {
-	// TODO Check if alias for host has already been added. if so return with
-	// error
 	var alias string = AssignAliasName("host")
 	hostProvider := SupportedProviders.Providers["host"].(HostProvider)
 	host := hostProvider.Supported[name]
 	host.ConfigureAuth()
 	providerTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "provider.tf.json")
-	// This doesn't work with multiple aliases since
-	// provider config file is created only once on host dir configuration
 	providerConfigTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "providerconfig.tf.json")
 	certificatesVariableTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "certificatesvar.tf.json")
 
