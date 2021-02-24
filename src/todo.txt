@@ -3,3 +3,4 @@ preserving hierarchy.
 11. test multiple sites on single host
 12. Add analytics to cli commands
 13. Add output while user waits for 'page up' to complete
+14. avoid redownloading terraform provider plugins for already existing plugins
