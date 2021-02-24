@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"builtonpage.com/main/cliinit"
@@ -127,6 +128,9 @@ func (u Up) Execute() {
 	_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
 		URL: pageDefinition.Template,
 	})
+	// TODO: Remove system files to avoid uploading those (e.g. .DS_Store for macos)
+	// remove .git directory to avoid uploading .git content
+	os.RemoveAll(filepath.Join(tempDir, ".git"))
 
 	if err != nil {
 		OutputChannel <- "Error fetching template at " + pageDefinition.Template + ". (details: " + err.Error() + ")"
