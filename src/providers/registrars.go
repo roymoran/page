@@ -156,7 +156,7 @@ func registrarProviderConfigTemplate(registrarProviderName string, registrarProv
 	var providerConfigTemplate hosts.ProviderConfigTemplate = hosts.ProviderConfigTemplate{
 		Provider: map[string]interface{}{
 			"acme": map[string]interface{}{
-				"server_url": constants.AcmeServerUrl(),
+				"server_url": constants.AcmeServerURL(),
 			},
 			registrarProviderName: registrarProviderConfig,
 		},

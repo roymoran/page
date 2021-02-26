@@ -8,7 +8,10 @@ package commands
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"text/tabwriter"
+
+	"builtonpage.com/main/logging"
 )
 
 type ICommand interface {
@@ -88,8 +91,11 @@ func Handle(args []string, channel chan string) {
 
 	command, commandValid := commandLookup[programArgs.ArgValues["command"]]
 
+	logging.LogEvent("command", programArgs.ArgValues["command"], strings.Join(programArgs.AdditionalArgValues, " "), 0)
+
 	if !commandValid {
 		OutputChannel <- fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
+		logging.LogException("unrecognized command", false)
 		close(OutputChannel)
 		return
 	}
@@ -106,7 +112,7 @@ func BuildUsageInfo() string {
 	usageInfo := "Common Page commands:\n"
 	var b bytes.Buffer
 	tabwriter.NewWriter(&b, 0, 8, 1, '\t', tabwriter.AlignRight)
-	for catergoryId, category := range usageCategories {
+	for catergoryID, category := range usageCategories {
 		usageInfo += fmt.Sprint("\n", category, "\n")
 
 		for commandName, command := range commandLookup {
@@ -114,7 +120,7 @@ func BuildUsageInfo() string {
 				continue
 			}
 
-			if command.UsageCategory() == catergoryId {
+			if command.UsageCategory() == catergoryID {
 				fmt.Fprint(&b, "   ", commandName, "\t\t", command.UsageInfoShort(), "\n")
 				usageInfo += fmt.Sprint(b.String())
 				b.Reset()
@@ -141,6 +147,7 @@ func ValidateArgs(commandInfo *CommandInfo, args []string) {
 		conf.ExecutionOutput += fmt.Sprintln()
 		conf.ExecutionOutput += fmt.Sprint("See 'page help ", commandInfo.DisplayName, "' for usage info.")
 		conf.ExecutionOutput += fmt.Sprintln()
+		logging.LogException("invalid command arguements", false)
 		return
 	}
 
