@@ -33,14 +33,11 @@ func TfInit(initPath string) error {
 func TfApply(applyPath string) error {
 	tf, err := tfexec.NewTerraform(applyPath, cliinit.TfExecPath)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	err = tf.Apply(context.Background())
 	if err != nil {
-		// TODO: Log TF error
-		fmt.Println(err)
 		return err
 	}
 

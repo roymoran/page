@@ -53,13 +53,14 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 	moduleTemplatePath := cliinit.ModuleTemplatePath("registrar", alias)
 
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
-		channel <- fmt.Sprint("Configuring ", name, " registrar...")
+		channel <- fmt.Sprintln("Configuring", name, "registrar...")
 		err := InstallRegistrarTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, acmeRegistrationTemplatePath, acmeEmail, registrarProviderName, registrarProviderDefinition, registrarProviderConfig, domainsVariableTemplatePath)
 		if err != nil {
 			return err
 		}
 	}
 
+	channel <- fmt.Sprintln("Saving", name, "registrar configuration...")
 	addRegistrarErr := registrar.AddRegistrar(alias, credentials)
 	if addRegistrarErr != nil {
 		return addRegistrarErr

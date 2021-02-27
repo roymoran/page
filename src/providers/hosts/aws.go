@@ -156,7 +156,7 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 		"resource": map[string]interface{}{
 			"aws_s3_bucket_object": map[string]interface{}{
 				formattedDomain + "_site_files": map[string]interface{}{
-					"for_each":     "${fileset(" + fmt.Sprintf(`"`) + "/Users/roymoran/docs/src/page/pageindexcopy" + fmt.Sprintf(`"`) + "," + fmt.Sprintf(`"`) + "**/*" + fmt.Sprintf(`"`) + ")}",
+					"for_each":     "${fileset(" + fmt.Sprintf(`"`) + templatePath + fmt.Sprintf(`"`) + "," + fmt.Sprintf(`"`) + "**/*" + fmt.Sprintf(`"`) + ")}",
 					"bucket":       "${aws_s3_bucket.pages_storage.bucket}",
 					"key":          siteDomain + "/${each.value}",
 					"source":       filepath.Join(templatePath, "${each.value}"),

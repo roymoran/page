@@ -32,14 +32,14 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 
 	moduleTemplatePath := cliinit.ModuleTemplatePath("host", alias)
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
-		channel <- fmt.Sprint("Configuring ", name, " host...")
+		channel <- fmt.Sprintln("Configuring", name, "host...")
 		err := InstallHostTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, certificatesVariableTemplatePath)
 		if err != nil {
 			return err
 		}
 	}
 
-	channel <- fmt.Sprint("Saving ", name, " host configuration...")
+	channel <- fmt.Sprintln("Saving", name, "host configuration...")
 	host.AddHost(alias, providerTemplatePath)
 
 	return nil

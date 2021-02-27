@@ -65,7 +65,7 @@ func (u Up) Execute() {
 	if !up.ExecutionOk {
 		return
 	}
-
+	OutputChannel <- fmt.Sprintln("Working...(this may take a few minutes)")
 	logMessage := ""
 
 	pageDefinition, err := definition.ReadDefinitionFile()
@@ -106,7 +106,7 @@ func (u Up) Execute() {
 		registrarAlias, _ = cliinit.FindDefaultAliasForRegistrar(pageDefinition.Registrar)
 		if !providerSupported {
 			up.ExecutionOk = false
-			logMessage = fmt.Sprint("Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars.")
+			logMessage = fmt.Sprintln("Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars.")
 			OutputChannel <- logMessage
 			logging.LogException(logMessage, false)
 			return
@@ -128,7 +128,7 @@ func (u Up) Execute() {
 
 		if !providerSupported {
 			up.ExecutionOk = false
-			logMessage = fmt.Sprint("Provided unsupported host or non-existing alias (" + pageDefinition.Host + "). See 'page conf host list' for supported hosts.")
+			logMessage = fmt.Sprintln("Provided unsupported host or non-existing alias (" + pageDefinition.Host + "). See 'page conf host list' for supported hosts.")
 			OutputChannel <- logMessage
 			logging.LogException(logMessage, false)
 			return
@@ -164,7 +164,7 @@ func (u Up) Execute() {
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException("Failed to congiure registrar, "+err.Error(), true)
+		logging.LogException("Failed to configure registrar, "+err.Error(), true)
 		return
 	}
 
@@ -172,7 +172,7 @@ func (u Up) Execute() {
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException("Failed to congiure host, "+err.Error(), true)
+		logging.LogException("Failed to configure host, "+err.Error(), true)
 		return
 	}
 }
