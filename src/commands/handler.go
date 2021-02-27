@@ -94,7 +94,13 @@ func Handle(args []string, channel chan string) {
 
 	command, commandValid := commandLookup[programArgs.ArgValues["command"]]
 
-	logging.LogEvent("command", programArgs.ArgValues["command"], strings.Join(programArgs.AdditionalArgValues, " "), 0)
+	if programArgs.ArgValues["command"] == "" {
+		logging.LogEvent("command", "none", strings.Join(programArgs.AdditionalArgValues, " "), 0)
+
+	} else {
+
+		logging.LogEvent("command", programArgs.ArgValues["command"], strings.Join(programArgs.AdditionalArgValues, " "), 0)
+	}
 
 	if !commandValid {
 		OutputChannel <- fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
