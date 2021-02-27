@@ -95,10 +95,8 @@ func Handle(args []string, channel chan string) {
 	command, commandValid := commandLookup[programArgs.ArgValues["command"]]
 
 	if programArgs.ArgValues["command"] == "" {
-		logging.LogEvent("command", "none", strings.Join(programArgs.AdditionalArgValues, " "), 0)
-
+		logging.LogEvent("command", "(none)", strings.Join(programArgs.AdditionalArgValues, " "), 0)
 	} else {
-
 		logging.LogEvent("command", programArgs.ArgValues["command"], strings.Join(programArgs.AdditionalArgValues, " "), 0)
 	}
 
