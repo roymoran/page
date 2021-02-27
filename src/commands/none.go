@@ -33,7 +33,7 @@ func (n None) Execute() {
 }
 
 func (n None) Output() string {
-	return fmt.Sprint("page version ", constants.AppVersion(), "\n\n", BuildUsageInfo(), "\n")
+	return fmt.Sprint(constants.AppName(), " ", constants.AppVersion(), "\n\n", BuildUsageInfo(), "\n")
 }
 
 func (n None) BindArgs() {

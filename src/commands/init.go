@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"builtonpage.com/main/definition"
+	"builtonpage.com/main/logging"
 )
 
 type Init struct {
@@ -47,7 +48,10 @@ func (i Init) UsageCategory() int {
 }
 
 func (i Init) Execute() {
-	definition.WriteDefinitionFile()
+	err := definition.WriteDefinitionFile()
+	if err != nil {
+		logging.LogException(err.Error(), true)
+	}
 }
 
 func (i Init) Output() string {

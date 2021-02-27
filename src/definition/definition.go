@@ -47,15 +47,14 @@ type PageDefinition struct {
 // executed is assumed. A return of true signals
 // that the file was writtent succesfully, otherwise
 // false is returned.
-func WriteDefinitionFile() bool {
-	status := true
+func WriteDefinitionFile() error {
 	writeErr := ioutil.WriteFile("page.yml", []byte(defaultTemplate), 0644)
 	if writeErr != nil {
-		log.Fatal("Failed to init page.yml")
-		log.Fatal(writeErr)
-		status = false
+		log.Fatal("Failed to write page.yml", writeErr)
+		return writeErr
 	}
-	return status
+
+	return nil
 }
 
 // ReadDefinitionFile loads the yaml file into

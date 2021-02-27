@@ -8,7 +8,7 @@ type Consts struct {
 }
 
 var consts Consts = Consts{
-	appName:       "Page CLI",
+	appName:       "page cli",
 	appVersion:    "v0.1.0-alpha.1",
 	acmeServerURL: "https://acme-v02.api.letsencrypt.org/directory",
 	analyticsID:   "UA-189047059-2",
@@ -18,7 +18,7 @@ func Constants() Consts {
 	return consts
 }
 func AppName() string {
-	return consts.appVersion
+	return consts.appName
 }
 func AppVersion() string {
 	return consts.appVersion

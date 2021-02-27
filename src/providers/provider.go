@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"builtonpage.com/main/cliinit"
+	"builtonpage.com/main/logging"
 	"builtonpage.com/main/providers/hosts"
 	"builtonpage.com/main/providers/registrars"
 )
@@ -30,7 +31,7 @@ type HostProvider struct {
 }
 
 var SupportedProviders = Provider{
-	Actions: map[string]func(IProvider, string, chan string) error{"add": AddProvider, "list": IProvider.List},
+	Actions: map[string]func(IProvider, string, chan string) error{"add": AddProvider, "list": ListProvider},
 	Providers: map[string]IProvider{
 		"host": HostProvider{
 			Supported: map[string]IHost{
@@ -60,12 +61,40 @@ func AddProvider(provider IProvider, providerName string, channel chan string) e
 	}
 
 	err := provider.Add(providerName, channel)
+	if err != nil {
+		logging.LogException("Failed to add provider. Details: "+err.Error(), true)
+	}
+
 	return err
 }
 
+// TODO: Maybe we don't want the channel to be propegated?
+// if there is an error in Adding the provider or initializing
+// the cli we can let conf.go receive the message via err.Error()
+// have conf.go/handler.go communicate that over the channel
+func ListProvider(provider IProvider, providerName string, channel chan string) error {
+	err := provider.List(providerName, channel)
+	if err != nil {
+		logging.LogException("Failed to list provider. Details: "+err.Error(), true)
+	}
+
+	return err
+}
+
+// SupportedProviderTypes returns a string slice containing the different provider
+// types e.g. registrar, host
 var SupportedProviderTypes []string = BuildSupportedProviderTypes()
+
+// SupportedAction returns a string slice containing the different actions
+// that can be performed on a provider e.g. add, list
 var SupportedAction []string = BuildSupportedActions()
+
+// SupportedRegistrars returns a string slice containing the
+// currently supported registrars
 var SupportedRegistrars []string = BuildSupportedRegistrars()
+
+// SupportedHosts returns a string slice containing the
+// currently supported hosts
 var SupportedHosts []string = BuildSupportedHosts()
 
 func BuildSupportedHosts() []string {

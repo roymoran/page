@@ -1,6 +1,10 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+
+	"builtonpage.com/main/logging"
+)
 
 type Help struct {
 }
@@ -18,10 +22,14 @@ var help CommandInfo = CommandInfo{
 }
 
 func (h Help) BindArgs() {
+	logMessage := ""
+
 	_, ok := commandLookup[help.ArgValues["commandName"]]
 	if !ok {
+		logMessage = fmt.Sprint("unrecognized command '", help.ArgValues["commandName"], "'. Expected a valid command. See 'page' for valid commands.\n")
 		help.ExecutionOk = false
-		help.ExecutionOutput += fmt.Sprint("unrecognized command '", help.ArgValues["commandName"], "'. Expected a valid command. See 'page' for valid commands.\n")
+		help.ExecutionOutput += logMessage
+		logging.LogException(logMessage, false)
 		return
 	}
 }

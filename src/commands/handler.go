@@ -74,6 +74,9 @@ var programArgs ProgramArgs = ProgramArgs{
 	OrderedArgLabel: []string{"programName", "command"},
 }
 
+// OutputChannel used to send intermediate output
+// for certain commands that require several seconds
+// to run like 'page up'
 var OutputChannel chan string = nil
 
 // Handle is the entry point that begins execution

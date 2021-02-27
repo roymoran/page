@@ -9,11 +9,13 @@ package cliinit
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
+	"builtonpage.com/main/logging"
 	"github.com/hashicorp/terraform-exec/tfinstall"
 )
 
@@ -67,21 +69,31 @@ var initialPageConfig PageConfig = PageConfig{
 // and installs required executables for the
 // cli
 func CliInit() {
+	logMessage := ""
 	dirErr := os.MkdirAll(TfInstallPath, os.ModePerm)
 	if dirErr != nil {
-		log.Fatal("CliInit error. Error creating tf install path.", dirErr)
+		logMessage = fmt.Sprint("CliInit error. Error creating tf install path.", dirErr)
+
+		logging.LogException(logMessage, true)
+		log.Fatal(logMessage)
 	}
 
 	configError := writeConfigFile(initialPageConfig)
 
 	if configError != nil {
-		log.Fatal("CliInit error. Error creating config.json.", configError)
+		logMessage = fmt.Sprint("CliInit error. Error creating config.json.", configError)
+
+		logging.LogException(logMessage, true)
+		log.Fatal(logMessage)
 	}
 
 	execPath, installErr := InstallTerraform()
 
 	if installErr != nil {
-		log.Fatal("CliInit error. Error installing terraform.", installErr)
+		logMessage = fmt.Sprint("CliInit error. Error installing terraform.", installErr)
+
+		logging.LogException(logMessage, true)
+		log.Fatal(logMessage)
 	}
 
 	initialPageConfig.ConfigStatus = true
@@ -89,7 +101,10 @@ func CliInit() {
 	configError = writeConfigFile(initialPageConfig)
 
 	if configError != nil {
-		log.Fatal("CliInit error. Error setting InitialConfig to true.", configError)
+		logMessage = fmt.Sprint("CliInit error. Error setting InitialConfig to true.", configError)
+
+		logging.LogException(logMessage, true)
+		log.Fatal(logMessage)
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"builtonpage.com/main/logging"
 	"builtonpage.com/main/providers"
 )
 
@@ -39,20 +40,26 @@ func (c Conf) BindArgs() {
 		return
 	}
 
+	logMessage := ""
+
 	provider, ok := providers.SupportedProviders.Providers[conf.ArgValues["providerType"]]
+
 	if !ok {
+		logMessage = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host\n\n")
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host\n\n")
+		conf.ExecutionOutput = logMessage
+		logging.LogException(logMessage, false)
 		return
 	}
 
 	confArgs.Provider = provider
-
 	action, actionExists := providers.SupportedProviders.Actions[conf.ArgValues["actionName"]]
 
 	if !actionExists {
+		logMessage = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list\n\n")
 		conf.ExecutionOk = false
-		conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list\n\n")
+		conf.ExecutionOutput = logMessage
+		logging.LogException(logMessage, false)
 		return
 	}
 
@@ -71,8 +78,10 @@ func (c Conf) BindArgs() {
 		}
 
 		if !providerSupported {
+			logMessage = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s\n\n")
 			conf.ExecutionOk = false
-			conf.ExecutionOutput = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s\n\n")
+			conf.ExecutionOutput = logMessage
+			logging.LogException(logMessage, false)
 			return
 		}
 	}
@@ -123,6 +132,7 @@ func (c Conf) Execute() {
 	err := confArgs.Action(confArgs.Provider, conf.ArgValues["providerName"], OutputChannel)
 	if err != nil {
 		conf.ExecutionOk = false
+		logging.LogException(err.Error(), false)
 	}
 }
 

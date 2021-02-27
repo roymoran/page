@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"builtonpage.com/main/cliinit"
 	"builtonpage.com/main/definition"
+	"builtonpage.com/main/logging"
 	"builtonpage.com/main/providers"
 	"builtonpage.com/main/providers/hosts"
 	"github.com/go-git/go-git/v5"
@@ -58,9 +58,6 @@ func (u Up) UsageCategory() int {
 }
 
 func (u Up) BindArgs() {
-	if !up.ExecutionOk {
-		return
-	}
 }
 
 // TODO: What if the same site gets redeployed twice?
@@ -69,18 +66,27 @@ func (u Up) Execute() {
 		return
 	}
 
+	logMessage := ""
+
 	pageDefinition, err := definition.ReadDefinitionFile()
 	if err != nil {
-		log.Fatalln("error:" + err.Error())
+		logging.LogException(err.Error(), true)
 		up.ExecutionOutput += err.Error()
 		return
 	}
 
-	tempDir, _ := ioutil.TempDir("", "template")
+	tempDir, tempDirErr := ioutil.TempDir("", "template")
 	defer os.RemoveAll(tempDir)
 
-	registrarProvider, _ := providers.SupportedProviders.Providers["registrar"]
-	hostProvider, _ := providers.SupportedProviders.Providers["host"]
+	if tempDirErr != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.LogException(tempDirErr.Error(), true)
+		return
+	}
+
+	registrarProvider := providers.SupportedProviders.Providers["registrar"]
+	hostProvider := providers.SupportedProviders.Providers["host"]
 
 	var hostProviderConcrete providers.HostProvider
 	var registrarProviderConcrete providers.RegistrarProvider
@@ -93,14 +99,16 @@ func (u Up) Execute() {
 	registrar, providerSupported = registrarProviderConcrete.Supported[registrarName]
 
 	// alias may not exist, in which case assume
-	// name of registrar povider was provided.
+	// name of registrar was provided.
 	// Retrieve the default alias for that registrar.
 	if err != nil {
 		registrar, providerSupported = registrarProviderConcrete.Supported[pageDefinition.Registrar]
 		registrarAlias, _ = cliinit.FindDefaultAliasForRegistrar(pageDefinition.Registrar)
 		if !providerSupported {
 			up.ExecutionOk = false
-			OutputChannel <- "Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars."
+			logMessage = fmt.Sprint("Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars.")
+			OutputChannel <- logMessage
+			logging.LogException(logMessage, false)
 			return
 		}
 	}
@@ -120,7 +128,9 @@ func (u Up) Execute() {
 
 		if !providerSupported {
 			up.ExecutionOk = false
-			OutputChannel <- "Provided unsupported host or non-existing alias (" + pageDefinition.Host + "). See 'page conf host list' for supported hosts."
+			logMessage = fmt.Sprint("Provided unsupported host or non-existing alias (" + pageDefinition.Host + "). See 'page conf host list' for supported hosts.")
+			OutputChannel <- logMessage
+			logging.LogException(logMessage, false)
 			return
 		}
 	}
@@ -133,55 +143,57 @@ func (u Up) Execute() {
 	os.RemoveAll(filepath.Join(tempDir, ".git"))
 
 	if err != nil {
-		OutputChannel <- "Error fetching template at " + pageDefinition.Template + ". (details: " + err.Error() + ")"
+		up.ExecutionOk = false
+		logMessage = fmt.Sprint("Error fetching template at " + pageDefinition.Template + ". (details: " + err.Error() + ")")
+		OutputChannel <- logMessage
+		logging.LogException(logMessage, false)
 		return
 	}
 
-	writeCertificateToHostModule(hostAlias, registrarAlias, pageDefinition.Domain)
-	writeCnameDomainToRegistrarModule(hostAlias, registrarAlias, pageDefinition.Domain)
+	err = writeCertificateToHostModule(hostAlias, registrarAlias, pageDefinition.Domain)
+	err = writeCnameDomainToRegistrarModule(hostAlias, registrarAlias, pageDefinition.Domain)
 
-	registrar.ConfigureRegistrar(registrarAlias, pageDefinition)
+	if err != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.LogException(err.Error(), true)
+		return
+	}
+
+	err = registrar.ConfigureRegistrar(registrarAlias, pageDefinition)
+	if err != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.LogException("Failed to congiure registrar, "+err.Error(), true)
+		return
+	}
 
 	err = host.ConfigureHost(hostAlias, tempDir, pageDefinition)
 	if err != nil {
+		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
+		logging.LogException("Failed to congiure host, "+err.Error(), true)
 		return
 	}
-
-	// Resolve template url, is it valid?
-	// Download template from url, build static assets as needed,
-	// then read build files into memory. Take into consideration the size
-	// of the built assets - will it be ok to store in memory until deploy?
-	// or maybe copy these one by one into a deploy directory (zip if needed)?
-	// maintaining a flag that signals deploy step once assets are ready.
-
-	// Get default host for host_value on yaml file. Does infrastructure
-	// exist to deploy assets? If not create infrastructure with message
-	// 'Creating infrastructure on [host_value]...'
-	// Infrastructure could potentially be defined and created with
-	// Infrastructure as Code tool e.g. terraform (this logic)
-	// may need to be done 'page conf host...' command
-
-	// Get default registrar for registrar_value on yaml file,
-	// does domain exist on registrar? if not register with message
-	// 'Registering domain.com with [registrar_value]...'
-	// configure dns records as needed so that the custom domain
-	// points to the host infrastructure
-
-	// Take assets from deploy directory, and execute depoyment via host
-	// cli
-	up.ExecutionOutput += fmt.Sprintln("deployed")
 }
 
 func (u Up) Output() string {
 	return up.ExecutionOutput
 }
 
-func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteDomain string) {
+func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteDomain string) error {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 	var hostModuleTemplate hosts.HostModuleTemplate
-	templateData, _ := ioutil.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
-	_ = json.Unmarshal(templateData, &hostModuleTemplate)
+	templateData, readFileErr := ioutil.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
+	if readFileErr != nil {
+		return readFileErr
+	}
+
+	err := json.Unmarshal(templateData, &hostModuleTemplate)
+	if err != nil {
+		return err
+	}
+
 	newCert := hosts.Certificate{
 		CertificateChain: "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_chain}",
 		PrivateKeyPem:    "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.private_key_pem}",
@@ -190,21 +202,40 @@ func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteD
 
 	hostModuleTemplate.Module["host_"+hostAlias].Certificates[formattedDomain+"_certificate"] = newCert
 
-	file, _ := json.MarshalIndent(hostModuleTemplate, "", " ")
-	_ = ioutil.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
+	file, err := json.MarshalIndent(hostModuleTemplate, "", " ")
+	err = ioutil.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, siteDomain string) {
+func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, siteDomain string) error {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 	var registrarModuleTemplate hosts.RegistrarModuleTemplate
-	templateData, _ := ioutil.ReadFile(cliinit.ModuleTemplatePath("registrar", registrarAlias))
-	_ = json.Unmarshal(templateData, &registrarModuleTemplate)
+	templateData, readFileErr := ioutil.ReadFile(cliinit.ModuleTemplatePath("registrar", registrarAlias))
+
+	if readFileErr != nil {
+		return readFileErr
+	}
+
+	err := json.Unmarshal(templateData, &registrarModuleTemplate)
+	if err != nil {
+		return err
+	}
+
 	cnameDomain := hosts.Domain{
 		Domain: "${module.host_" + hostAlias + "." + formattedDomain + "_domain}",
 	}
 
 	registrarModuleTemplate.Module["registrar_"+registrarAlias].Domains[formattedDomain+"_domain"] = cnameDomain
 
-	file, _ := json.MarshalIndent(registrarModuleTemplate, "", " ")
-	_ = ioutil.WriteFile(cliinit.ModuleTemplatePath("registrar", registrarAlias), []byte(file), 0644)
+	file, err := json.MarshalIndent(registrarModuleTemplate, "", " ")
+	err = ioutil.WriteFile(cliinit.ModuleTemplatePath("registrar", registrarAlias), []byte(file), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
