@@ -178,7 +178,7 @@ func AssignAliasName(providerType string) string {
 				// for example cli currently does not support firebase host so user can use 'firebase'
 				// as their alias. Once firebase is supported this alias may become unsupported.
 
-				fmt.Println("alias should not be the same as the name of a " + providerType + " provider (" + strings.Join(supportedProviders[:], ", ") + ")")
+				fmt.Println("alias should not be the same name of a " + providerType + " provider (" + strings.Join(supportedProviders[:], ", ") + ")")
 
 				break
 			}
