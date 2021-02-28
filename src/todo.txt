@@ -1,5 +1,4 @@
 11. test multiple sites on single host
-13. Add output while user waits for 'page up' to complete
 14. avoid redownloading terraform provider plugins for already existing plugins
 15. How to handle ssl renewals? Possibly rerunning 'page up' should renew ssl?
 16. How to handle cname record updates? By default root and www subdomain should reach the main website.
