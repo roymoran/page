@@ -10,6 +10,6 @@ Download [latest](https://github.com/roymoran/page/releases) release for your op
 ```bash
 # create new page
 $ page new
-# after modifying
+# deploy new page
 $ page up
 ```
