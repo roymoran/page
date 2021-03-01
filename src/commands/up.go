@@ -106,7 +106,7 @@ func (u Up) Execute() {
 		registrarAlias, _ = cliinit.FindDefaultAliasForRegistrar(pageDefinition.Registrar)
 		if !providerSupported {
 			up.ExecutionOk = false
-			logMessage = fmt.Sprintln("Provided unsupported registrar (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars.")
+			logMessage = fmt.Sprintln("Provided unsupported registrar or non-existing alias (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars.")
 			OutputChannel <- logMessage
 			logging.LogException(logMessage, false)
 			return
