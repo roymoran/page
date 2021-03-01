@@ -18,10 +18,3 @@ $ page new
 # after modifying
 $ page up
 ```
-
-## Supported Hosts and Registrars
-### Hosts
-- AWS
-
-### Registrars
-- Namecheap
