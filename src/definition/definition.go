@@ -14,15 +14,23 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var defaultTemplate = `# version - page config template version
+var defaultTemplate = `# This configuration file defines your site to be deployed
+# The comments displayed before each property should be informative
+# enough to get your site deployed. If you run into a problem
+# you can create an issue at https://github.com/roymoran/page.
+
+# version - page config template version
+# should remain "0"
 version: "0"
 # specify a supported host name or an alias
+# supported hosts can be found with 'page conf host list'
 host: "aws"
 # specify a supported registrar name or an alias
+# supported registrars can be found with 'page conf registrar list'
 registrar: "namecheap"
 # specify the domain name for your site. The registrar
-# specified above must own the domain name. Only specify
-# a top-level domain name. 
+# you specified above must own the domain name.
+# Only specify a top-level domain name.
 domain: "example.com"
 # template - a url of a git repo containing static assets
 # to be hosted. url should be accessible from machine running
