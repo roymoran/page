@@ -5,6 +5,7 @@ type Consts struct {
 	appVersion    string
 	acmeServerURL string
 	analyticsID   string
+	appAuthors    []string
 }
 
 var consts Consts = Consts{
@@ -12,16 +13,23 @@ var consts Consts = Consts{
 	appVersion:    "v0.1.0-alpha.4",
 	acmeServerURL: "https://acme-v02.api.letsencrypt.org/directory",
 	analyticsID:   "UA-189047059-2",
+	appAuthors:    []string{"Roy Moran (https://github.com/roymoran)"},
 }
 
 func Constants() Consts {
 	return consts
 }
+
 func AppName() string {
 	return consts.appName
 }
+
 func AppVersion() string {
 	return consts.appVersion
+}
+
+func AppAuthors() []string {
+	return consts.appAuthors
 }
 
 func AcmeServerURL() string {

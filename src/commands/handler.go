@@ -116,7 +116,7 @@ func Handle(args []string, channel chan string) {
 }
 
 func BuildUsageInfo() string {
-	usageInfo := "Common Page commands:\n"
+	usageInfo := "common commands:\n"
 	var b bytes.Buffer
 	tabwriter.NewWriter(&b, 0, 8, 1, '\t', tabwriter.AlignRight)
 	for catergoryID, category := range usageCategories {
@@ -151,9 +151,9 @@ func ValidateArgs(commandInfo *CommandInfo, args []string) {
 
 	// TODO: Generalize so that on 'page help...' message is appended to all failing commands
 	if !commandInfo.ExecutionOk {
-		conf.ExecutionOutput += fmt.Sprintln()
-		conf.ExecutionOutput += fmt.Sprint("See 'page help ", commandInfo.DisplayName, "' for usage info.")
-		conf.ExecutionOutput += fmt.Sprintln()
+		commandInfo.ExecutionOutput += fmt.Sprintln()
+		commandInfo.ExecutionOutput += fmt.Sprint("See 'page help ", commandInfo.DisplayName, "' for usage info.")
+		commandInfo.ExecutionOutput += fmt.Sprintln()
 		logging.LogException("invalid command arguements", false)
 		return
 	}
