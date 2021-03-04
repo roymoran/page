@@ -13,3 +13,10 @@ $ page new
 # deploy new page
 $ page up
 ```
+
+## Supported Hosts/Registrars
+### Hosts
+- AWS
+
+### Registrars
+- Namecheap
