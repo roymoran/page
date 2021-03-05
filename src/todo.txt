@@ -3,3 +3,4 @@
 15. How to handle ssl renewals? Possibly rerunning 'page up' should renew ssl?
 16. How to handle cname record updates? By default root and www subdomain should reach the main website.
 17. add additional tests
+18. cli assumes static assets to be uploaded contains index.html. Validate or change.
