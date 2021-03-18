@@ -21,10 +21,7 @@ func LogEvent(category string, action string, label string, value int) {
 	client.ApplicationName(constants.AppName())
 	client.ApplicationVersion(constants.AppVersion())
 	client.ApplicationInstallerID(runtime.GOOS)
-	err = client.Send(ga.NewEvent(category, action).Label(label))
-	if err != nil {
-		return
-	}
+	client.Send(ga.NewEvent(category, action).Label(label))
 }
 
 // LogException records a google analytics exception/crash
@@ -38,8 +35,5 @@ func LogException(description string, fatal bool) {
 	client.ApplicationName(constants.AppName())
 	client.ApplicationVersion(constants.AppVersion())
 	client.ApplicationInstallerID(runtime.GOOS)
-	err = client.Send(ga.NewException().Description(description).IsExceptionFatal(fatal))
-	if err != nil {
-		return
-	}
+	client.Send(ga.NewException().Description(description).IsExceptionFatal(fatal))
 }
