@@ -85,3 +85,15 @@ Best approach for setting up infrastructure for initial configuration? Terraform
 
 Serving static assets over storage accounts (S3, Azure Storage Account, etc) versus throwing static assets on a VM behind webserver on VM? Cost difference? Difference in technical complexity? Would adding new supported hosts be easier with VM route? 
 - TBD
+
+## Create Build
+TODO: Add commands needed to generate builds for each supported OS. 
+
+**macos**
+page_0.1.0-alpha.6_darwin_amd64 (64-bit)
+
+**linux**
+page_0.1.0-alpha.6_linux_amd64 (64-bit)
+
+**windows**
+page_0.1.0-alpha.6_windows_amd64 (64-bit)
