@@ -1,0 +1,85 @@
+# CI definition builds, tests, and creates executable for various
+# target platforms including macos, windows, and linux
+#
+# Build server has following software dependencies.
+#
+# Software
+# - go
+stages:
+  # build debug/production application and tests
+  - builds
+  # run application unit and system tests
+  - tests
+  # create application release based on git tags
+  - release
+
+build:
+  stage: builds
+  tags:
+    - rpi
+  script:
+    - cd src
+    - go build
+
+darwin_amd64:
+    stage: tests
+    tags:
+      - rpi
+    script:
+      - echo run all test suites on native platform
+      - cd src && cd tests
+      - go tests
+
+windows_amd64:
+    stage: tests
+    tags:
+      - rpi
+    script:
+      - echo run tests on native platform
+      - cd src && cd tests
+      - go tests
+
+linux_amd64:
+    stage: tests
+    tags:
+      - rpi
+    script:
+      - echo run tests on native platform
+      - cd src && cd tests
+      - go tests
+
+linux_arm64:
+    stage: tests
+    tags:
+      - rpi
+    script:
+      - echo run tests on native platform
+      - cd src && cd tests
+      - go tests
+
+linux_arm:
+    stage: tests
+    tags:
+      - rpi
+    script:
+      - echo run tests on native platform
+      - cd src && cd tests
+      - go tests
+
+all:
+  stage: release
+  rules:
+    # only upload artifact on tagged branch (only default branch should ever be tagged)
+    - if: '$CI_COMMIT_TAG != null'
+  tags:
+    - rpi
+  script:
+    - env GOOS=darwin GOARCH=amd64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_darwin_amd64.tar.bz2" page && rm page
+    - env GOOS=windows GOARCH=amd64 go build -o page.exe && tar -cjvf "page_${CI_COMMIT_TAG}_windows_amd64.tar.bz2" page && rm page
+    - env GOOS=linux GOARCH=amd64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_amd64.tar.bz2" page && rm page
+    - env GOOS=linux GOARCH=arm64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_arm64.tar.bz2" page && rm page
+    - env GOOS=linux GOARCH=arm go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_arm.tar.bz2" page && rm page
+    - mv page_*.tar.bz2 $CI_PROJECT_DIR/build/
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/build/**

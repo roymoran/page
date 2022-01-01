@@ -90,10 +90,25 @@ Serving static assets over storage accounts (S3, Azure Storage Account, etc) ver
 TODO: Add commands needed to generate builds for each supported OS. 
 
 **macos**
-page_0.1.0-alpha.6_darwin_amd64 (64-bit)
-
+page_0.1.0-alpha.6_darwin_amd64 (macos intel 64-bit)
+```bash
+$ env GOOS=darwin GOARCH=amd64 go build -o page
+```
 **linux**
-page_0.1.0-alpha.6_linux_amd64 (64-bit)
-
+page_0.1.0-alpha.6_linux_amd64 (linux intel 64-bit)
+```bash
+$ env GOOS=linux GOARCH=amd64 go build -o page
+```
+page_0.1.0-alpha.6_linux_arm64 (linux arm 64-bit)
+```bash
+$ env GOOS=linux GOARCH=arm64 go build -o page
+```
+page_0.1.0-alpha.6_linux_arm (linux arm 32-bit)
+```bash
+$ env GOOS=linux GOARCH=arm go build -o page
+```
 **windows**
-page_0.1.0-alpha.6_windows_amd64 (64-bit)
+page_0.1.0-alpha.6_windows_amd64 (windows intel 64-bit)
+```bash
+$ env GOOS=windows GOARCH=amd64 go build -o page.exe
+```

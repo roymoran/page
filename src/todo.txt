@@ -5,3 +5,4 @@
 17. add additional tests
 18. cli assumes static assets to be uploaded contains index.html. Validate or change.
 19. Add user output for exactly what resources were being/going to be deployed to my host and how much its going to cost me. If possible I'd like the ability to revert/destroy the deployment.
+20. run gitlab ci test suite for each supported os/architecture
