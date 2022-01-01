@@ -28,7 +28,7 @@ darwin_amd64:
     script:
       - echo run all test suites on native platform
       - cd src && cd tests
-      - go tests
+      - go test
 
 windows_amd64:
     stage: tests
@@ -37,7 +37,7 @@ windows_amd64:
     script:
       - echo run tests on native platform
       - cd src && cd tests
-      - go tests
+      - go test
 
 linux_amd64:
     stage: tests
@@ -46,7 +46,7 @@ linux_amd64:
     script:
       - echo run tests on native platform
       - cd src && cd tests
-      - go tests
+      - go test
 
 linux_arm64:
     stage: tests
@@ -55,7 +55,7 @@ linux_arm64:
     script:
       - echo run tests on native platform
       - cd src && cd tests
-      - go tests
+      - go test
 
 linux_arm:
     stage: tests
@@ -64,7 +64,7 @@ linux_arm:
     script:
       - echo run tests on native platform
       - cd src && cd tests
-      - go tests
+      - go test
 
 all:
   stage: release
