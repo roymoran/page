@@ -76,7 +76,7 @@ all:
   script:
     - cd src
     - env GOOS=darwin GOARCH=amd64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_darwin_amd64.tar.bz2" page && rm page
-    - env GOOS=windows GOARCH=amd64 go build -o page.exe && tar -cjvf "page_${CI_COMMIT_TAG}_windows_amd64.tar.bz2" page && rm page
+    - env GOOS=windows GOARCH=amd64 go build -o page.exe && tar -cjvf "page_${CI_COMMIT_TAG}_windows_amd64.tar.bz2" page.exe && rm page.exe
     - env GOOS=linux GOARCH=amd64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_amd64.tar.bz2" page && rm page
     - env GOOS=linux GOARCH=arm64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_arm64.tar.bz2" page && rm page
     - env GOOS=linux GOARCH=arm go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_arm.tar.bz2" page && rm page
