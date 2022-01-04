@@ -8,3 +8,4 @@
 - Add user output for exactly what resources were being/going to be deployed to my host and how much its going to cost me. If possible I'd like the ability to revert/destroy the deployment.
 - run gitlab ci test suite for each supported os/architecture
 - what is the intent of the system
+- remove docs directory
