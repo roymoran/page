@@ -10,4 +10,4 @@
 - what is the intent of the system
 - remove docs directory
 - If a new page is deployed on same aws host, the host storage get cleared removing other deployed pages. 
-- can i generalize this further to make it 10x easier to several more register and hosts. 
+- can i generalize this further to make it 10x easier to support several more registrars and hosts. 
