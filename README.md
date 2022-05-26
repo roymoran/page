@@ -1,14 +1,5 @@
-## Page CLI
-
-<p align="center">
-    <img src="https://img.shields.io/badge/Build-Passing-brightgreen" alt="Build Badge Support Link">
-  <a href="https://calendly.com/roy_/page-cli">
-    <img src="https://img.shields.io/badge/Support-Support%20via%20Calendly-blue" alt="Calendly Support Link">
-  </a>
-</p>
-
 ## Demo
-![Demo](./docs/pagecli.gif)
+![Demo](./demo.gif)
 
 ## Getting Started
 
