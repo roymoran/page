@@ -70,7 +70,7 @@ all:
   stage: release
   rules:
     # only upload artifact on tagged branch (only default branch should ever be tagged)
-    - if: '$CI_COMMIT_TAG != null'
+    - if: $CI_COMMIT_TAG
   tags:
     - rpi
   script:
