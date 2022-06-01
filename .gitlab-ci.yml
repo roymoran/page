@@ -5,6 +5,7 @@
 #
 # Software
 # - go
+image: golang:1.18
 stages:
   # build debug/production application and tests
   - builds
@@ -15,16 +16,12 @@ stages:
 
 build:
   stage: builds
-  tags:
-    - rpi
   script:
     - cd src
     - go build
 
 darwin_amd64:
     stage: tests
-    tags:
-      - rpi
     script:
       - echo run all test suites on native platform
       - cd src && cd tests
@@ -32,8 +29,6 @@ darwin_amd64:
 
 windows_amd64:
     stage: tests
-    tags:
-      - rpi
     script:
       - echo run tests on native platform
       - cd src && cd tests
@@ -41,8 +36,6 @@ windows_amd64:
 
 linux_amd64:
     stage: tests
-    tags:
-      - rpi
     script:
       - echo run tests on native platform
       - cd src && cd tests
@@ -50,8 +43,6 @@ linux_amd64:
 
 linux_arm64:
     stage: tests
-    tags:
-      - rpi
     script:
       - echo run tests on native platform
       - cd src && cd tests
@@ -59,8 +50,6 @@ linux_arm64:
 
 linux_arm:
     stage: tests
-    tags:
-      - rpi
     script:
       - echo run tests on native platform
       - cd src && cd tests
