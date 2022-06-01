@@ -43,23 +43,23 @@ release: $(BUILD_RELEASE_PATH) page_darwin_amd64.tar.bz2 page_linux_amd64.tar.bz
 
 # macos intel 64-bit
 page_darwin_amd64.tar.bz2:
-	cd src && env GOOS=darwin GOARCH=amd64 go build -o ../$(BUILD_RELEASE_PATH)page && tar -cjvf "page_darwin_amd64.tar.bz2" ../$(BUILD_RELEASE_PATH)page && mv page_darwin_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm ../$(BUILD_RELEASE_PATH)page
+	cd src && env GOOS=darwin GOARCH=amd64 go build -o page && tar -cjvf "page_darwin_amd64.tar.bz2" page && mv page_darwin_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm page
 
 # linux intel 64-bit
 page_linux_amd64.tar.bz2:
-	cd src && env GOOS=linux GOARCH=amd64 go build -o ../$(BUILD_RELEASE_PATH)page && tar -cjvf "page_linux_amd64.tar.bz2" ../$(BUILD_RELEASE_PATH)page && mv page_linux_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm ../$(BUILD_RELEASE_PATH)page
+	cd src && env GOOS=linux GOARCH=amd64 go build -o page && tar -cjvf "page_linux_amd64.tar.bz2" page && mv page_linux_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm page
 
 # linux arm 64-bit
 page_linux_arm64.tar.bz2:
-	cd src && env GOOS=linux GOARCH=arm64 go build -o ../$(BUILD_RELEASE_PATH)page && tar -cjvf "page_linux_arm64.tar.bz2" ../$(BUILD_RELEASE_PATH)page && mv page_linux_arm64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm ../$(BUILD_RELEASE_PATH)page
+	cd src && env GOOS=linux GOARCH=arm64 go build -o page && tar -cjvf "page_linux_arm64.tar.bz2" page && mv page_linux_arm64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm page
 
 # linux arm 32-bit
 page_linux_arm.tar.bz2:
-	cd src && env GOOS=linux GOARCH=arm go build -o ../$(BUILD_RELEASE_PATH)page && tar -cjvf "page_linux_arm.tar.bz2" ../$(BUILD_RELEASE_PATH)page && mv page_linux_arm.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm ../$(BUILD_RELEASE_PATH)page
+	cd src && env GOOS=linux GOARCH=arm go build -o page && tar -cjvf "page_linux_arm.tar.bz2" page && mv page_linux_arm.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm page
 
 # windows intel 64-bit
 page_windows_amd64.tar.bz2:
-	cd src && env GOOS=windows GOARCH=amd64 go build -o ../$(BUILD_RELEASE_PATH)page.exe && tar -cjvf "page_windows_amd64.tar.bz2" ../$(BUILD_RELEASE_PATH)page.exe && mv page_windows_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm ../$(BUILD_RELEASE_PATH)page.exe
+	cd src && env GOOS=windows GOARCH=amd64 go build -o page.exe && tar -cjvf "page_windows_amd64.tar.bz2" page.exe && mv page_windows_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm page.exe
 
 $(BUILD_PATH):
 	$(MKDIR) $@
