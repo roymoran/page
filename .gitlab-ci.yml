@@ -17,43 +17,12 @@ stages:
 build:
   stage: builds
   script:
-    - cd src
-    - go build
+    - make
 
-darwin_amd64:
+test:
     stage: tests
     script:
-      - echo run all test suites on native platform
-      - cd src && cd tests
-      - go test
-
-windows_amd64:
-    stage: tests
-    script:
-      - echo run tests on native platform
-      - cd src && cd tests
-      - go test
-
-linux_amd64:
-    stage: tests
-    script:
-      - echo run tests on native platform
-      - cd src && cd tests
-      - go test
-
-linux_arm64:
-    stage: tests
-    script:
-      - echo run tests on native platform
-      - cd src && cd tests
-      - go test
-
-linux_arm:
-    stage: tests
-    script:
-      - echo run tests on native platform
-      - cd src && cd tests
-      - go test
+      - make test
 
 all:
   stage: release
@@ -63,13 +32,7 @@ all:
   script:
     - apt-get update -y
     - apt-get install bzip2 -y
-    - cd src
-    - env GOOS=darwin GOARCH=amd64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_darwin_amd64.tar.bz2" page && rm page
-    - env GOOS=windows GOARCH=amd64 go build -o page.exe && tar -cjvf "page_${CI_COMMIT_TAG}_windows_amd64.tar.bz2" page.exe && rm page.exe
-    - env GOOS=linux GOARCH=amd64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_amd64.tar.bz2" page && rm page
-    - env GOOS=linux GOARCH=arm64 go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_arm64.tar.bz2" page && rm page
-    - env GOOS=linux GOARCH=arm go build -o page && tar -cjvf "page_${CI_COMMIT_TAG}_linux_arm.tar.bz2" page && rm page
-    - mv page_*.tar.bz2 $CI_PROJECT_DIR/build/
+    - make release
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/build/**
+      - $CI_PROJECT_DIR/build/bins/**
