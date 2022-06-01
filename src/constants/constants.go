@@ -10,7 +10,7 @@ type Consts struct {
 
 var consts Consts = Consts{
 	appName:       "page cli",
-	appVersion:    "v0.1.0-alpha.10",
+	appVersion:    "v0.1.0-alpha.11",
 	acmeServerURL: "https://acme-v02.api.letsencrypt.org/directory",
 	analyticsID:   "UA-189047059-2",
 	appAuthors:    []string{"Roy Moran (https://github.com/roymoran)"},
