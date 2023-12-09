@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"builtonpage.com/main/definition"
-	"builtonpage.com/main/logging"
+	"pagecli.com/main/definition"
+	"pagecli.com/main/logging"
 )
 
 type New struct {

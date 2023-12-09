@@ -3,8 +3,8 @@ package hosts
 import (
 	"encoding/json"
 
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/definition"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/definition"
 )
 
 type Azure struct {

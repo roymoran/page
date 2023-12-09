@@ -3,13 +3,16 @@ package registrars
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/definition"
-	"builtonpage.com/main/providers/hosts"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/definition"
+	"pagecli.com/main/progress"
+	"pagecli.com/main/providers/hosts"
+	"pagecli.com/main/terraformutils"
 )
 
 type Namecheap struct {
@@ -38,9 +41,36 @@ func (n Namecheap) ConfigureAuth() (cliinit.Credentials, error) {
 	return registrarCredentials, nil
 }
 
-func (n Namecheap) ConfigureRegistrar(registrarAlias string, pageConfig definition.PageDefinition) error {
-	var certificateFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json")
-	var cnameFilePath string = filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_cname.tf.json")
+func (n Namecheap) ConfigureDNS(registrarAlias string, pageConfig definition.PageDefinition) error {
+
+	if cnameInfraFile := filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_cname.tf.json"); !terraformutils.ResourcesConfigured(cnameInfraFile) {
+		registrarCnameResourceTemplate := cnameResourceTemplate(pageConfig.Domain)
+		cnameResourceFile, _ := json.MarshalIndent(registrarCnameResourceTemplate, "", " ")
+
+		err := os.WriteFile(cnameInfraFile, cnameResourceFile, 0644)
+
+		if err != nil {
+			fmt.Println("error writing acme certificate resource template", err)
+			return err
+		}
+
+		err = hosts.TfApply(progress.DomainCheck, progress.DomainUpdatingSequence, progress.StandardTimeout)
+
+		if err != nil {
+			os.Remove(cnameInfraFile)
+			return err
+		}
+
+		return nil
+	}
+	var moduleIdentifier string = "module.registrar_" + registrarAlias + "."
+	var cnameIdentifier string = moduleIdentifier + "namecheap_domain_records." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_cname"
+	hosts.TfApplyWithTarget(progress.DomainCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{cnameIdentifier})
+
+	return nil
+}
+
+func (n Namecheap) ConfigureCertificate(registrarAlias string, pageConfig definition.PageDefinition) error {
 	credentials, readCredentialsErr := cliinit.FindRegistrarCredentials(registrarAlias)
 
 	if readCredentialsErr != nil {
@@ -50,16 +80,30 @@ func (n Namecheap) ConfigureRegistrar(registrarAlias string, pageConfig definiti
 	acmeCertificateResourceTemplate := AcmeCertificateResourceTemplate(n.RegistrarName, pageConfig.Domain, credentials)
 	acmeCertificateResourceFile, _ := json.MarshalIndent(acmeCertificateResourceTemplate, "", " ")
 
-	registrarCnameResourceTemplate := cnameResourceTemplate(pageConfig.Domain)
-	cnameResourceFile, _ := json.MarshalIndent(registrarCnameResourceTemplate, "", " ")
+	if certificateInfraFile := filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_certificate.tf.json"); !terraformutils.ResourcesConfigured(certificateInfraFile) {
+		err := os.WriteFile(certificateInfraFile, acmeCertificateResourceFile, 0644)
 
-	err := ioutil.WriteFile(certificateFilePath, acmeCertificateResourceFile, 0644)
-	err = ioutil.WriteFile(cnameFilePath, cnameResourceFile, 0644)
+		if err != nil {
+			fmt.Println("error writing acme certificate resource template", err)
+			return err
+		}
 
-	if err != nil {
-		fmt.Println("error writing acme certificate resource template", err)
-		return err
+		err = hosts.TfApply(progress.CertificateCheck, progress.CertificateGeneratingSequence, 2*time.Minute)
+
+		if err != nil {
+			os.Remove(certificateInfraFile)
+			return err
+		}
+
+		return nil
 	}
+
+	// TODO:
+	// at this point we should assume that the certificate has been configured so we should check
+	// for renewal and renew if necessary. If certificate is not up for renewal, lets provide
+	// some output that indicates to the user when the certificate will be up for renewal
+	var moduleIdentifier string = "module.registrar_" + registrarAlias + "."
+	hosts.TfApplyWithTarget(progress.CertificateCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{moduleIdentifier + "acme_certificate." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_certificate"})
 
 	return nil
 }
@@ -80,15 +124,14 @@ func (n Namecheap) AddRegistrar(alias string, credentials cliinit.Credentials) e
 }
 
 func (n Namecheap) ProviderDefinition() (string, hosts.Provider) {
-	return "namecheap", hosts.Provider{Version: "1.7.0", Source: "robgmills/namecheap"}
+	return "namecheap", hosts.Provider{Version: "2.1.0", Source: "namecheap/namecheap"}
 }
 
 func (n Namecheap) ProviderConfig(username string, password string) map[string]string {
 	return map[string]string{
-		"username":    username,
+		"user_name":   username,
 		"api_user":    username,
-		"token":       password,
-		"ip":          "127.0.0.1",
+		"api_key":     password,
 		"use_sandbox": "false",
 	}
 }
@@ -120,37 +163,32 @@ func AcmeCertificateResourceTemplate(dnsProvider string, siteDomain string, cred
 		"output": map[string]interface{}{
 			formattedDomain + "_certificate": map[string]interface{}{
 				"value": map[string]interface{}{
-					"certificate_pem":   "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
-					"private_key_pem":   "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
-					"certificate_chain": "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}${acme_certificate." + formattedDomain + "_certificate.issuer_pem}",
+					"certificate_pem":       "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}",
+					"private_key_pem":       "${acme_certificate." + formattedDomain + "_certificate.private_key_pem}",
+					"certificate_chain":     "${acme_certificate." + formattedDomain + "_certificate.certificate_pem}${acme_certificate." + formattedDomain + "_certificate.issuer_pem}",
+					"certificate_not_after": "${acme_certificate." + formattedDomain + "_certificate.certificate_not_after}",
+					"min_days_remaining":    "${acme_certificate." + formattedDomain + "_certificate.min_days_remaining}",
 				},
 			},
 		},
 	}
 }
 
-func jsonCertificateProperties(siteDomain string, registrarAlias string) map[string]interface{} {
-	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
-	return map[string]interface{}{
-		formattedDomain + "_certificate": map[string]interface{}{
-			"certificate_pem":   "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_pem}",
-			"private_key_pem":   "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.private_key_pem}",
-			"certificate_chain": "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_chain}",
-		},
-	}
-}
-
+// TODO: Add ability to add multiple records to a domain here
 func cnameResourceTemplate(siteDomain string) map[string]interface{} {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 
 	var cnameResourceTemplate map[string]interface{} = map[string]interface{}{
 		"resource": map[string]interface{}{
-			"namecheap_record": map[string]interface{}{
+			"namecheap_domain_records": map[string]interface{}{
 				formattedDomain + "_cname": map[string]interface{}{
-					"domain":  siteDomain,
-					"address": "${lookup(var.domains, " + fmt.Sprintf(`"`) + formattedDomain + "_domain" + fmt.Sprintf(`"`) + ").domain}.",
-					"name":    "@",
-					"type":    "CNAME",
+					"domain": siteDomain,
+					"record": map[string]interface{}{
+						"hostname": "@",
+						"type":     "CNAME",
+						"address":  "${lookup(var.domains, " + fmt.Sprintf(`"`) + formattedDomain + "_domain" + fmt.Sprintf(`"`) + ").domain}.",
+					},
+					// TODO: Add ability to add multiple records to a domain here
 				},
 			},
 		},

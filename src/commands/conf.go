@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"builtonpage.com/main/logging"
-	"builtonpage.com/main/providers"
+	"pagecli.com/main/logging"
+	"pagecli.com/main/providers"
 )
 
 type Conf struct {

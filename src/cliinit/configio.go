@@ -3,8 +3,8 @@ package cliinit
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"log"
+	"os"
 )
 
 func AddProvider(provider ProviderConfig) error {
@@ -173,7 +173,7 @@ func FindDefaultAliasForRegistrar(registrarName string) (string, error) {
 
 func readConfigFile() (PageConfig, error) {
 	var config PageConfig
-	configData, err := ioutil.ReadFile(ConfigPath)
+	configData, err := os.ReadFile(ConfigPath)
 
 	if err != nil {
 		log.Fatal("error reading cli config file", err)
@@ -195,7 +195,7 @@ func writeConfigFile(config PageConfig) error {
 		return err
 	}
 	// TODO: perm os.FileMode? 0644?
-	err = ioutil.WriteFile(ConfigPath, []byte(file), 0644)
+	err = os.WriteFile(ConfigPath, []byte(file), 0644)
 
 	if err != nil {
 		log.Fatal("error writing config file", err)

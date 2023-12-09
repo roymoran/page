@@ -1,10 +1,10 @@
-package tests
+package unit_tests
 
 import (
 	"strings"
 	"testing"
 
-	"builtonpage.com/main/commands"
+	"pagecli.com/main/commands"
 )
 
 func TestNoneCommand(t *testing.T) {

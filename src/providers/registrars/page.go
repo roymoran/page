@@ -1,9 +1,9 @@
 package registrars
 
 import (
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/definition"
-	"builtonpage.com/main/providers/hosts"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/definition"
+	"pagecli.com/main/providers/hosts"
 )
 
 type Page struct {
@@ -12,13 +12,13 @@ type Page struct {
 func (p Page) ConfigureAuth() (cliinit.Credentials, error) {
 	return cliinit.Credentials{}, nil
 }
-func (p Page) ConfigureRegistrar(registrarAlias string, hostAlias string, pageConfig definition.PageDefinition) error {
+func (p Page) ConfigureDNS(registrarAlias string, hostAlias string, pageConfig definition.PageDefinition) error {
 	return nil
 }
 
 func (p Page) ProviderDefinition() (string, hosts.Provider) {
 	// TODO: Modify this
-	return "page", hosts.Provider{Version: "1.7.0", Source: "robgmills/namecheap"}
+	return "page", hosts.Provider{Version: "1.7.0", Source: "page/page"}
 }
 
 func (p Page) AddRegistrar(alias string, credentials cliinit.Credentials) error {

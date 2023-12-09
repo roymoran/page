@@ -3,9 +3,9 @@ package logging
 import (
 	"runtime"
 
-	"builtonpage.com/main/constants"
 	"github.com/denisbrodbeck/machineid"
 	ga "github.com/jpillora/go-ogle-analytics"
+	"pagecli.com/main/constants"
 )
 
 var client, _ = ga.NewClient(constants.AnalyticsID())

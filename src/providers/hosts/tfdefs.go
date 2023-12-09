@@ -24,6 +24,7 @@ type ProviderConfigTemplate struct {
 // will be hosted.
 type BaseInfraTemplate struct {
 	Resource map[string]interface{} `json:"resource,omitempty"`
+	Data     map[string]interface{} `json:"data,omitempty"`
 	Output   map[string]interface{} `json:"output,omitempty"`
 }
 
@@ -54,13 +55,25 @@ type ModuleTemplate struct {
 }
 
 type HostModuleTemplate struct {
-	Module map[string]HostModuleProperties `json:"module,omitempty"`
+	Module map[string]HostModuleProperties  `json:"module,omitempty"`
+	Output map[string]HostModuleOutputValue `json:"output,omitempty"`
 }
 
 type HostModuleProperties struct {
 	Certificates map[string]Certificate `json:"certificates,omitempty"`
 	Source       string                 `json:"source,omitempty"`
 }
+
+type HostModuleOutputValue struct {
+	Value HostModuleOutputValueProperties `json:"value,omitempty"`
+}
+
+type HostModuleOutputValueProperties struct {
+	Domain                        string `json:"domain,omitempty"`
+	CertificateMinDaysBeforeRenew string `json:"certificate_min_days_before_renew,omitempty"`
+	CertificateExpiry             string `json:"certificate_expiry,omitempty"`
+}
+
 type Certificate struct {
 	CertificateChain string `json:"certificate_chain,omitempty"`
 	CertificatePem   string `json:"certificate_pem,omitempty"`

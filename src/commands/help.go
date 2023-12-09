@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"builtonpage.com/main/logging"
+	"pagecli.com/main/logging"
 )
 
 type Help struct {
@@ -26,7 +26,7 @@ func (h Help) BindArgs() {
 
 	_, ok := commandLookup[help.ArgValues["commandName"]]
 	if !ok {
-		logMessage = fmt.Sprint("unrecognized command '", help.ArgValues["commandName"], "'. Expected a valid command. See 'page' for valid commands.\n")
+		logMessage = fmt.Sprint("unrecognized command '", help.ArgValues["commandName"], "'. See 'page' for valid commands.\n")
 		help.ExecutionOk = false
 		help.ExecutionOutput += logMessage
 		logging.LogException(logMessage, false)

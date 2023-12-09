@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"builtonpage.com/main/logging"
+	"pagecli.com/main/logging"
 )
 
 type ICommand interface {
@@ -43,21 +43,24 @@ var usageCategories = []string{
 // name with the struct that implements ICommand.
 // Empty string is special case where no command name
 // is provided to the program. The output for this case
-//  is usage info on available commands
+//
+//	is usage info on available commands
 var commandLookup = map[string]ICommand{
 	new.DisplayName:  New{},
 	up.DisplayName:   Up{},
 	conf.DisplayName: Conf{},
 	help.DisplayName: Help{},
 	"":               None{},
+	"infra":          Infra{}, // Hidden command
 }
 
 var commandInfoMap = map[string]*CommandInfo{
-	new.DisplayName:  &new,
-	conf.DisplayName: &conf,
-	help.DisplayName: &help,
-	none.DisplayName: &none,
-	up.DisplayName:   &up,
+	new.DisplayName:   &new,
+	conf.DisplayName:  &conf,
+	help.DisplayName:  &help,
+	none.DisplayName:  &none,
+	up.DisplayName:    &up,
+	infra.DisplayName: &infra,
 }
 
 type ProgramArgs struct {
@@ -123,7 +126,7 @@ func BuildUsageInfo() string {
 		usageInfo += fmt.Sprint("\n", category, "\n")
 
 		for commandName, command := range commandLookup {
-			if commandName == "none" {
+			if commandName == "none" || commandName == "infra" {
 				continue
 			}
 

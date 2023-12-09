@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"builtonpage.com/main/constants"
+	"pagecli.com/main/constants"
 )
 
 type None struct {

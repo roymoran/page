@@ -1,0 +1,123 @@
+body {
+    background: #fff;
+    font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+    margin: 0;
+    padding: 20px;
+}
+
+.terminal {
+    background: #000;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 14px;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+}
+
+.buttons {
+    flex-grow: 0;
+}
+
+.header .buttons span {
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.close {
+    background: #ff605c;
+}
+
+.minimize {
+    background: #ffbd44;
+}
+
+.fullscreen {
+    background: #00ca56;
+}
+
+.title {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: bold;
+}
+
+.content {
+    white-space: pre;
+    min-height: 300px;
+    /* Set the minimum height you prefer */
+    max-height: 50vh;
+    /* Adjust this value as needed */
+    overflow-y: auto;
+    /* Enables scrolling when content exceeds max-height */
+}
+
+.content p {
+    margin: 0;
+}
+
+.cursor {
+    background-color: white;
+    animation: blink 1s steps(5, start) infinite;
+}
+
+@keyframes blink {
+    50% {
+        background-color: transparent;
+    }
+}
+
+.buttons-container {
+    text-align: center;
+    /* Center the buttons */
+    margin-top: 20px;
+    /* Spacing from the terminal window */
+}
+
+/* Common button styles */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 16px;
+    text-decoration: none;
+    /* Remove underline from links */
+    color: white;
+    /* Text color */
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+    /* Smooth transition for hover effects */
+}
+
+/* Individual button styles */
+#buy-btn {
+    background-color: #4CAF50;
+    /* Green color for purchase button */
+}
+
+#try-btn {
+    background-color: #555555;
+    /* Dark grey for the trial button */
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    /* Slight raise effect on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    /* Shadow effect for depth */
+}
+
+.btn:active {
+    transform: translateY(1px);
+    /* Push effect on click */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    /* Less shadow for click */
+}

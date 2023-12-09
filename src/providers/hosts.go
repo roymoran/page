@@ -3,19 +3,19 @@ package providers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/definition"
-	"builtonpage.com/main/providers/hosts"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/definition"
+	"pagecli.com/main/providers/hosts"
 )
 
 type IHost interface {
 	ConfigureAuth() error
 	ConfigureHost(hostAlias string, templatePath string, page definition.PageDefinition) error
+	ConfigureWebsite(hostAlias string, templatePath string, page definition.PageDefinition) error
 	AddHost(alias string, definitionPath string) error
 	ProviderTemplate() []byte
 	ProviderConfigTemplate() []byte
@@ -69,10 +69,10 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 		return hostDirErr
 	}
 
-	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, hostModuleTemplate(name, alias), 0644)
-	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
-	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
-	hostCertificatesVariableTemplatePathErr := ioutil.WriteFile(certificatesVariableTemplatePath, hostCertificatesVariableTemplate(alias), 0644)
+	moduleTemplatePathErr := os.WriteFile(moduleTemplatePath, hostModuleTemplate(name, alias), 0644)
+	providerTemplatePathErr := os.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
+	providerConfigTemplatePathErr := os.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
+	hostCertificatesVariableTemplatePathErr := os.WriteFile(certificatesVariableTemplatePath, hostCertificatesVariableTemplate(alias), 0644)
 
 	if moduleTemplatePathErr != nil ||
 		providerTemplatePathErr != nil ||
@@ -80,7 +80,7 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 		hostCertificatesVariableTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
 		os.RemoveAll(providerAliasPath)
-		return fmt.Errorf("failed ioutil.WriteFile for provider template")
+		return fmt.Errorf("failed os.WriteFile for provider template")
 	}
 
 	err := hosts.TfInit(cliinit.ProvidersPath)

@@ -3,20 +3,20 @@ package providers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/constants"
-	"builtonpage.com/main/definition"
-	"builtonpage.com/main/providers/hosts"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/constants"
+	"pagecli.com/main/definition"
+	"pagecli.com/main/providers/hosts"
 )
 
 type IRegistrar interface {
 	ConfigureAuth() (cliinit.Credentials, error)
-	ConfigureRegistrar(string, definition.PageDefinition) error
+	ConfigureCertificate(string, definition.PageDefinition) error
+	ConfigureDNS(string, definition.PageDefinition) error
 	AddRegistrar(string, cliinit.Credentials) error
 	ProviderDefinition() (string, hosts.Provider)
 	ProviderConfig(string, string) map[string]string
@@ -93,17 +93,17 @@ func InstallRegistrarTerraformProvider(name string, alias string, providerAliasP
 	}
 
 	registrarProviderTemplate := registrarProviderTemplate(registrarProviderName, registrarProviderDefinition)
-	moduleTemplatePathErr := ioutil.WriteFile(moduleTemplatePath, registrarModuleTemplate(name, alias), 0644)
-	providerTemplatePathErr := ioutil.WriteFile(providerTemplatePath, registrarProviderTemplate, 0644)
-	providerConfigTemplatePathErr := ioutil.WriteFile(providerConfigTemplatePath, registrarProviderConfigTemplate(registrarProviderName, registrarProviderConfig), 0644)
-	acmeRegistrationTemplatePathErr := ioutil.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate(acmeRegistrationEmail), 0644)
-	domainsVariableTemplatePathErr := ioutil.WriteFile(domainsVariableTemplatePath, hostDomainsVariableTemplate(), 0644)
+	moduleTemplatePathErr := os.WriteFile(moduleTemplatePath, registrarModuleTemplate(name, alias), 0644)
+	providerTemplatePathErr := os.WriteFile(providerTemplatePath, registrarProviderTemplate, 0644)
+	providerConfigTemplatePathErr := os.WriteFile(providerConfigTemplatePath, registrarProviderConfigTemplate(registrarProviderName, registrarProviderConfig), 0644)
+	acmeRegistrationTemplatePathErr := os.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate(acmeRegistrationEmail), 0644)
+	domainsVariableTemplatePathErr := os.WriteFile(domainsVariableTemplatePath, hostDomainsVariableTemplate(), 0644)
 
 	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil || acmeRegistrationTemplatePathErr != nil || domainsVariableTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
 		os.RemoveAll(providerAliasPath)
-		fmt.Println("failed ioutil.WriteFile for provider template")
-		return fmt.Errorf("failed ioutil.WriteFile for provider template")
+		fmt.Println("failed os.WriteFile for provider template")
+		return fmt.Errorf("failed os.WriteFile for provider template")
 	}
 
 	err := hosts.TfInit(cliinit.ProvidersPath)
@@ -138,11 +138,11 @@ func registrarProviderTemplate(registrarProviderName string, registrarProviderDe
 			RequiredProvider: map[string]hosts.Provider{
 				"acme": {
 					Source:  "vancluever/acme",
-					Version: "2.1.2",
+					Version: "2.18.0",
 				},
 				"tls": {
 					Source:  "hashicorp/tls",
-					Version: "3.0.0",
+					Version: "4.0.4",
 				},
 				registrarProviderName: registrarProviderDefinition,
 			},

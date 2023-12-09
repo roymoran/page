@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"builtonpage.com/main/commands"
+	"pagecli.com/main/commands"
 )
 
 func main() {

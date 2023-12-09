@@ -6,10 +6,10 @@ import (
 	"sort"
 	"strings"
 
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/logging"
-	"builtonpage.com/main/providers/hosts"
-	"builtonpage.com/main/providers/registrars"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/logging"
+	"pagecli.com/main/providers/hosts"
+	"pagecli.com/main/providers/registrars"
 )
 
 type Provider struct {
@@ -56,7 +56,6 @@ var SupportedProviders = Provider{
 // have conf.go/handler.go communicate that over the channel
 func AddProvider(provider IProvider, providerName string, channel chan string) error {
 	if !cliinit.CliInitialized() {
-		channel <- fmt.Sprintln("Performing one time cli configuration...")
 		cliinit.CliInit()
 	}
 
@@ -210,7 +209,7 @@ func AliasForProviderExists(providerType string, alias string) bool {
 	return false
 }
 
-// ProviderDirectoryConfigured is utility function that
+// AliasDirectoryConfigured is utility function that
 // check if a directory already exists given a path
 func AliasDirectoryConfigured(aliasPath string) bool {
 	exists := true

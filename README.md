@@ -1,9 +1,17 @@
 ## Demo
+
 ![Demo](./demo.gif)
 
-## Getting Started
+## Install
 
-Download [latest](https://github.com/roymoran/page/releases) release for your operating system. Install by unzipping it and moving the file to a directory included in your system's [PATH](https://superuser.com/questions/284342/what-are-path-and-other-environment-variables-and-how-can-i-set-or-use-them).
+Downloads `install.sh` from this repository and executes it.
+
+```bash
+# for macos/linux
+$ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
+# for windows powershell
+$ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')
+```
 
 ## Create Site
 
@@ -13,6 +21,10 @@ $ page new
 # deploy new page
 $ page up
 ```
+
+## More Resources
+
+- [Short videos](https://youtube.com/playlist?list=PLSqMEKs-lT4qVtG7-jSJj9_ZvsUMZTxAJ) to learn about installing, configuring, and using the tool. Start with the [installation guide](https://www.youtube.com/watch?v=Btjy280AVlg).
 
 ## Supported Hosts/Registrars
 

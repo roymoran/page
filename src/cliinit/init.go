@@ -10,21 +10,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
-	"builtonpage.com/main/logging"
-	"github.com/hashicorp/terraform-exec/tfinstall"
+	"github.com/hashicorp/go-version"
+	"github.com/hashicorp/hc-install/product"
+	"github.com/hashicorp/hc-install/releases"
+	"pagecli.com/main/logging"
 )
 
 var installDir, _ = os.UserHomeDir()
-var pageCliPath string = filepath.Join(installDir, ".pagecli")
+var PageCliPath string = filepath.Join(installDir, ".pagecli")
 
 // TfInstallPath returns the path to the
 // directory containing terraform binary
-var TfInstallPath string = filepath.Join(pageCliPath, "tf")
+var TfInstallPath string = filepath.Join(PageCliPath, "tf")
 
 // TfExecPath returns the path to the
 // terraform binary
@@ -33,7 +34,7 @@ var TfExecPath string = filepath.Join(TfInstallPath, "terraform")
 // ConfigPath returns the path to the
 // page cli config.json file. Which contains
 // configuration details for this cli tool
-var ConfigPath string = filepath.Join(pageCliPath, "config.json")
+var ConfigPath string = filepath.Join(PageCliPath, "config.json")
 
 // ProvidersPath returns the path to the
 // 'provider' directory a nested directory
@@ -55,7 +56,7 @@ var ProviderAliasPath func(providerName string, alias string) string = func(prov
 var ModuleTemplatePath func(providerType string, alias string) string = func(providerType string, alias string) string {
 	return filepath.Join(ProvidersPath, providerType+"_"+alias+".tf.json")
 }
-var exactTfVersion string = "0.14.5"
+var exactTfVersion string = "1.6.4"
 
 var initialPageConfig PageConfig = PageConfig{
 	TfPath:       TfInstallPath,
@@ -114,7 +115,7 @@ func CliInit() {
 // function properly
 func CliInitialized() bool {
 	initialized := false
-	configData, fileErr := ioutil.ReadFile(ConfigPath)
+	configData, fileErr := os.ReadFile(ConfigPath)
 
 	if fileErr != nil {
 		return initialized
@@ -134,7 +135,13 @@ func CliInitialized() bool {
 // with the version specified by 'exactTfVersion'
 // in the directory specified by 'TfInstallPath'
 func InstallTerraform() (string, error) {
-	execPath, installErr := tfinstall.Find(context.Background(), tfinstall.ExactVersion(exactTfVersion, TfInstallPath))
+	installer := &releases.ExactVersion{
+		Product:    product.Terraform,
+		Version:    version.Must(version.NewVersion("1.6.4")),
+		InstallDir: TfInstallPath,
+	}
+
+	execPath, installErr := installer.Install(context.Background())
 
 	if installErr != nil {
 		log.Fatal("InstallTerraform error.", installErr)

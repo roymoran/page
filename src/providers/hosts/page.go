@@ -1,8 +1,8 @@
 package hosts
 
 import (
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/definition"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/definition"
 )
 
 type PageHost struct {

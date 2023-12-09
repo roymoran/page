@@ -3,15 +3,16 @@ package hosts
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/definition"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/definition"
+	"pagecli.com/main/progress"
+	"pagecli.com/main/terraformutils"
 )
 
 type AmazonWebServices struct {
@@ -26,7 +27,11 @@ var awsProviderTemplate ProviderTemplate = ProviderTemplate{
 		RequiredProvider: map[string]Provider{
 			"aws": {
 				Source:  "hashicorp/aws",
-				Version: "3.25.0",
+				Version: "5.26.0",
+			},
+			"external": {
+				Source:  "hashicorp/external",
+				Version: "2.3.2",
 			},
 		},
 	},
@@ -52,28 +57,68 @@ func (aws AmazonWebServices) ConfigureAuth() error {
 }
 
 func (aws AmazonWebServices) ConfigureHost(hostAlias string, templatePath string, page definition.PageDefinition) error {
-	// set up base infra for site to be hosted
-	// if not already created
-	if baseInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), "base.tf.json"); !baseInfraConfigured(baseInfraFile) {
+	if baseInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), "base.tf.json"); !terraformutils.ResourcesConfigured(baseInfraFile) {
 		randstr := randSeq(12)
 		bucketName := "pagecli" + randstr
 
-		err := ioutil.WriteFile(baseInfraFile, baseInfraTemplate(bucketName), 0644)
+		err := os.WriteFile(baseInfraFile, baseInfraTemplate(bucketName), 0644)
 
 		if err != nil {
 			fmt.Println("error configureBaseInfra writing base.tf.json for host", aws.HostName)
 			return err
 		}
+
+		err = TfApply(progress.HostCheck, progress.HostProvisioningSequence, progress.StandardTimeout)
+		if err != nil {
+			os.Remove(baseInfraFile)
+		}
+
+		return nil
 	}
 
-	// TODO: Add case if site is already live and active?
-	// maybe show list of sites that are currently live
-	// via cli command
-	var siteFile string = filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), strings.Replace(page.Domain, ".", "_", -1)+"_site.tf.json")
-	err := aws.createSite(siteFile, page, templatePath, hostAlias)
-	if err != nil {
-		return err
+	// host already configured assumed by the presence of base.tf.json
+	// TODO: send the right targets for this host
+	var moduleIdentifier string = "module.host_" + hostAlias + "."
+	TfApplyWithTarget(progress.HostCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{moduleIdentifier + "aws_s3_bucket.pages_storage", moduleIdentifier + "aws_s3_bucket_policy.pages_storage_policy", moduleIdentifier + "aws_s3_bucket_public_access_block.pages_storage_pab", moduleIdentifier + "aws_s3_bucket_website_configuration.pages_storage_website_configuration", moduleIdentifier + "data.aws_iam_policy_document.pages_storage_policy_document"})
+	return nil
+}
+
+func (aws AmazonWebServices) ConfigureWebsite(hostAlias string, templatePath string, page definition.PageDefinition) error {
+	if siteInfraFile := filepath.Join(cliinit.ProviderAliasPath(aws.HostName, hostAlias), strings.Replace(page.Domain, ".", "_", -1)+"_site.tf.json"); !terraformutils.ResourcesConfigured(siteInfraFile) {
+		err := os.WriteFile(siteInfraFile, siteTemplate(page.Domain, templatePath, hostAlias), 0644)
+
+		if err != nil {
+			fmt.Println("error ConfigureWebsite writing site infra file", templatePath)
+			return err
+		}
+
+		err = TfApply(progress.WebsiteFilesCheck, progress.HostWebsiteFilesUploadingSequence, 10*time.Minute)
+		if err != nil {
+			os.Remove(siteInfraFile)
+			if strings.Contains(err.Error(), "NoCredentialProviders") {
+				return fmt.Errorf("error: missing credentials for %v host", aws.HostName)
+			} else if strings.Contains(err.Error(), "InvalidClientTokenId") {
+				return fmt.Errorf("error: invalid access_key for %v host", aws.HostName)
+			} else if strings.Contains(err.Error(), "SignatureDoesNotMatch") {
+				return fmt.Errorf("error: invalid secret_key for %v host", aws.HostName)
+			} else {
+				// TODO: Log this
+				return err
+			}
+		}
+
+		return nil
 	}
+
+	formattedDomain := strings.Replace(page.Domain, ".", "_", -1)
+
+	var moduleIdentifier string = "module.host_" + hostAlias + "."
+	var certificateIdentifier string = moduleIdentifier + "aws_acm_certificate." + formattedDomain + "_cert"
+	var cdnIdentifier string = moduleIdentifier + "aws_cloudfront_distribution.pagecli_com_s3_cdn"
+	var siteFilesIdentifier string = moduleIdentifier + "aws_s3_object.pagecli_com_site_files"
+	var tlsPrivateKeyIdentifier string = moduleIdentifier + "tls_private_key.pagecli_com_tls_private_key"
+	var tlsSelfSignedCertIdentifier string = moduleIdentifier + "tls_self_signed_cert.pagecli_com_tls_self_signed_cert"
+	TfApplyWithTarget(progress.WebsiteFilesCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{certificateIdentifier, cdnIdentifier, siteFilesIdentifier, tlsPrivateKeyIdentifier, tlsSelfSignedCertIdentifier})
 
 	return nil
 }
@@ -133,11 +178,50 @@ func baseInfraTemplate(bucketName string) []byte {
 			"aws_s3_bucket": map[string]interface{}{
 				"pages_storage": map[string]interface{}{
 					"bucket": bucketName,
-					// TODO: Consider that a template may not
-					// have index.html entry point.
-					"website": map[string]interface{}{
-						"index_document": "index.html",
-						"error_document": "index.html",
+				},
+			},
+			"aws_s3_bucket_policy": map[string]interface{}{
+				"pages_storage_policy": map[string]interface{}{
+					"bucket": bucketName,
+					"policy": "${data.aws_iam_policy_document.pages_storage_policy_document.json}",
+				},
+			},
+			// TODO: Consider that a template may not
+			// have index.html entry point.
+			"aws_s3_bucket_website_configuration": map[string]interface{}{
+				"pages_storage_website_configuration": map[string]interface{}{
+					"bucket": bucketName,
+					"index_document": map[string]interface{}{
+						"suffix": "index.html",
+					},
+					"error_document": map[string]interface{}{
+						"key": "index.html",
+					},
+				},
+			},
+			"aws_s3_bucket_public_access_block": map[string]interface{}{
+				"pages_storage_pab": map[string]interface{}{
+					"bucket": bucketName,
+
+					"block_public_acls":       false,
+					"block_public_policy":     false,
+					"ignore_public_acls":      false,
+					"restrict_public_buckets": false,
+				},
+			},
+		},
+		Data: map[string]interface{}{
+			"aws_iam_policy_document": map[string]interface{}{
+				"pages_storage_policy_document": map[string]interface{}{
+					"statement": map[string]interface{}{
+						"principals": map[string]interface{}{
+							"type":        "*",
+							"identifiers": []string{"*"},
+						},
+						"sid":       "PublicReadGetObject",
+						"effect":    "Allow",
+						"actions":   []string{"s3:GetObject"},
+						"resources": []string{"${aws_s3_bucket.pages_storage.arn}/*"},
 					},
 				},
 			},
@@ -152,16 +236,18 @@ func baseInfraTemplate(bucketName string) []byte {
 // on the aws host
 func siteTemplate(siteDomain string, templatePath string, hostAlias string) []byte {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
+	executablePath, _ := os.Executable()
 	var awsSiteDefinition map[string]interface{} = map[string]interface{}{
 		"resource": map[string]interface{}{
-			"aws_s3_bucket_object": map[string]interface{}{
+			"aws_s3_object": map[string]interface{}{
 				formattedDomain + "_site_files": map[string]interface{}{
-					"for_each":     "${fileset(" + fmt.Sprintf(`"`) + templatePath + fmt.Sprintf(`"`) + "," + fmt.Sprintf(`"`) + "**/*" + fmt.Sprintf(`"`) + ")}",
+					"for_each": "${fileset(" + fmt.Sprintf(`"`) + templatePath + fmt.Sprintf(`"`) + "," + fmt.Sprintf(`"`) + "**/*" + fmt.Sprintf(`"`) + ")}",
+
 					"bucket":       "${aws_s3_bucket.pages_storage.bucket}",
 					"key":          siteDomain + "/${each.value}",
 					"source":       filepath.Join(templatePath, "${each.value}"),
-					"acl":          "public-read",
-					"content_type": "text/html",
+					"content_type": "${data.external.assign_content_type[each.value].result[" + fmt.Sprintf(`"`) + "mimetype" + fmt.Sprintf(`"`) + "]}",
+					"etag":         "${filemd5(" + fmt.Sprintf(`"`) + filepath.Join(templatePath, "${each.value}") + fmt.Sprintf(`"`) + ")}",
 					"depends_on":   []string{"aws_s3_bucket.pages_storage"},
 				},
 			},
@@ -217,12 +303,11 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 
 			"tls_self_signed_cert": map[string]interface{}{
 				formattedDomain + "_tls_self_signed_cert": map[string]interface{}{
-					"key_algorithm":   "RSA",
 					"private_key_pem": "${lookup(var.certificates, " + fmt.Sprintf(`"`) + formattedDomain + "_certificate" + fmt.Sprintf(`"`) + ").private_key_pem}",
 
 					"subject": map[string]interface{}{
 						"common_name":  siteDomain,
-						"organization": "ACME Examples, Inc",
+						"organization": siteDomain + ", Inc",
 					},
 
 					"validity_period_hours": 12,
@@ -243,6 +328,17 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 				},
 			},
 		},
+		"data": map[string]interface{}{
+			// TODO: Can be eliminated if terraform contains
+			// a built-in function for determining content type
+			"external": map[string]interface{}{
+				"assign_content_type": map[string]interface{}{
+					"for_each": "${fileset(" + fmt.Sprintf(`"`) + templatePath + fmt.Sprintf(`"`) + "," + fmt.Sprintf(`"`) + "**/*" + fmt.Sprintf(`"`) + ")}",
+
+					"program": []string{executablePath, "infra", "mimetype", "${each.value}"},
+				},
+			},
+		},
 		"output": map[string]interface{}{
 			formattedDomain + "_domain": map[string]interface{}{
 				"value": "${aws_cloudfront_distribution." + formattedDomain + "_s3_cdn.domain_name}",
@@ -254,48 +350,13 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 	return file
 }
 
-func baseInfraConfigured(baseInfraFile string) bool {
-	exists := true
-	_, err := os.Stat(baseInfraFile)
-	if err != nil {
-		return !exists
-	}
-	return exists
-}
-
-func (aws AmazonWebServices) createSite(siteFile string, page definition.PageDefinition, templatePath string, hostAlias string) error {
-	err := ioutil.WriteFile(siteFile, siteTemplate(page.Domain, templatePath, hostAlias), 0644)
-
-	if err != nil {
-		fmt.Println("error createSite writing site template", templatePath)
-		return err
-	}
-
-	err = TfApply(cliinit.ProvidersPath)
-	if err != nil {
-		os.Remove(siteFile)
-		if strings.Contains(err.Error(), "NoCredentialProviders") {
-			return fmt.Errorf("error: missing credentials for %v host", aws.HostName)
-		} else if strings.Contains(err.Error(), "InvalidClientTokenId") {
-			return fmt.Errorf("error: invalid access_key for %v host", aws.HostName)
-		} else if strings.Contains(err.Error(), "SignatureDoesNotMatch") {
-			return fmt.Errorf("error: invalid secret_key for %v host", aws.HostName)
-		} else {
-			// unknown error
-			// TODO: Log this
-			return err
-		}
-	}
-
-	return nil
-}
-
 func randSeq(n int) string {
-	rand.Seed(time.Now().UnixNano())
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
 	var letters = []rune("abcdefghijklmnopqrstuvwxyz")
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+		b[i] = letters[r.Intn(len(letters))]
 	}
 	return string(b)
 }

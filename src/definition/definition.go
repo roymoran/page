@@ -8,8 +8,10 @@ package definition
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"net/url"
+	"os"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -19,8 +21,7 @@ var defaultTemplate = `# This configuration file defines your site to be deploye
 # enough to get your site deployed. If you run into a problem
 # you can create an issue at https://github.com/roymoran/page.
 
-# version - page config template version
-# should remain "0"
+# page config template version
 version: "0"
 # specify a supported host name or an alias
 # supported hosts can be found with 'page conf host list'
@@ -32,11 +33,12 @@ registrar: "namecheap"
 # you specified above must own the domain name.
 # Only specify a top-level domain name.
 domain: "example.com"
-# template - a url of a git repo containing static assets
-# to be hosted. url should be accessible from machine running
-# 'page up'
-template: "https://github.com/roymoran/index"
+# template - a path to static assets to be published, 
+# either a local file path or public git url.
+template: "https://gitlab.com/roymoran/comingsoon.git"
 `
+
+type TemplateSource int
 
 // Note: struct fields must be public in order for unmarshal to
 // correctly populate the data.
@@ -48,6 +50,26 @@ type PageDefinition struct {
 	Version   string
 }
 
+// TemplateSource is the source of
+// the static site template.
+const (
+	GitURL TemplateSource = iota
+	FilePath
+)
+
+type PageDefinitionConfig struct {
+	TemplateSource TemplateSource
+
+	// validation indicators for the fields in the
+	// PageDefinition struct
+	ValidTemplate  bool
+	ValidRegistrar bool
+	ValidHost      bool
+	ValidDomain    bool
+	// if any of the fields are invalid, lets indicate why
+	InvalidFields map[string]string
+}
+
 // WriteDefinitionFile writes the yaml file
 // with default configurations at the location
 // specified by the path. If no path is passed
@@ -56,7 +78,7 @@ type PageDefinition struct {
 // that the file was writtent succesfully, otherwise
 // false is returned.
 func WriteDefinitionFile() error {
-	writeErr := ioutil.WriteFile("page.yml", []byte(defaultTemplate), 0644)
+	writeErr := os.WriteFile("page.yml", []byte(defaultTemplate), 0644)
 	if writeErr != nil {
 		log.Fatal("Failed to write page.yml", writeErr)
 		return writeErr
@@ -72,7 +94,7 @@ func WriteDefinitionFile() error {
 // a file not found error.
 func ReadDefinitionFile() (PageDefinition, error) {
 	t := PageDefinition{}
-	data, err := ioutil.ReadFile("page.yml")
+	data, err := os.ReadFile("page.yml")
 	if err != nil {
 		return t, fmt.Errorf("unable to find page.yml in current directory")
 	}
@@ -83,4 +105,127 @@ func ReadDefinitionFile() (PageDefinition, error) {
 	}
 
 	return t, nil
+}
+
+// ProccessDefinitionFile reads the values from the
+// PageDefinition struct and determines things about
+// the values provided. For example, if the template
+// is a git url or a local file path.
+func ProccessDefinitionFile(pd *PageDefinition) (PageDefinitionConfig, error) {
+	pageDefinitionConfig := PageDefinitionConfig{
+		ValidTemplate:  true,
+		ValidRegistrar: true,
+		ValidHost:      true,
+		ValidDomain:    true,
+	}
+	invalidPageDefinitionFileErr := fmt.Errorf("invalid page definition file")
+
+	// if any of the fields are empty mark the field as invalid
+	if pd.Template == "" {
+		pageDefinitionConfig.ValidTemplate = false
+		pageDefinitionConfig.InvalidFields["template"] = "template field is empty"
+	}
+	if pd.Registrar == "" {
+		pageDefinitionConfig.ValidRegistrar = false
+		pageDefinitionConfig.InvalidFields["registrar"] = "registrar field is empty"
+	}
+	if pd.Host == "" {
+		pageDefinitionConfig.ValidHost = false
+		pageDefinitionConfig.InvalidFields["host"] = "host field is empty"
+	}
+	if pd.Domain == "" {
+		pageDefinitionConfig.ValidDomain = false
+		pageDefinitionConfig.InvalidFields["domain"] = "domain field is empty"
+	}
+
+	// if any of the fields are invalid, return the config and error
+	if !pageDefinitionConfig.ValidTemplate || !pageDefinitionConfig.ValidRegistrar || !pageDefinitionConfig.ValidHost || !pageDefinitionConfig.ValidDomain {
+		return pageDefinitionConfig, invalidPageDefinitionFileErr
+	}
+
+	// check if the template is a valid source (git url or file path)
+	if isGitURL(pd.Template) {
+		pageDefinitionConfig.TemplateSource = GitURL
+	} else {
+		// assume file path now check if it is a valid path
+		// on the system
+		_, err := os.Stat(pd.Template)
+		if err != nil {
+			pageDefinitionConfig.ValidTemplate = false
+			pageDefinitionConfig.InvalidFields["template"] = "template field is not a valid git url or file path"
+			return pageDefinitionConfig, invalidPageDefinitionFileErr
+		}
+
+		pageDefinitionConfig.TemplateSource = FilePath
+	}
+
+	rootDomain, domainErr := GetRootDomain(pd.Domain)
+	if domainErr != nil {
+		pageDefinitionConfig.ValidDomain = false
+		pageDefinitionConfig.InvalidFields["domain"] = "domain field is not a valid domain name"
+		return pageDefinitionConfig, invalidPageDefinitionFileErr
+	}
+
+	// update the domain field with the root domain
+	pd.Domain = rootDomain
+
+	return pageDefinitionConfig, nil
+}
+
+// getRootDomain takes a URL and attempts to return the root domain.
+func GetRootDomain(inputURL string) (string, error) {
+
+	if inputURL == "" {
+		return "", fmt.Errorf("empty input url")
+	}
+
+	// Parse the URL input.
+	u, err := url.Parse(inputURL)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract the hostname from the URL.
+	hostname := u.Hostname()
+
+	// if host name is empty, we may have a url without a scheme
+	// so lets try to parse removing any paths then continue to split
+	// the hostname by dots
+	if hostname == "" {
+		u, err := url.Parse(strings.Split(inputURL, "/")[0])
+		if err != nil {
+			return "", err
+		}
+		hostname = u.Path
+	}
+
+	// Split the hostname by dots.
+	parts := strings.Split(hostname, ".")
+
+	// Check if we have at least a domain and a TLD.
+	if len(parts) >= 2 {
+		length := len(parts)
+		// Construct the root domain by taking the last two parts.
+		rootDomain := parts[length-2] + "." + parts[length-1]
+		return rootDomain, nil
+	}
+
+	return "", fmt.Errorf("unable to extract root domain from: %s", inputURL)
+}
+
+func isGitURL(template string) bool {
+	// Checking for HTTPS, HTTP, and Git protocol URLs
+	if strings.HasPrefix(template, "https://") ||
+		strings.HasPrefix(template, "http://") ||
+		strings.HasPrefix(template, "git://") {
+		return true
+	}
+
+	// Checking for SSH URLs
+	if strings.HasPrefix(template, "ssh://git@") ||
+		strings.HasPrefix(template, "git@") {
+		return true
+	}
+
+	return false
 }

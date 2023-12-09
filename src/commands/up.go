@@ -3,17 +3,18 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
-	"builtonpage.com/main/cliinit"
-	"builtonpage.com/main/definition"
-	"builtonpage.com/main/logging"
-	"builtonpage.com/main/providers"
-	"builtonpage.com/main/providers/hosts"
 	"github.com/go-git/go-git/v5"
+	"pagecli.com/main/cliinit"
+	"pagecli.com/main/definition"
+	"pagecli.com/main/logging"
+	"pagecli.com/main/providers"
+	"pagecli.com/main/providers/hosts"
 )
 
 type Up struct {
@@ -60,22 +61,37 @@ func (u Up) UsageCategory() int {
 func (u Up) BindArgs() {
 }
 
-// TODO: What if the same site gets redeployed twice?
 func (u Up) Execute() {
 	if !up.ExecutionOk {
 		return
 	}
-	OutputChannel <- fmt.Sprintln("Working...(this may take a few minutes)")
+
 	logMessage := ""
+	OutputChannel <- "\n"
 
 	pageDefinition, err := definition.ReadDefinitionFile()
+
 	if err != nil {
 		logging.LogException(err.Error(), true)
 		up.ExecutionOutput += err.Error()
 		return
 	}
 
-	tempDir, tempDirErr := ioutil.TempDir("", "template")
+	pageDefinitionConfig, err := definition.ProccessDefinitionFile(&pageDefinition)
+
+	if err != nil {
+		up.ExecutionOk = false
+		logging.LogException(err.Error(), true)
+		up.ExecutionOutput += err.Error()
+		return
+	}
+
+	tempDir := filepath.Join(cliinit.PageCliPath, "temp")
+	// make sure all files are removed from tempDir before
+	// we start copying files to it.
+	os.RemoveAll(tempDir) // precautionary measure
+
+	tempDirErr := os.Mkdir(tempDir, 0755)
 	defer os.RemoveAll(tempDir)
 
 	if tempDirErr != nil {
@@ -135,12 +151,55 @@ func (u Up) Execute() {
 		}
 	}
 
-	_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
-		URL: pageDefinition.Template,
-	})
-	// TODO: Remove system files to avoid uploading those (e.g. .DS_Store for macos)
-	// remove .git directory to avoid uploading .git content
-	os.RemoveAll(filepath.Join(tempDir, ".git"))
+	if pageDefinitionConfig.TemplateSource == definition.GitURL {
+		_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
+			URL: pageDefinition.Template,
+		})
+		os.RemoveAll(filepath.Join(tempDir, ".git"))
+	} else {
+		// its a file path so just walk the directory and copy the files to the temp dir
+		err = filepath.WalkDir(pageDefinition.Template, func(path string, d os.DirEntry, err error) error {
+
+			if err != nil {
+				return err
+			}
+
+			// if it is a directory, copy the directory structure
+			// to the temp dir and return
+			if d.IsDir() {
+				rel, err := filepath.Rel(pageDefinition.Template, path)
+				if err != nil {
+					return err
+				}
+
+				err = os.MkdirAll(filepath.Join(tempDir, rel), 0755)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}
+
+			rel, err := filepath.Rel(pageDefinition.Template, path)
+			if err != nil {
+				return err
+			}
+
+			// create the directory structure in the temp dir
+			// and copy the file to that location
+			err = os.MkdirAll(filepath.Join(tempDir, filepath.Dir(rel)), 0755)
+			if err != nil {
+				return err
+			}
+
+			err = os.WriteFile(filepath.Join(tempDir, rel), []byte{}, 0644)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
+	}
 
 	if err != nil {
 		up.ExecutionOk = false
@@ -150,9 +209,6 @@ func (u Up) Execute() {
 		return
 	}
 
-	err = writeCertificateToHostModule(hostAlias, registrarAlias, pageDefinition.Domain)
-	err = writeCnameDomainToRegistrarModule(hostAlias, registrarAlias, pageDefinition.Domain)
-
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
@@ -160,13 +216,7 @@ func (u Up) Execute() {
 		return
 	}
 
-	err = registrar.ConfigureRegistrar(registrarAlias, pageDefinition)
-	if err != nil {
-		up.ExecutionOk = false
-		up.ExecutionOutput += err.Error()
-		logging.LogException("Failed to configure registrar, "+err.Error(), true)
-		return
-	}
+	formattedDomain := strings.Replace(pageDefinition.Domain, ".", "_", -1)
 
 	err = host.ConfigureHost(hostAlias, tempDir, pageDefinition)
 	if err != nil {
@@ -175,16 +225,116 @@ func (u Up) Execute() {
 		logging.LogException("Failed to configure host, "+err.Error(), true)
 		return
 	}
+
+	err = registrar.ConfigureCertificate(registrarAlias, pageDefinition)
+	if err != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.LogException("Failed to configure certificate, "+err.Error(), true)
+		return
+	}
+
+	// now adjust host module terraform template to provide
+	// certificate details as input to the host module
+	err = addCertificatesToHostModule(hostAlias, registrarAlias, formattedDomain)
+
+	err = host.ConfigureWebsite(hostAlias, tempDir, pageDefinition)
+	if err != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.LogException("Failed to configure website, "+err.Error(), true)
+		return
+	}
+
+	// now adjust host module terraform template to include
+	// output values for the host module
+	err = addOutputsToHostModule(hostAlias, registrarAlias, formattedDomain)
+
+	// now adjust registrar module terraform template
+	err = writeCnameDomainToRegistrarModule(hostAlias, registrarAlias, formattedDomain)
+
+	err = registrar.ConfigureDNS(registrarAlias, pageDefinition)
+	if err != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.LogException("Failed to configure registrar, "+err.Error(), true)
+		return
+	}
+
+	hostOutputKey := "host_" + hostAlias + "_" + formattedDomain
+	certExpiration, _ := hosts.TfSingleOutput[string](hostOutputKey, "certificate_expiry")
+	dayBeforeRenew, _ := hosts.TfSingleOutput[int](hostOutputKey, "certificate_min_days_before_renew")
+	// domain, _ := hosts.TfSingleOutput[string](hostOutputKey, "domain")
+
+	// Parse the time from the string
+	var userReadableExpiration string
+	var renewInfo string
+	expirationTime, err := time.Parse(time.RFC3339, certExpiration)
+	if err != nil {
+		userReadableExpiration = certExpiration
+		renewInfo = "Certificate Renewal: run 'page up' within " + strconv.Itoa(dayBeforeRenew) + " days of expiration"
+
+	} else {
+		// Format the time to be more user-readable
+		userReadableExpiration = expirationTime.Format("January 2, 2006 at 3:04pm (MST)")
+		// Calculate the renewal window start time
+		renewalWindowStart := expirationTime.AddDate(0, 0, -dayBeforeRenew)
+		// Calculate the time remaining before the renewal window starts
+		timeUntilRenewal := time.Until(renewalWindowStart)
+		daysUntilRenewal := int(timeUntilRenewal.Hours() / 24)
+		renewInfo = "Certificate Renewal: run 'page up' in " + strconv.Itoa(daysUntilRenewal) + " days"
+
+	}
+
+	up.ExecutionOutput += fmt.Sprintln("")
+	up.ExecutionOutput += fmt.Sprintln("Page details")
+	up.ExecutionOutput += fmt.Sprintln("Domain: https://" + pageDefinition.Domain)
+	up.ExecutionOutput += fmt.Sprintln("Certificate Expires: " + userReadableExpiration)
+	up.ExecutionOutput += fmt.Sprintln(renewInfo)
 }
 
 func (u Up) Output() string {
 	return up.ExecutionOutput
 }
 
-func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteDomain string) error {
-	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
+func addOutputsToHostModule(hostAlias string, registrarAlias string, formattedSiteDomain string) error {
 	var hostModuleTemplate hosts.HostModuleTemplate
-	templateData, readFileErr := ioutil.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
+	templateData, readFileErr := os.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
+	if readFileErr != nil {
+		return readFileErr
+	}
+
+	err := json.Unmarshal(templateData, &hostModuleTemplate)
+	if err != nil {
+		return err
+	}
+
+	hostModuleOutputValueProperties := hosts.HostModuleOutputValueProperties{
+		Domain:                        "${module.host_" + hostAlias + "." + formattedSiteDomain + "_domain}",
+		CertificateMinDaysBeforeRenew: "${module.registrar_" + registrarAlias + "." + formattedSiteDomain + "_certificate.min_days_remaining}",
+		CertificateExpiry:             "${module.registrar_" + registrarAlias + "." + formattedSiteDomain + "_certificate.certificate_not_after}",
+	}
+
+	if hostModuleTemplate.Output == nil {
+		hostModuleTemplate.Output = map[string]hosts.HostModuleOutputValue{}
+	}
+
+	hostModuleTemplate.Output["host_"+hostAlias+"_"+formattedSiteDomain] = hosts.HostModuleOutputValue{
+		Value: hostModuleOutputValueProperties,
+	}
+
+	file, err := json.MarshalIndent(hostModuleTemplate, "", " ")
+	err = os.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addCertificatesToHostModule(hostAlias string, registrarAlias string, formattedSiteDomain string) error {
+	var hostModuleTemplate hosts.HostModuleTemplate
+	templateData, readFileErr := os.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
 	if readFileErr != nil {
 		return readFileErr
 	}
@@ -195,15 +345,15 @@ func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteD
 	}
 
 	newCert := hosts.Certificate{
-		CertificateChain: "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_chain}",
-		PrivateKeyPem:    "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.private_key_pem}",
-		CertificatePem:   "${module.registrar_" + registrarAlias + "." + formattedDomain + "_certificate.certificate_pem}",
+		CertificateChain: "${module.registrar_" + registrarAlias + "." + formattedSiteDomain + "_certificate.certificate_chain}",
+		PrivateKeyPem:    "${module.registrar_" + registrarAlias + "." + formattedSiteDomain + "_certificate.private_key_pem}",
+		CertificatePem:   "${module.registrar_" + registrarAlias + "." + formattedSiteDomain + "_certificate.certificate_pem}",
 	}
 
-	hostModuleTemplate.Module["host_"+hostAlias].Certificates[formattedDomain+"_certificate"] = newCert
+	hostModuleTemplate.Module["host_"+hostAlias].Certificates[formattedSiteDomain+"_certificate"] = newCert
 
 	file, err := json.MarshalIndent(hostModuleTemplate, "", " ")
-	err = ioutil.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
+	err = os.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
 	if err != nil {
 		return err
 	}
@@ -211,10 +361,9 @@ func writeCertificateToHostModule(hostAlias string, registrarAlias string, siteD
 	return nil
 }
 
-func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, siteDomain string) error {
-	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
+func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, formattedSiteDomain string) error {
 	var registrarModuleTemplate hosts.RegistrarModuleTemplate
-	templateData, readFileErr := ioutil.ReadFile(cliinit.ModuleTemplatePath("registrar", registrarAlias))
+	templateData, readFileErr := os.ReadFile(cliinit.ModuleTemplatePath("registrar", registrarAlias))
 
 	if readFileErr != nil {
 		return readFileErr
@@ -226,13 +375,13 @@ func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, 
 	}
 
 	cnameDomain := hosts.Domain{
-		Domain: "${module.host_" + hostAlias + "." + formattedDomain + "_domain}",
+		Domain: "${module.host_" + hostAlias + "." + formattedSiteDomain + "_domain}",
 	}
 
-	registrarModuleTemplate.Module["registrar_"+registrarAlias].Domains[formattedDomain+"_domain"] = cnameDomain
+	registrarModuleTemplate.Module["registrar_"+registrarAlias].Domains[formattedSiteDomain+"_domain"] = cnameDomain
 
 	file, err := json.MarshalIndent(registrarModuleTemplate, "", " ")
-	err = ioutil.WriteFile(cliinit.ModuleTemplatePath("registrar", registrarAlias), []byte(file), 0644)
+	err = os.WriteFile(cliinit.ModuleTemplatePath("registrar", registrarAlias), []byte(file), 0644)
 	if err != nil {
 		return err
 	}
