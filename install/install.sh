@@ -31,7 +31,7 @@ case "$OS" in
 esac
 
 case "$ARCH" in
-    arm64)
+    aarch64|arm64)
         ARCH="arm64"
         ;;
     amd64|x86_64)
