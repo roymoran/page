@@ -3,6 +3,7 @@
 # GitHub repository details
 $REPO_USER = "roymoran"
 $REPO_NAME = "page"
+$success = $true
 
 # Fetch the latest release tag
 $LATEST_RELEASE_API = "https://api.github.com/repos/$REPO_USER/$REPO_NAME/releases/latest"
