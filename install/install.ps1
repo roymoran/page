@@ -11,7 +11,7 @@ $VERSION = Invoke-RestMethod -Uri $LATEST_RELEASE_API | Select-Object -ExpandPro
 # Construct the download URL
 $OS = "windows"
 $ARCH = if ([System.Environment]::Is64BitProcess) { "amd64" } else { "arm64" } 
-$BINARY_URL = "https://github.com/$REPO_USER/$REPO_NAME/releases/download/$VERSION/page_${OS}_${ARCH}.tar.bz2"
+$BINARY_URL = "https://github.com/$REPO_USER/$REPO_NAME/releases/download/$VERSION/page_${OS}_${ARCH}.zip"
 
 
 # Define the local binary path and zip path
