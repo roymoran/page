@@ -101,3 +101,6 @@ $RECYCLE.BIN/
 # Builds and debug binaries
 build/
 __debug_bin*
+
+# ignore tempsite-* dirs
+**/tempsite-*

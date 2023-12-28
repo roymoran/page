@@ -9,6 +9,7 @@ require (
 	github.com/hashicorp/hc-install v0.6.0
 	github.com/hashicorp/terraform-exec v0.19.0
 	github.com/jpillora/go-ogle-analytics v0.0.0-20161213085824-14b04e0594ef
+	gitlab.nasapps.net/page/builder v0.1.0-alpha.4
 	gopkg.in/yaml.v2 v2.2.4
 )
 
@@ -28,6 +29,7 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
+	github.com/sashabaranov/go-openai v1.17.9 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect

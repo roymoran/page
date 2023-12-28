@@ -14,12 +14,19 @@ stages:
   # create application release based on git tags
   - release
 
+variables:
+  GOPRIVATE: "gitlab.nasapps.net"
+
+before_script:
+  - echo -e "machine gitlab.nasapps.net\nlogin $GITLAB_USERNAME\npassword $GITLAB_TOKEN" > ~/.netrc
+
 build:
   stage: builds
   tags:
     - synology
   script:
     - go version
+    - go env
     - make
 
 test:
@@ -31,6 +38,8 @@ test:
 
 all:
   stage: release
+  tags:
+    - synology
   rules:
     # only upload artifact on tagged branch (only default branch should ever be tagged)
     - if: $CI_COMMIT_TAG

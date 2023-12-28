@@ -1,14 +1,20 @@
-# version - page config template version
+# This configuration file defines your site to be deployed
+# The comments displayed before each property should be informative
+# enough to get your site deployed. If you run into a problem
+# you can create an issue at https://github.com/roymoran/page.
+
+# page config template version
 version: "0"
 # specify a supported host name or an alias
+# supported hosts can be found with 'page conf host list'
 host: "aws"
 # specify a supported registrar name or an alias
+# supported registrars can be found with 'page conf registrar list'
 registrar: "namecheap"
 # specify the domain name for your site. The registrar
-# specified above must own the domain name. Only specify
-# a top-level domain name. 
+# you specified above must own the domain name.
+# Only specify a top-level domain name.
 domain: "pagecli.com"
-# template - a url of a git repo containing static assets
-# to be hosted. url should be accessible from machine running
-# 'page up'
+# template - a path to static assets to be published, 
+# either a local file path or public git url.
 template: "https://gitlab.com/roymoran/pageindex.git"

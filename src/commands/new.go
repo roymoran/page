@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	"pagecli.com/main/cliinit"
 	"pagecli.com/main/definition"
 	"pagecli.com/main/logging"
 )
@@ -48,6 +49,10 @@ func (n New) UsageCategory() int {
 }
 
 func (n New) Execute() {
+	if !cliinit.CliInitialized() {
+		cliinit.CliInit()
+	}
+
 	err := definition.WriteDefinitionFile()
 	if err != nil {
 		logging.LogException(err.Error(), true)

@@ -34,9 +34,8 @@ type CommandInfo struct {
 }
 
 var usageCategories = []string{
-	"start new page project",
-	"publish page project",
-	"configure default registrar/host",
+	"create",
+	"configure",
 }
 
 // commandLookup creates a mapping of each command
@@ -46,21 +45,23 @@ var usageCategories = []string{
 //
 //	is usage info on available commands
 var commandLookup = map[string]ICommand{
-	new.DisplayName:  New{},
-	up.DisplayName:   Up{},
-	conf.DisplayName: Conf{},
-	help.DisplayName: Help{},
-	"":               None{},
-	"infra":          Infra{}, // Hidden command
+	new.DisplayName:     New{},
+	up.DisplayName:      Up{},
+	conf.DisplayName:    Conf{},
+	help.DisplayName:    Help{},
+	builder.DisplayName: Builder{},
+	"":                  None{},
+	"infra":             Infra{}, // Hidden command
 }
 
 var commandInfoMap = map[string]*CommandInfo{
-	new.DisplayName:   &new,
-	conf.DisplayName:  &conf,
-	help.DisplayName:  &help,
-	none.DisplayName:  &none,
-	up.DisplayName:    &up,
-	infra.DisplayName: &infra,
+	new.DisplayName:     &new,
+	conf.DisplayName:    &conf,
+	help.DisplayName:    &help,
+	none.DisplayName:    &none,
+	up.DisplayName:      &up,
+	infra.DisplayName:   &infra,
+	builder.DisplayName: &builder,
 }
 
 type ProgramArgs struct {

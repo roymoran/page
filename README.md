@@ -24,7 +24,7 @@ $ page up
 
 ## More Resources
 
-- [Short videos](https://youtube.com/playlist?list=PLSqMEKs-lT4qVtG7-jSJj9_ZvsUMZTxAJ) to learn about configuring and using the tool.
+- [Short videos](https://youtube.com/playlist?list=PLSqMEKs-lT4qVtG7-jSJj9_ZvsUMZTxAJ) to learn about installing, configuring, and using the tool. Start with the [installation guide](https://www.youtube.com/watch?v=Btjy280AVlg).
 
 ## Supported Hosts/Registrars
 

@@ -34,7 +34,8 @@ func (n None) Execute() {
 }
 
 func (n None) Output() string {
-	return fmt.Sprint(constants.AppName(), " ", constants.AppVersion(), "\n", "author(s); "+strings.Join(constants.AppAuthors(), ", "), "\n\n", BuildUsageInfo(), "\n")
+	out := fmt.Sprint(constants.AppName(), " ", constants.AppVersion(), " (", constants.AppTier(), ")\n", constants.AppUpgradeInfo(), "\n", "Authors: "+strings.Join(constants.AppAuthors(), ", "), "\n\n", BuildUsageInfo(), "\n")
+	return out
 }
 
 func (n None) BindArgs() {

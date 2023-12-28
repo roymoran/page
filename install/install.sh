@@ -17,7 +17,7 @@ BASE_URL="https://github.com/$REPO_USER/$REPO_NAME/releases/download/$VERSION"
 OS=$(uname -s)
 ARCH=$(uname -m)
 
-# Map OS and Architecture to your binary naming convention
+# Map OS and Architecture to binary naming convention
 case "$OS" in
     Darwin)
         OS="darwin"
@@ -49,7 +49,18 @@ BINARY_URL="$BASE_URL/page_${OS}_${ARCH}.tar.bz2"
 LOCAL_BINARY_PATH="/usr/local/bin/page"
 
 # Download and extract the binary
-curl -L "$BINARY_URL" | tar -xj
+curl -L "$BINARY_URL" -o "page.tar.bz2"
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# Extract the binary and check if the extraction was successful
+tar -xjf "page.tar.bz2"
+if [ $? -ne 0 ]; then
+    rm "page.tar.bz2"
+    exit 1
+fi
+rm "page.tar.bz2"
 
 # Make the binary executable
 chmod +x page

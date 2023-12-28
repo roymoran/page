@@ -22,6 +22,11 @@ func TfInit(initPath string) error {
 		return err
 	}
 
+	// Stream Terraform's output to stdout in debug mode
+	if os.Getenv("PAGE_CLI_DEBUG") == "true" {
+		tf.SetStdout(os.Stdout)
+	}
+
 	err = tf.Init(context.Background(), tfexec.Upgrade(true))
 
 	if err != nil {
@@ -76,11 +81,7 @@ func TfApply(infrastructureCheckMessage string, progressMessageSequence []string
 			break
 		}
 
-		cancel() // Cancel the current context
-		// TODO: Can a failed terraform apply be detrimental to
-		// the page up process? Will a failed apply here cause
-		// future applies to fail? What's the best approach here?
-		// Should we use terraform destroy to clean up any partially created resource?
+		cancel()                    // Cancel the current context
 		time.Sleep(time.Second * 1) // Wait a second before retrying
 	}
 

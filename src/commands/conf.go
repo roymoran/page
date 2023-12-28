@@ -121,7 +121,7 @@ func (c Conf) UsageInfoExpanded() string {
 }
 
 func (c Conf) UsageCategory() int {
-	return 2
+	return 1
 }
 
 func (c Conf) Execute() {

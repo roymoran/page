@@ -55,7 +55,7 @@ func (u Up) UsageInfoExpanded() string {
 }
 
 func (u Up) UsageCategory() int {
-	return 1
+	return 0
 }
 
 func (u Up) BindArgs() {
@@ -64,6 +64,10 @@ func (u Up) BindArgs() {
 func (u Up) Execute() {
 	if !up.ExecutionOk {
 		return
+	}
+
+	if !cliinit.CliInitialized() {
+		cliinit.CliInit()
 	}
 
 	logMessage := ""

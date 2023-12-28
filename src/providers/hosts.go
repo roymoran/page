@@ -64,7 +64,7 @@ func (hp HostProvider) List(name string, channel chan string) error {
 func InstallHostTerraformProvider(name string, alias string, providerAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, certificatesVariableTemplatePath string) error {
 	hostDirErr := os.MkdirAll(providerAliasPath, os.ModePerm)
 	if hostDirErr != nil {
-		os.Remove(providerAliasPath)
+		os.RemoveAll(providerAliasPath)
 		log.Fatalln("error creating host config directory for", providerAliasPath, hostDirErr)
 		return hostDirErr
 	}
@@ -85,6 +85,8 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 
 	err := hosts.TfInit(cliinit.ProvidersPath)
 	if err != nil {
+		os.Remove(moduleTemplatePath)
+		os.RemoveAll(providerAliasPath)
 		fmt.Println("failed init on new terraform directory", cliinit.ProvidersPath)
 		return err
 	}
