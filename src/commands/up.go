@@ -90,18 +90,16 @@ func (u Up) Execute() {
 		return
 	}
 
-	tempDir := filepath.Join(cliinit.PageCliPath, "temp")
-	// make sure all files are removed from tempDir before
-	// we start copying files to it.
-	os.RemoveAll(tempDir) // precautionary measure
+	formattedDomain := strings.Replace(pageDefinition.Domain, ".", "_", -1)
+	siteDir := filepath.Join(cliinit.SiteFilesPath, formattedDomain)
+	os.RemoveAll(siteDir)
 
-	tempDirErr := os.Mkdir(tempDir, 0755)
-	defer os.RemoveAll(tempDir)
+	siteDirErr := os.MkdirAll(siteDir, 0755)
 
-	if tempDirErr != nil {
+	if siteDirErr != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException(tempDirErr.Error(), true)
+		logging.LogException(siteDirErr.Error(), true)
 		return
 	}
 
@@ -156,10 +154,10 @@ func (u Up) Execute() {
 	}
 
 	if pageDefinitionConfig.TemplateSource == definition.GitURL {
-		_, err = git.PlainClone(tempDir, false, &git.CloneOptions{
+		_, err = git.PlainClone(siteDir, false, &git.CloneOptions{
 			URL: pageDefinition.Template,
 		})
-		os.RemoveAll(filepath.Join(tempDir, ".git"))
+		os.RemoveAll(filepath.Join(siteDir, ".git"))
 	} else {
 		// its a file path so just walk the directory and copy the files to the temp dir
 		err = filepath.WalkDir(pageDefinition.Template, func(path string, d os.DirEntry, err error) error {
@@ -176,7 +174,7 @@ func (u Up) Execute() {
 					return err
 				}
 
-				err = os.MkdirAll(filepath.Join(tempDir, rel), 0755)
+				err = os.MkdirAll(filepath.Join(siteDir, rel), 0755)
 				if err != nil {
 					return err
 				}
@@ -191,12 +189,12 @@ func (u Up) Execute() {
 
 			// create the directory structure in the temp dir
 			// and copy the file to that location
-			err = os.MkdirAll(filepath.Join(tempDir, filepath.Dir(rel)), 0755)
+			err = os.MkdirAll(filepath.Join(siteDir, filepath.Dir(rel)), 0755)
 			if err != nil {
 				return err
 			}
 
-			err = os.WriteFile(filepath.Join(tempDir, rel), []byte{}, 0644)
+			err = os.WriteFile(filepath.Join(siteDir, rel), []byte{}, 0644)
 			if err != nil {
 				return err
 			}
@@ -220,9 +218,7 @@ func (u Up) Execute() {
 		return
 	}
 
-	formattedDomain := strings.Replace(pageDefinition.Domain, ".", "_", -1)
-
-	err = host.ConfigureHost(hostAlias, tempDir, pageDefinition)
+	err = host.ConfigureHost(hostAlias, siteDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
@@ -242,7 +238,7 @@ func (u Up) Execute() {
 	// certificate details as input to the host module
 	err = addCertificatesToHostModule(hostAlias, registrarAlias, formattedDomain)
 
-	err = host.ConfigureWebsite(hostAlias, tempDir, pageDefinition)
+	err = host.ConfigureWebsite(hostAlias, siteDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()

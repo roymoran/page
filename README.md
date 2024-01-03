@@ -24,7 +24,7 @@ $ page up
 
 ## More Resources
 
-- [Short videos](https://youtube.com/playlist?list=PLSqMEKs-lT4qVtG7-jSJj9_ZvsUMZTxAJ) to learn about configuring and using the tool.
+- [Short videos](https://www.youtube.com/watch?v=CsP49-j_4yk&list=PLSqMEKs-lT4qVtG7-jSJj9_ZvsUMZTxAJ&index=1) to learn about configuring, and using the tool.
 
 ## Supported Hosts/Registrars
 

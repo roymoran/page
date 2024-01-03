@@ -23,6 +23,9 @@ import (
 var installDir, _ = os.UserHomeDir()
 var PageCliPath string = filepath.Join(installDir, ".pagecli")
 
+// Path to temporary website files
+var SiteFilesPath string = filepath.Join(PageCliPath, "sitefiles")
+
 // TfInstallPath returns the path to the
 // directory containing terraform binary
 var TfInstallPath string = filepath.Join(PageCliPath, "tf")

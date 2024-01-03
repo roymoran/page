@@ -35,7 +35,7 @@ registrar: "namecheap"
 domain: "example.com"
 # template - a path to static assets to be published, 
 # either a local file path or public git url.
-template: "https://gitlab.com/roymoran/comingsoon.git"
+template: "https://gitlab.com/page-templates/placeholders/comingsoon.git"
 `
 
 type TemplateSource int

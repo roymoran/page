@@ -77,7 +77,6 @@ func (aws AmazonWebServices) ConfigureHost(hostAlias string, templatePath string
 	}
 
 	// host already configured assumed by the presence of base.tf.json
-	// TODO: send the right targets for this host
 	var moduleIdentifier string = "module.host_" + hostAlias + "."
 	TfApplyWithTarget(progress.HostCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{moduleIdentifier + "aws_s3_bucket.pages_storage", moduleIdentifier + "aws_s3_bucket_policy.pages_storage_policy", moduleIdentifier + "aws_s3_bucket_public_access_block.pages_storage_pab", moduleIdentifier + "aws_s3_bucket_website_configuration.pages_storage_website_configuration", moduleIdentifier + "data.aws_iam_policy_document.pages_storage_policy_document"})
 	return nil
@@ -246,7 +245,7 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 					"bucket":       "${aws_s3_bucket.pages_storage.bucket}",
 					"key":          siteDomain + "/${each.value}",
 					"source":       filepath.Join(templatePath, "${each.value}"),
-					"content_type": "${data.external.assign_content_type[each.value].result[" + fmt.Sprintf(`"`) + "mimetype" + fmt.Sprintf(`"`) + "]}",
+					"content_type": "${data.external." + formattedDomain + "_assign_content_type[each.value].result[" + fmt.Sprintf(`"`) + "mimetype" + fmt.Sprintf(`"`) + "]}",
 					"etag":         "${filemd5(" + fmt.Sprintf(`"`) + filepath.Join(templatePath, "${each.value}") + fmt.Sprintf(`"`) + ")}",
 					"depends_on":   []string{"aws_s3_bucket.pages_storage"},
 				},
@@ -332,7 +331,7 @@ func siteTemplate(siteDomain string, templatePath string, hostAlias string) []by
 			// TODO: Can be eliminated if terraform contains
 			// a built-in function for determining content type
 			"external": map[string]interface{}{
-				"assign_content_type": map[string]interface{}{
+				formattedDomain + "_assign_content_type": map[string]interface{}{
 					"for_each": "${fileset(" + fmt.Sprintf(`"`) + templatePath + fmt.Sprintf(`"`) + "," + fmt.Sprintf(`"`) + "**/*" + fmt.Sprintf(`"`) + ")}",
 
 					"program": []string{executablePath, "infra", "mimetype", "${each.value}"},
