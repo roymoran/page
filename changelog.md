@@ -1,3 +1,18 @@
+## [v0.1.1-alpha.14] - Another bug bites the dust...
+
+Install this release:
+
+```bash
+# for macos/linux
+$ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
+# for windows powershell
+$ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')
+```
+
+Changes:
+
+* Fix error when copying over files from a template path
+
 ## [v0.1.0-alpha.14] - No need to be alarmed, just small fixes...
 
 Install this release:

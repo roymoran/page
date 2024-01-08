@@ -194,7 +194,15 @@ func (u Up) Execute() {
 				return err
 			}
 
-			err = os.WriteFile(filepath.Join(siteDir, rel), []byte{}, 0644)
+			// now read the file contents
+			data, err := os.ReadFile(path)
+
+			if err != nil {
+				data = make([]byte, 0)
+			}
+
+			// now write the file and contents
+			err = os.WriteFile(filepath.Join(siteDir, rel), data, 0644)
 			if err != nil {
 				return err
 			}
