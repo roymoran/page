@@ -117,8 +117,8 @@ func ProccessDefinitionFile(pd *PageDefinition) (PageDefinitionConfig, error) {
 		ValidRegistrar: true,
 		ValidHost:      true,
 		ValidDomain:    true,
+		InvalidFields:  make(map[string]string),
 	}
-	invalidPageDefinitionFileErr := fmt.Errorf("invalid page definition file")
 
 	// if any of the fields are empty mark the field as invalid
 	if pd.Template == "" {
@@ -140,7 +140,7 @@ func ProccessDefinitionFile(pd *PageDefinition) (PageDefinitionConfig, error) {
 
 	// if any of the fields are invalid, return the config and error
 	if !pageDefinitionConfig.ValidTemplate || !pageDefinitionConfig.ValidRegistrar || !pageDefinitionConfig.ValidHost || !pageDefinitionConfig.ValidDomain {
-		return pageDefinitionConfig, invalidPageDefinitionFileErr
+		return pageDefinitionConfig, templateFieldErrors(pageDefinitionConfig.InvalidFields)
 	}
 
 	// check if the template is a valid source (git url or file path)
@@ -153,7 +153,7 @@ func ProccessDefinitionFile(pd *PageDefinition) (PageDefinitionConfig, error) {
 		if err != nil {
 			pageDefinitionConfig.ValidTemplate = false
 			pageDefinitionConfig.InvalidFields["template"] = "template field is not a valid git url or file path"
-			return pageDefinitionConfig, invalidPageDefinitionFileErr
+			return pageDefinitionConfig, templateFieldErrors(pageDefinitionConfig.InvalidFields)
 		}
 
 		pageDefinitionConfig.TemplateSource = FilePath
@@ -163,7 +163,7 @@ func ProccessDefinitionFile(pd *PageDefinition) (PageDefinitionConfig, error) {
 	if domainErr != nil {
 		pageDefinitionConfig.ValidDomain = false
 		pageDefinitionConfig.InvalidFields["domain"] = "domain field is not a valid domain name"
-		return pageDefinitionConfig, invalidPageDefinitionFileErr
+		return pageDefinitionConfig, templateFieldErrors(pageDefinitionConfig.InvalidFields)
 	}
 
 	// update the domain field with the root domain
@@ -228,4 +228,15 @@ func isGitURL(template string) bool {
 	}
 
 	return false
+}
+
+func templateFieldErrors(invalidFields map[string]string) error {
+	var errStr strings.Builder
+	errStr.WriteString("invalid page definition file:\n")
+
+	for field, err := range invalidFields {
+		errStr.WriteString(fmt.Sprintf("%s: %s\n", field, err))
+	}
+
+	return fmt.Errorf(errStr.String())
 }

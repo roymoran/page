@@ -1,3 +1,18 @@
+## [v0.1.2] - Another day, another bug...
+
+Install this release:
+
+```bash
+# for macos/linux
+$ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
+# for windows powershell
+$ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')
+```
+
+Changes:
+
+* Fix errors in ProccessDefinitionFile and add templateFieldErrors helper function to surface template file error messages
+
 ## [v0.1.1-alpha.14] - Another bug bites the dust...
 
 Install this release:
