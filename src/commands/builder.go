@@ -18,10 +18,12 @@ var builder CommandInfo = CommandInfo{
 }
 
 func (b Builder) BindArgs() {
-
 }
 
 func (b Builder) Execute() {
+	if !builder.ExecutionOk {
+		return
+	}
 	buildercore.Start()
 }
 

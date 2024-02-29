@@ -17,7 +17,14 @@ endif
 # Build output root path
 BUILD_PATH = build/
 BUILD_RELEASE_PATH = build/bins/
+BUILD_RELEASE_PKGS_PATH = build/bins/pkg/
 PROGRAM_OUTPUT_NAME = page
+MACOS_ARM64_PACKAGE_PATH = build/bins/pkg/arm64/
+MACOS_AMD64_PACKAGE_PATH = build/bins/pkg/amd64/
+DEVELOPER_ID_INSTALLER := "Developer ID Installer: Roy Moran (KQ859WKQZ6)"
+NOTARIZE_KEYCHAIN_PROFILE := AppNotaryService
+PKG_IDENTIFIER := com.pagecli.page
+VERSION := 1.0.0
 
 #######################################
 # Check if codesign programs are available
@@ -33,12 +40,18 @@ LINUX_CODESIGN_AVAILABLE := $(shell command -v gpg 2> /dev/null)
 ifeq ($(MACOS_CODESIGN_AVAILABLE),)
   MACOS_CODESIGN :=
 else
-  MACOS_CODESIGN_IDENTITY := $(shell security find-identity -v -p codesigning | grep -o 'Apple Development: Roy Moran (YNA4H679A6)')
+  MACOS_CODESIGN_IDENTITY := $(shell security find-identity -v -p codesigning | grep -o 'Developer ID Application: Roy Moran (KQ859WKQZ6)')
   ifeq ($(MACOS_CODESIGN_IDENTITY),)
     MACOS_CODESIGN :=
   else
   # on macos use "security find-identity -v -p codesigning" to list available certificates
-    MACOS_CODESIGN := && codesign --sign "Apple Development: Roy Moran (YNA4H679A6)" --timestamp $(PROGRAM_OUTPUT_NAME)
+    MACOS_CODESIGN := && codesign --sign "Developer ID Application: Roy Moran (KQ859WKQZ6)" --timestamp --options runtime --verbose $(PROGRAM_OUTPUT_NAME)
+	MACOS_PKGBUILD_AMD64 := && pkgbuild --root ../$(MACOS_AMD64_PACKAGE_PATH) --identifier $(PKG_IDENTIFIER) --version $(VERSION) --install-location /usr/local/bin ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64_unsigned.pkg
+	MACOS_PKGBUILD_ARM64 := && pkgbuild --root ../$(MACOS_ARM64_PACKAGE_PATH) --identifier $(PKG_IDENTIFIER) --version $(VERSION) --install-location /usr/local/bin ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64_unsigned.pkg
+	MACOS_PKGSIGN_AMD64 := && productsign --sign "Developer ID Installer: Roy Moran (KQ859WKQZ6)" ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64_unsigned.pkg ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64.pkg
+	MACOS_PKGSIGN_ARM64 := && productsign --sign "Developer ID Installer: Roy Moran (KQ859WKQZ6)" ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64_unsigned.pkg ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64.pkg
+	MACOS_PKGNOTARIZE_AMD64 := && xcrun notarytool submit ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64.pkg --keychain-profile $(NOTARIZE_KEYCHAIN_PROFILE) --wait && xcrun stapler staple ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64.pkg && spctl --assess --verbose --type install ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64.pkg
+	MACOS_PKGNOTARIZE_ARM64 := && xcrun notarytool submit ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64.pkg --keychain-profile $(NOTARIZE_KEYCHAIN_PROFILE) --wait && xcrun stapler staple ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64.pkg && spctl --assess --verbose --type install ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64.pkg
   endif
 endif
 
@@ -81,19 +94,19 @@ page: $(BUILD_PATH)
 	cd src && go build -o ../$(BUILD_PATH)$(PROGRAM_OUTPUT_NAME)
 
 test:
-	cd src/tests/unit && go test -v
-	cd src/tests/integration && go test -v
-	cd src/tests/system && go test -v
+	cd src/tests/unit && PAGE_CLI_TEST=true go test -v
+	cd src/tests/integration && PAGE_CLI_TEST=true go test -v
+	cd src/tests/system && PAGE_CLI_TEST=true go test -v
 
-release: $(BUILD_RELEASE_PATH) page_darwin_amd64.tar.bz2 page_darwin_arm64.tar.bz2 page_linux_amd64.tar.bz2 page_linux_arm64.tar.bz2 page_linux_arm.tar.bz2 page_windows_amd64.zip page_windows_arm64.zip
+release: $(BUILD_RELEASE_PATH) $(MACOS_ARM64_PACKAGE_PATH) $(MACOS_AMD64_PACKAGE_PATH) page_darwin_amd64.tar.bz2 page_darwin_arm64.tar.bz2 page_linux_amd64.tar.bz2 page_linux_arm64.tar.bz2 page_linux_arm.tar.bz2 page_windows_amd64.zip page_windows_arm64.zip rmpkg
 
 # macos intel 64-bit and codesign with Apple Developer Certificate
 page_darwin_amd64.tar.bz2:
-	cd src && env GOOS=darwin GOARCH=amd64 go build -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && tar -cjvf "page_darwin_amd64.tar.bz2" page && mv page_darwin_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
+	cd src && env GOOS=darwin GOARCH=amd64 go build -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && mv $(PROGRAM_OUTPUT_NAME) ../$(MACOS_AMD64_PACKAGE_PATH) $(MACOS_PKGBUILD_AMD64) $(MACOS_PKGSIGN_AMD64) $(MACOS_PKGNOTARIZE_AMD64) && mv ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64.pkg ../$(BUILD_RELEASE_PATH)
 
 # macos arm 64-bit and codesign with Apple Developer Certificate
 page_darwin_arm64.tar.bz2:
-	cd src && env GOOS=darwin GOARCH=arm64 go build -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && tar -cjvf "page_darwin_arm64.tar.bz2" $(PROGRAM_OUTPUT_NAME) && mv page_darwin_arm64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
+	cd src && env GOOS=darwin GOARCH=arm64 go build -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && mv $(PROGRAM_OUTPUT_NAME) ../$(MACOS_ARM64_PACKAGE_PATH) $(MACOS_PKGBUILD_ARM64) $(MACOS_PKGSIGN_ARM64) $(MACOS_PKGNOTARIZE_ARM64) && mv ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64.pkg ../$(BUILD_RELEASE_PATH)
 
 # linux intel 64-bit
 page_linux_amd64.tar.bz2:
@@ -121,5 +134,14 @@ $(BUILD_PATH):
 $(BUILD_RELEASE_PATH):
 	$(MKDIR) $@
 
+$(MACOS_AMD64_PACKAGE_PATH):
+	$(MKDIR) $@
+
+$(MACOS_ARM64_PACKAGE_PATH):
+	$(MKDIR) $@
+
 clean:
 	$(CLEANUP) $(BUILD_PATH)
+
+rmpkg:
+	$(CLEANUP) $(BUILD_RELEASE_PKGS_PATH)

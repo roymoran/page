@@ -5,7 +5,6 @@
 #
 # Software
 # - go
-image: golang:1.19
 stages:
   # build debug/production application and tests
   - builds
@@ -22,8 +21,6 @@ before_script:
 
 build:
   stage: builds
-  tags:
-    - synology
   script:
     - go version
     - go env
@@ -31,15 +28,11 @@ build:
 
 test:
     stage: tests
-    tags:
-    - synology
     script:
       - make test
 
 all:
   stage: release
-  tags:
-    - synology
   rules:
     # only upload artifact on tagged branch (only default branch should ever be tagged)
     - if: $CI_COMMIT_TAG

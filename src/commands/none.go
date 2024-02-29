@@ -34,7 +34,7 @@ func (n None) Execute() {
 }
 
 func (n None) Output() string {
-	out := fmt.Sprint(constants.AppName(), " ", constants.AppVersion(), " (", constants.AppTier(), ")\n", constants.AppUpgradeInfo(), "\n", "Authors: "+strings.Join(constants.AppAuthors(), ", "), "\n\n", BuildUsageInfo(), "\n")
+	out := fmt.Sprint(constants.AppName(), " ", constants.AppVersion(), "\n", "Authors: "+strings.Join(constants.AppAuthors(), ", "), "\n\n", BuildUsageInfo(), "\n")
 	return out
 }
 

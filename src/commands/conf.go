@@ -114,7 +114,7 @@ func (c Conf) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln("Example usage")
 	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "host list")
 	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "registrar list")
-	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "host add namecheap")
+	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "host add aws")
 	extendedUsage += fmt.Sprintln("page", conf.DisplayName, "registrar add namecheap")
 	extendedUsage += fmt.Sprintln()
 	return extendedUsage

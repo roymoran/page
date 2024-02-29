@@ -1,6 +1,6 @@
 # Developing
 
-For fast debugging just build the application and execute it.
+For fast debugging just build the application and execute it. 
 
 ```bash
 # compile and output application to build directory
@@ -9,15 +9,19 @@ $ make
 $ cd build
 # execute
 $ ./page
+# 
 ```
 
 [Delve go debugger](https://github.com/go-delve/delve) is used for step through debugging. Use VSCode debugging panel for getting started quickly. Otherwise see go-delve/delve repo for instructions.
 
-To debug terraform problems or see deprecation warnings use terraform directly from the command line.
+To debug terraform problems or see deprecation warnings use terraform directly from the command line or run page with PAGE_CLI_DEBUG flag.
 
 ```bash
-# see basic output
+# page with terraform debugs logs
+$ PAGE_CLI_DEBUG=true page up
+# terraform basic commands
 $ terraform apply
+$ terraform plan
 # verbose logging
 $ TF_LOG=debug terraform apply
 ```

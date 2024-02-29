@@ -14,12 +14,12 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v2"
+	"pagecli.com/main/cliinit"
 )
 
-var defaultTemplate = `# This configuration file defines your site to be deployed
+var defaultDefinition = `# This configuration file defines your site to be deployed
 # The comments displayed before each property should be informative
-# enough to get your site deployed. If you run into a problem
-# you can create an issue at https://github.com/roymoran/page.
+# enough to get your site deployed.
 
 # page config template version
 version: "0"
@@ -33,41 +33,41 @@ registrar: "namecheap"
 # you specified above must own the domain name.
 # Only specify a top-level domain name.
 domain: "example.com"
-# template - a path to static assets to be published, 
+# files - a path to static assets to be published, 
 # either a local file path or public git url.
-template: "https://gitlab.com/page-templates/placeholders/comingsoon.git"
+files: "https://gitlab.com/page-templates/placeholders/comingsoon.git"
 `
 
-type TemplateSource int
+type FilesSource int
 
 // Note: struct fields must be public in order for unmarshal to
 // correctly populate the data.
 type PageDefinition struct {
-	Template  string
+	Files     string
 	Registrar string
 	Host      string
 	Domain    string
 	Version   string
 }
 
-// TemplateSource is the source of
-// the static site template.
+// FilesSource is the source of
+// the static site files.
 const (
-	GitURL TemplateSource = iota
+	GitURL FilesSource = iota
 	FilePath
 )
 
 type PageDefinitionConfig struct {
-	TemplateSource TemplateSource
+	FilesSource FilesSource
 
 	// validation indicators for the fields in the
 	// PageDefinition struct
-	ValidTemplate  bool
+	ValidFiles     bool
 	ValidRegistrar bool
 	ValidHost      bool
 	ValidDomain    bool
 	// if any of the fields are invalid, lets indicate why
-	InvalidFields map[string]string
+	InvalidFieldsReason map[string]string
 }
 
 // WriteDefinitionFile writes the yaml file
@@ -78,7 +78,7 @@ type PageDefinitionConfig struct {
 // that the file was writtent succesfully, otherwise
 // false is returned.
 func WriteDefinitionFile() error {
-	writeErr := os.WriteFile("page.yml", []byte(defaultTemplate), 0644)
+	writeErr := os.WriteFile("page.yml", []byte(defaultDefinition), 0644)
 	if writeErr != nil {
 		log.Fatal("Failed to write page.yml", writeErr)
 		return writeErr
@@ -109,65 +109,83 @@ func ReadDefinitionFile() (PageDefinition, error) {
 
 // ProccessDefinitionFile reads the values from the
 // PageDefinition struct and determines things about
-// the values provided. For example, if the template
+// the values provided. For example, if the files
 // is a git url or a local file path.
 func ProccessDefinitionFile(pd *PageDefinition) (PageDefinitionConfig, error) {
 	pageDefinitionConfig := PageDefinitionConfig{
-		ValidTemplate:  true,
-		ValidRegistrar: true,
-		ValidHost:      true,
-		ValidDomain:    true,
-		InvalidFields:  make(map[string]string),
+		ValidFiles:          true,
+		ValidRegistrar:      true,
+		ValidHost:           true,
+		ValidDomain:         true,
+		InvalidFieldsReason: make(map[string]string),
 	}
 
 	// if any of the fields are empty mark the field as invalid
-	if pd.Template == "" {
-		pageDefinitionConfig.ValidTemplate = false
-		pageDefinitionConfig.InvalidFields["template"] = "template field is empty"
+	if pd.Files == "" {
+		pageDefinitionConfig.ValidFiles = false
+		pageDefinitionConfig.InvalidFieldsReason["files"] = "files field is empty"
 	}
 	if pd.Registrar == "" {
 		pageDefinitionConfig.ValidRegistrar = false
-		pageDefinitionConfig.InvalidFields["registrar"] = "registrar field is empty"
+		pageDefinitionConfig.InvalidFieldsReason["registrar"] = "registrar field is empty"
 	}
 	if pd.Host == "" {
 		pageDefinitionConfig.ValidHost = false
-		pageDefinitionConfig.InvalidFields["host"] = "host field is empty"
+		pageDefinitionConfig.InvalidFieldsReason["host"] = "host field is empty"
 	}
 	if pd.Domain == "" {
 		pageDefinitionConfig.ValidDomain = false
-		pageDefinitionConfig.InvalidFields["domain"] = "domain field is empty"
+		pageDefinitionConfig.InvalidFieldsReason["domain"] = "domain field is empty"
 	}
 
 	// if any of the fields are invalid, return the config and error
-	if !pageDefinitionConfig.ValidTemplate || !pageDefinitionConfig.ValidRegistrar || !pageDefinitionConfig.ValidHost || !pageDefinitionConfig.ValidDomain {
-		return pageDefinitionConfig, templateFieldErrors(pageDefinitionConfig.InvalidFields)
+	if !pageDefinitionConfig.ValidFiles || !pageDefinitionConfig.ValidRegistrar || !pageDefinitionConfig.ValidHost || !pageDefinitionConfig.ValidDomain {
+		return pageDefinitionConfig, filesFieldErrors(pageDefinitionConfig.InvalidFieldsReason)
 	}
 
-	// check if the template is a valid source (git url or file path)
-	if isGitURL(pd.Template) {
-		pageDefinitionConfig.TemplateSource = GitURL
-	} else {
-		// assume file path now check if it is a valid path
-		// on the system
-		_, err := os.Stat(pd.Template)
-		if err != nil {
-			pageDefinitionConfig.ValidTemplate = false
-			pageDefinitionConfig.InvalidFields["template"] = "template field is not a valid git url or file path"
-			return pageDefinitionConfig, templateFieldErrors(pageDefinitionConfig.InvalidFields)
-		}
+	_, errRegistrarAlias := cliinit.FindRegistrarByAlias(pd.Registrar)
+	_, errRegistrarName := cliinit.FindDefaultAliasForRegistrar(pd.Registrar)
 
-		pageDefinitionConfig.TemplateSource = FilePath
+	if errRegistrarAlias != nil && errRegistrarName != nil {
+		pageDefinitionConfig.ValidRegistrar = false
+		pageDefinitionConfig.InvalidFieldsReason["registrar"] = "you haven't configured the registrar " + pd.Registrar + ". See supported registrars with 'page conf registrar list' and configure one with 'page conf registrar add namecheap' for example."
+		return pageDefinitionConfig, filesFieldErrors(pageDefinitionConfig.InvalidFieldsReason)
+	}
+
+	_, errHostAlias := cliinit.FindHostByAlias(pd.Host)
+	_, errHostName := cliinit.FindDefaultAliasForHost(pd.Host)
+
+	if errHostAlias != nil && errHostName != nil {
+		pageDefinitionConfig.ValidHost = false
+		pageDefinitionConfig.InvalidFieldsReason["host"] = "you haven't configured the host " + pd.Host + ". See supported registrars with 'page conf host list' and configure one with 'page conf host add aws' for example."
+		return pageDefinitionConfig, filesFieldErrors(pageDefinitionConfig.InvalidFieldsReason)
 	}
 
 	rootDomain, domainErr := GetRootDomain(pd.Domain)
 	if domainErr != nil {
 		pageDefinitionConfig.ValidDomain = false
-		pageDefinitionConfig.InvalidFields["domain"] = "domain field is not a valid domain name"
-		return pageDefinitionConfig, templateFieldErrors(pageDefinitionConfig.InvalidFields)
+		pageDefinitionConfig.InvalidFieldsReason["domain"] = "domain field is not a valid domain name"
+		return pageDefinitionConfig, filesFieldErrors(pageDefinitionConfig.InvalidFieldsReason)
 	}
 
 	// update the domain field with the root domain
 	pd.Domain = rootDomain
+
+	// check if the files is a valid source (git url or file path)
+	if isGitURL(pd.Files) {
+		pageDefinitionConfig.FilesSource = GitURL
+	} else {
+		// assume file path now check if it is a valid path
+		// on the system
+		_, err := os.Stat(pd.Files)
+		if err != nil {
+			pageDefinitionConfig.ValidFiles = false
+			pageDefinitionConfig.InvalidFieldsReason["files"] = "files field is not a valid git url or file path"
+			return pageDefinitionConfig, filesFieldErrors(pageDefinitionConfig.InvalidFieldsReason)
+		}
+
+		pageDefinitionConfig.FilesSource = FilePath
+	}
 
 	return pageDefinitionConfig, nil
 }
@@ -213,26 +231,26 @@ func GetRootDomain(inputURL string) (string, error) {
 	return "", fmt.Errorf("unable to extract root domain from: %s", inputURL)
 }
 
-func isGitURL(template string) bool {
+func isGitURL(url string) bool {
 	// Checking for HTTPS, HTTP, and Git protocol URLs
-	if strings.HasPrefix(template, "https://") ||
-		strings.HasPrefix(template, "http://") ||
-		strings.HasPrefix(template, "git://") {
+	if strings.HasPrefix(url, "https://") ||
+		strings.HasPrefix(url, "http://") ||
+		strings.HasPrefix(url, "git://") {
 		return true
 	}
 
 	// Checking for SSH URLs
-	if strings.HasPrefix(template, "ssh://git@") ||
-		strings.HasPrefix(template, "git@") {
+	if strings.HasPrefix(url, "ssh://git@") ||
+		strings.HasPrefix(url, "git@") {
 		return true
 	}
 
 	return false
 }
 
-func templateFieldErrors(invalidFields map[string]string) error {
+func filesFieldErrors(invalidFields map[string]string) error {
 	var errStr strings.Builder
-	errStr.WriteString("invalid page definition file:\n")
+	errStr.WriteString("invalid page definition file:\n\n")
 
 	for field, err := range invalidFields {
 		errStr.WriteString(fmt.Sprintf("%s: %s\n", field, err))

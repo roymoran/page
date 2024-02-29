@@ -1,23 +1,21 @@
 package constants
 
 type Consts struct {
-	appName       string
-	appVersion    string
-	appTier       string
-	acmeServerURL string
-	analyticsID   string
-	upgradeInfo   string
-	appAuthors    []string
+	appName        string
+	appVersion     string
+	acmeServerURL  string
+	analyticsID    string
+	upgradeMessage string
+	appAuthors     []string
 }
 
 var consts Consts = Consts{
-	appName:       "page cli",
-	appVersion:    "v0.1.2",
-	acmeServerURL: "https://acme-v02.api.letsencrypt.org/directory",
-	analyticsID:   "UA-189047059-2",
-	appTier:       "free version",
-	upgradeInfo:   "upgrade available https://buy.stripe.com/bIYbL12XA83P7pC3cc",
-	appAuthors:    []string{"Roy Moran (roy.moran@icloud.com)"},
+	appName:        "page cli",
+	appVersion:     "v0.3.1",
+	acmeServerURL:  "https://acme-v02.api.letsencrypt.org/directory",
+	analyticsID:    "UA-189047059-2",
+	upgradeMessage: "This feature is not available in the current version of the tool. Purchase information available at https://pagecli.com#pricing.\n\nA single license is available at https://buy.stripe.com/bIYbL12XA83P7pC3cc\n",
+	appAuthors:     []string{"Roy Moran (roy.moran@icloud.com)"},
 }
 
 func Constants() Consts {
@@ -28,10 +26,6 @@ func AppName() string {
 	return consts.appName
 }
 
-func AppTier() string {
-	return consts.appTier
-}
-
 func AppVersion() string {
 	return consts.appVersion
 }
@@ -40,8 +34,8 @@ func AppAuthors() []string {
 	return consts.appAuthors
 }
 
-func AppUpgradeInfo() string {
-	return consts.upgradeInfo
+func AppUpgradeMessage() string {
+	return consts.upgradeMessage
 }
 
 func AcmeServerURL() string {

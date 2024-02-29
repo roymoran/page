@@ -1,3 +1,29 @@
+## [v0.3.1] - Better. Faster. Stronger...
+
+Install this release for Linux or Windows:
+
+```bash
+# for linux
+$ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
+# for windows powershell
+$ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')
+```
+
+On macOS download and run the .pkg installer.
+
+Changes:
+
+* Revert init.go
+* Validate Host and Registrar valid
+
+## [v0.3.0] - Another day, another improvement...
+
+Changes:
+
+* Introduce PAGE_CLI_TEST flag for better testing
+* Change `template` key in definition file to `files`
+* Remove payment link output
+
 ## [v0.1.2] - Another day, another bug...
 
 Install this release:

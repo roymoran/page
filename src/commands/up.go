@@ -38,10 +38,10 @@ func (u Up) UsageInfoExpanded() string {
 	extendedUsage += fmt.Sprintln(up.DisplayName, "-", u.UsageInfoShort())
 	extendedUsage += fmt.Sprintln()
 	extendedUsage += fmt.Sprintln("Description")
-	extendedUsage += fmt.Sprintln("Publishes your template to a live website using the .yml definition file in")
+	extendedUsage += fmt.Sprintln("Publishes your files to a live website using the .yml definition file in")
 	extendedUsage += fmt.Sprintln("the current directory. It uses the default host/registrar specified in the")
 	extendedUsage += fmt.Sprintln(".yml file. If neither a default host/registrar is found for the provided values,")
-	extendedUsage += fmt.Sprintln("the command will fail. If the domain must exists on the configured registrar")
+	extendedUsage += fmt.Sprintln("the command will fail. The domain must exists on the configured registrar.")
 	extendedUsage += fmt.Sprintln("For self-hosting on cloud platforms like azure, aws, etc. if the infrastructure")
 	extendedUsage += fmt.Sprintln("will be created (this is typically a storage resource exposed for public access).")
 	extendedUsage += fmt.Sprintln()
@@ -59,6 +59,7 @@ func (u Up) UsageCategory() int {
 }
 
 func (u Up) BindArgs() {
+
 }
 
 func (u Up) Execute() {
@@ -108,59 +109,43 @@ func (u Up) Execute() {
 
 	var hostProviderConcrete providers.HostProvider
 	var registrarProviderConcrete providers.RegistrarProvider
-	var providerSupported bool
 
 	var registrar providers.IRegistrar = nil
 	var registrarAlias string = pageDefinition.Registrar
 	registrarProviderConcrete = registrarProvider.(providers.RegistrarProvider)
 	registrarName, err := cliinit.FindRegistrarByAlias(registrarAlias)
-	registrar, providerSupported = registrarProviderConcrete.Supported[registrarName]
+	registrar = registrarProviderConcrete.Supported[registrarName]
 
 	// alias may not exist, in which case assume
 	// name of registrar was provided.
 	// Retrieve the default alias for that registrar.
 	if err != nil {
-		registrar, providerSupported = registrarProviderConcrete.Supported[pageDefinition.Registrar]
+		registrar = registrarProviderConcrete.Supported[pageDefinition.Registrar]
 		registrarAlias, _ = cliinit.FindDefaultAliasForRegistrar(pageDefinition.Registrar)
-		if !providerSupported {
-			up.ExecutionOk = false
-			logMessage = fmt.Sprintln("Provided unsupported registrar or non-existing alias (" + pageDefinition.Registrar + "). See 'page conf registrar list' for supported registrars.")
-			OutputChannel <- logMessage
-			logging.LogException(logMessage, false)
-			return
-		}
 	}
 
 	var host providers.IHost = nil
 	var hostAlias string = pageDefinition.Host
 	hostProviderConcrete = hostProvider.(providers.HostProvider)
 	hostName, err := cliinit.FindHostByAlias(hostAlias)
-	host, providerSupported = hostProviderConcrete.Supported[hostName]
+	host = hostProviderConcrete.Supported[hostName]
 
 	// alias may not exist, in which case assume
 	// name of host provider was provided. Retrieve
 	// the default alias for that host.
 	if err != nil {
-		host, providerSupported = hostProviderConcrete.Supported[pageDefinition.Host]
+		host = hostProviderConcrete.Supported[pageDefinition.Host]
 		hostAlias, _ = cliinit.FindDefaultAliasForHost(pageDefinition.Host)
-
-		if !providerSupported {
-			up.ExecutionOk = false
-			logMessage = fmt.Sprintln("Provided unsupported host or non-existing alias (" + pageDefinition.Host + "). See 'page conf host list' for supported hosts.")
-			OutputChannel <- logMessage
-			logging.LogException(logMessage, false)
-			return
-		}
 	}
 
-	if pageDefinitionConfig.TemplateSource == definition.GitURL {
+	if pageDefinitionConfig.FilesSource == definition.GitURL {
 		_, err = git.PlainClone(siteDir, false, &git.CloneOptions{
-			URL: pageDefinition.Template,
+			URL: pageDefinition.Files,
 		})
 		os.RemoveAll(filepath.Join(siteDir, ".git"))
 	} else {
 		// its a file path so just walk the directory and copy the files to the temp dir
-		err = filepath.WalkDir(pageDefinition.Template, func(path string, d os.DirEntry, err error) error {
+		err = filepath.WalkDir(pageDefinition.Files, func(path string, d os.DirEntry, err error) error {
 
 			if err != nil {
 				return err
@@ -169,7 +154,7 @@ func (u Up) Execute() {
 			// if it is a directory, copy the directory structure
 			// to the temp dir and return
 			if d.IsDir() {
-				rel, err := filepath.Rel(pageDefinition.Template, path)
+				rel, err := filepath.Rel(pageDefinition.Files, path)
 				if err != nil {
 					return err
 				}
@@ -182,7 +167,7 @@ func (u Up) Execute() {
 				return nil
 			}
 
-			rel, err := filepath.Rel(pageDefinition.Template, path)
+			rel, err := filepath.Rel(pageDefinition.Files, path)
 			if err != nil {
 				return err
 			}
@@ -213,7 +198,7 @@ func (u Up) Execute() {
 
 	if err != nil {
 		up.ExecutionOk = false
-		logMessage = fmt.Sprint("Error fetching template at " + pageDefinition.Template + ". (details: " + err.Error() + ")")
+		logMessage = fmt.Sprint("Error fetching files at " + pageDefinition.Files + ". (details: " + err.Error() + ")")
 		OutputChannel <- logMessage
 		logging.LogException(logMessage, false)
 		return

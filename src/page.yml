@@ -1,7 +1,6 @@
 # This configuration file defines your site to be deployed
 # The comments displayed before each property should be informative
-# enough to get your site deployed. If you run into a problem
-# you can create an issue at https://github.com/roymoran/page.
+# enough to get your site deployed.
 
 # page config template version
 version: "0"
@@ -15,6 +14,6 @@ registrar: "namecheap"
 # you specified above must own the domain name.
 # Only specify a top-level domain name.
 domain: "pagecli.com"
-# template - a path to static assets to be published, 
+# files - a path to static assets to be published, 
 # either a local file path or public git url.
-template: "https://gitlab.com/roymoran/pageindex.git"
+files: "https://gitlab.com/roymoran/pageindex.git"

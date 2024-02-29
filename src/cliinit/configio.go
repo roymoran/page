@@ -96,7 +96,7 @@ func FindHostByAlias(alias string) (string, error) {
 		}
 	}
 
-	return "", errors.New("")
+	return "", errors.New("no host found for alias")
 }
 
 // FindRegistrarByAlias returns the name of the host given
@@ -114,7 +114,7 @@ func FindRegistrarByAlias(alias string) (string, error) {
 		}
 	}
 
-	return "", errors.New("")
+	return "", errors.New("no registrar found for alias")
 }
 
 // FindDefaultAliasForHost returns the alias for the default
@@ -132,7 +132,7 @@ func FindDefaultAliasForHost(hostName string) (string, error) {
 		}
 	}
 
-	return "", errors.New("")
+	return "", errors.New("no host found for " + hostName)
 }
 
 // FindRegistrarCredentials returns the credentials for a registrar
@@ -168,7 +168,7 @@ func FindDefaultAliasForRegistrar(registrarName string) (string, error) {
 		}
 	}
 
-	return "", errors.New("")
+	return "", errors.New("no registrar found for " + registrarName)
 }
 
 func readConfigFile() (PageConfig, error) {

@@ -1,8 +1,5 @@
-- test multiple sites on single host
-- How to handle ssl renewals? Possibly rerunning 'page up' should renew ssl?
 - How to handle cname record updates? By default root and www subdomain should reach the main website.
 - cli assumes static assets to be uploaded contains index.html. Validate or change.
-- Add user output for exactly what resources were being/going to be deployed to my host and how much its going to cost me. If possible I'd like the ability to revert/destroy the deployment.
 - run gitlab ci test suite for each supported os/architecture
-- If a new page is deployed on same aws host, the host storage get cleared removing other deployed pages. 
 - can i generalize this further to make it 10x easier to support several more registrars and hosts. 
+- add terraform resource with aws host for creating cloudfront function that allows better naviation of SPA
