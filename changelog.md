@@ -1,9 +1,26 @@
-## [v0.3.1] - Better. Faster. Stronger...
+## [v0.3.2] - Forgive Me for I Have Sinned...
 
-Install this release for Linux or Windows:
+Use your terminal to install this release for Linux or Windows:
 
 ```bash
-# for linux
+# for macos/linux
+$ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
+# for windows powershell
+$ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')
+```
+
+On macOS download and run the .pkg installer.
+
+Changes:
+
+* Avoid CNAME record at apex for Namecheap, this causes failure when attempting to validate domain ownership via DNS challenge.
+
+## [v0.3.1] - Better. Faster. Stronger...
+
+Use your terminal to install this release for Linux or Windows:
+
+```bash
+# for macos/linux
 $ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
 # for windows powershell
 $ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')

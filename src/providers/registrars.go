@@ -138,7 +138,7 @@ func registrarProviderTemplate(registrarProviderName string, registrarProviderDe
 			RequiredProvider: map[string]hosts.Provider{
 				"acme": {
 					Source:  "vancluever/acme",
-					Version: "2.18.0",
+					Version: "2.21.0",
 				},
 				"tls": {
 					Source:  "hashicorp/tls",

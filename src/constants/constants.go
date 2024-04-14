@@ -11,7 +11,7 @@ type Consts struct {
 
 var consts Consts = Consts{
 	appName:        "page cli",
-	appVersion:     "v0.3.1",
+	appVersion:     "v0.3.2",
 	acmeServerURL:  "https://acme-v02.api.letsencrypt.org/directory",
 	analyticsID:    "UA-189047059-2",
 	upgradeMessage: "This feature is not available in the current version of the tool. Purchase information available at https://pagecli.com#pricing.\n\nA single license is available at https://buy.stripe.com/bIYbL12XA83P7pC3cc\n",

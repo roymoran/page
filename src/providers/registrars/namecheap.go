@@ -43,11 +43,12 @@ func (n Namecheap) ConfigureAuth() (cliinit.Credentials, error) {
 
 func (n Namecheap) ConfigureDNS(registrarAlias string, pageConfig definition.PageDefinition) error {
 
-	if cnameInfraFile := filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_cname.tf.json"); !terraformutils.ResourcesConfigured(cnameInfraFile) {
-		registrarCnameResourceTemplate := cnameResourceTemplate(pageConfig.Domain)
-		cnameResourceFile, _ := json.MarshalIndent(registrarCnameResourceTemplate, "", " ")
+	dnsRecordType := "ALIAS"
+	if dnsRecordInfraFile := filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_"+strings.ToLower(dnsRecordType)+".tf.json"); !terraformutils.ResourcesConfigured(dnsRecordInfraFile) {
+		registrarDnsRecordResourceTemplate := dnsResourceTemplate(pageConfig.Domain, dnsRecordType)
+		dnsRecordResourceFile, _ := json.MarshalIndent(registrarDnsRecordResourceTemplate, "", " ")
 
-		err := os.WriteFile(cnameInfraFile, cnameResourceFile, 0644)
+		err := os.WriteFile(dnsRecordInfraFile, dnsRecordResourceFile, 0644)
 
 		if err != nil {
 			fmt.Println("error writing acme certificate resource template", err)
@@ -57,15 +58,15 @@ func (n Namecheap) ConfigureDNS(registrarAlias string, pageConfig definition.Pag
 		err = hosts.TfApply(progress.DomainCheck, progress.DomainUpdatingSequence, progress.StandardTimeout)
 
 		if err != nil {
-			os.Remove(cnameInfraFile)
+			os.Remove(dnsRecordInfraFile)
 			return err
 		}
 
 		return nil
 	}
 	var moduleIdentifier string = "module.registrar_" + registrarAlias + "."
-	var cnameIdentifier string = moduleIdentifier + "namecheap_domain_records." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_cname"
-	hosts.TfApplyWithTarget(progress.DomainCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{cnameIdentifier})
+	var dnsRecordIdentifier string = moduleIdentifier + "namecheap_domain_records." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_" + strings.ToLower(dnsRecordType)
+	hosts.TfApplyWithTarget(progress.DomainCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{dnsRecordIdentifier})
 
 	return nil
 }
@@ -175,18 +176,19 @@ func AcmeCertificateResourceTemplate(dnsProvider string, siteDomain string, cred
 }
 
 // TODO: Add ability to add multiple records to a domain here
-func cnameResourceTemplate(siteDomain string) map[string]interface{} {
+func dnsResourceTemplate(siteDomain string, recordType string) map[string]interface{} {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 
-	var cnameResourceTemplate map[string]interface{} = map[string]interface{}{
+	var dnsRecordResourceTemplate map[string]interface{} = map[string]interface{}{
 		"resource": map[string]interface{}{
 			"namecheap_domain_records": map[string]interface{}{
-				formattedDomain + "_cname": map[string]interface{}{
+				formattedDomain + "_" + strings.ToLower(recordType): map[string]interface{}{
 					"domain": siteDomain,
 					"record": map[string]interface{}{
 						"hostname": "@",
-						"type":     "CNAME",
+						"type":     recordType,
 						"address":  "${lookup(var.domains, " + fmt.Sprintf(`"`) + formattedDomain + "_domain" + fmt.Sprintf(`"`) + ").domain}.",
+						"ttl":      60,
 					},
 					// TODO: Add ability to add multiple records to a domain here
 				},
@@ -194,5 +196,5 @@ func cnameResourceTemplate(siteDomain string) map[string]interface{} {
 		},
 	}
 
-	return cnameResourceTemplate
+	return dnsRecordResourceTemplate
 }
