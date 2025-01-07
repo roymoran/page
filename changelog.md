@@ -1,3 +1,22 @@
+## [v0.3.3] - Small Changes
+
+Use your terminal to install this release for Linux or Windows:
+
+```bash
+# for macos/linux
+$ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
+# for windows powershell
+$ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')
+```
+
+On macOS download and run the .pkg installer.
+
+Changes:
+
+* Improve analytics reporting
+* Add logging service
+* Print out commands in consistent order
+
 ## [v0.3.2] - Forgive Me for I Have Sinned...
 
 Use your terminal to install this release for Linux or Windows:

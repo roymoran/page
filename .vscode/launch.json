@@ -12,6 +12,13 @@
             "program": "${workspaceFolder}/src/main.go",
             "args": [],
             "console": "externalTerminal",
+            "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "example",
+                "BASIC_AUTH_PASSWORD": "example",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+            }
         },
         {
             "name": "page builder",
@@ -19,7 +26,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/main.go",
-            "args": ["build"],
+            "args": [
+                "build"
+            ],
             "console": "externalTerminal",
         },
         {
@@ -28,7 +37,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/main.go",
-            "args": ["new"],
+            "args": [
+                "new"
+            ],
             "console": "externalTerminal",
         },
         {
@@ -37,7 +48,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/main.go",
-            "args": ["help"],
+            "args": [
+                "help"
+            ],
             "console": "externalTerminal",
         },
         {
@@ -46,7 +59,10 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/main.go",
-            "args": ["help", "conf"],
+            "args": [
+                "help",
+                "conf"
+            ],
             "console": "externalTerminal",
         },
         {
@@ -55,7 +71,12 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/main.go",
-            "args": ["conf", "registrar", "add", "namecheap"],
+            "args": [
+                "conf",
+                "registrar",
+                "add",
+                "namecheap"
+            ],
             "console": "externalTerminal",
         },
         {
@@ -64,7 +85,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/main.go",
-            "args": ["up"],
+            "args": [
+                "up"
+            ],
             "console": "externalTerminal",
             "env": {
                 "PAGE_CLI_DEBUG": "true"
@@ -76,7 +99,11 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/main.go",
-            "args": ["infra", "mimetype", "{ \"file_path\": \"/var/style.css\" }"],
+            "args": [
+                "infra",
+                "mimetype",
+                "{ \"file_path\": \"/var/style.css\" }"
+            ],
             "console": "externalTerminal",
         },
     ]

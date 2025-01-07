@@ -55,7 +55,10 @@ func (n New) Execute() {
 
 	err := definition.WriteDefinitionFile()
 	if err != nil {
-		logging.LogException(err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: err.Error(),
+		})
 	}
 }
 

@@ -77,7 +77,10 @@ func (u Up) Execute() {
 	pageDefinition, err := definition.ReadDefinitionFile()
 
 	if err != nil {
-		logging.LogException(err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: err.Error(),
+		})
 		up.ExecutionOutput += err.Error()
 		return
 	}
@@ -86,7 +89,10 @@ func (u Up) Execute() {
 
 	if err != nil {
 		up.ExecutionOk = false
-		logging.LogException(err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: err.Error(),
+		})
 		up.ExecutionOutput += err.Error()
 		return
 	}
@@ -99,8 +105,11 @@ func (u Up) Execute() {
 
 	if siteDirErr != nil {
 		up.ExecutionOk = false
-		up.ExecutionOutput += err.Error()
-		logging.LogException(siteDirErr.Error(), true)
+		up.ExecutionOutput += siteDirErr.Error()
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: siteDirErr.Error(),
+		})
 		return
 	}
 
@@ -200,14 +209,20 @@ func (u Up) Execute() {
 		up.ExecutionOk = false
 		logMessage = fmt.Sprint("Error fetching files at " + pageDefinition.Files + ". (details: " + err.Error() + ")")
 		OutputChannel <- logMessage
-		logging.LogException(logMessage, false)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: logMessage,
+		})
 		return
 	}
 
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException(err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: err.Error(),
+		})
 		return
 	}
 
@@ -215,7 +230,10 @@ func (u Up) Execute() {
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException("Failed to configure host, "+err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to configure host, " + err.Error(),
+		})
 		return
 	}
 
@@ -223,7 +241,10 @@ func (u Up) Execute() {
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException("Failed to configure certificate, "+err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to configure certificate, " + err.Error(),
+		})
 		return
 	}
 
@@ -235,7 +256,10 @@ func (u Up) Execute() {
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException("Failed to configure website, "+err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to configure website, " + err.Error(),
+		})
 		return
 	}
 
@@ -250,7 +274,10 @@ func (u Up) Execute() {
 	if err != nil {
 		up.ExecutionOk = false
 		up.ExecutionOutput += err.Error()
-		logging.LogException("Failed to configure registrar, "+err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to configure registrar, " + err.Error(),
+		})
 		return
 	}
 

@@ -61,7 +61,10 @@ func AddProvider(provider IProvider, providerName string, channel chan string) e
 
 	err := provider.Add(providerName, channel)
 	if err != nil {
-		logging.LogException("Failed to add provider. Details: "+err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to add provider. Details: " + err.Error(),
+		})
 	}
 
 	return err
@@ -74,7 +77,10 @@ func AddProvider(provider IProvider, providerName string, channel chan string) e
 func ListProvider(provider IProvider, providerName string, channel chan string) error {
 	err := provider.List(providerName, channel)
 	if err != nil {
-		logging.LogException("Failed to list provider. Details: "+err.Error(), true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to list provider. Details: " + err.Error(),
+		})
 	}
 
 	return err

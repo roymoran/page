@@ -91,7 +91,12 @@ info:
 	@echo
 
 page: $(BUILD_PATH)
-	cd src && go build -o ../$(BUILD_PATH)$(PROGRAM_OUTPUT_NAME)
+	cd src && go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o ../$(BUILD_PATH)$(PROGRAM_OUTPUT_NAME)
 
 test:
 	cd src/tests/unit && PAGE_CLI_TEST=true go test -v
@@ -102,31 +107,66 @@ release: $(BUILD_RELEASE_PATH) $(MACOS_ARM64_PACKAGE_PATH) $(MACOS_AMD64_PACKAGE
 
 # macos intel 64-bit and codesign with Apple Developer Certificate
 page_darwin_amd64.tar.bz2:
-	cd src && env GOOS=darwin GOARCH=amd64 go build -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && mv $(PROGRAM_OUTPUT_NAME) ../$(MACOS_AMD64_PACKAGE_PATH) $(MACOS_PKGBUILD_AMD64) $(MACOS_PKGSIGN_AMD64) $(MACOS_PKGNOTARIZE_AMD64) && mv ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64.pkg ../$(BUILD_RELEASE_PATH)
+	cd src && env GOOS=darwin GOARCH=amd64 go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && mv $(PROGRAM_OUTPUT_NAME) ../$(MACOS_AMD64_PACKAGE_PATH) $(MACOS_PKGBUILD_AMD64) $(MACOS_PKGSIGN_AMD64) $(MACOS_PKGNOTARIZE_AMD64) && mv ../$(MACOS_AMD64_PACKAGE_PATH)page_darwin_amd64.pkg ../$(BUILD_RELEASE_PATH)
 
 # macos arm 64-bit and codesign with Apple Developer Certificate
 page_darwin_arm64.tar.bz2:
-	cd src && env GOOS=darwin GOARCH=arm64 go build -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && mv $(PROGRAM_OUTPUT_NAME) ../$(MACOS_ARM64_PACKAGE_PATH) $(MACOS_PKGBUILD_ARM64) $(MACOS_PKGSIGN_ARM64) $(MACOS_PKGNOTARIZE_ARM64) && mv ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64.pkg ../$(BUILD_RELEASE_PATH)
+	cd src && env GOOS=darwin GOARCH=arm64 go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o $(PROGRAM_OUTPUT_NAME) $(MACOS_CODESIGN) && mv $(PROGRAM_OUTPUT_NAME) ../$(MACOS_ARM64_PACKAGE_PATH) $(MACOS_PKGBUILD_ARM64) $(MACOS_PKGSIGN_ARM64) $(MACOS_PKGNOTARIZE_ARM64) && mv ../$(MACOS_ARM64_PACKAGE_PATH)page_darwin_arm64.pkg ../$(BUILD_RELEASE_PATH)
 
 # linux intel 64-bit
 page_linux_amd64.tar.bz2:
-	cd src && env GOOS=linux GOARCH=amd64 go build -o $(PROGRAM_OUTPUT_NAME) $(LINUX_CODESIGN) && tar -cjvf "page_linux_amd64.tar.bz2" $(PROGRAM_OUTPUT_NAME) && mv page_linux_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
+	cd src && env GOOS=linux GOARCH=amd64 go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o $(PROGRAM_OUTPUT_NAME) $(LINUX_CODESIGN) && tar -cjvf "page_linux_amd64.tar.bz2" $(PROGRAM_OUTPUT_NAME) && mv page_linux_amd64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
 
 # linux arm 64-bit
 page_linux_arm64.tar.bz2:
-	cd src && env GOOS=linux GOARCH=arm64 go build -o $(PROGRAM_OUTPUT_NAME) $(LINUX_CODESIGN) && tar -cjvf "page_linux_arm64.tar.bz2" $(PROGRAM_OUTPUT_NAME) && mv page_linux_arm64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
+	cd src && env GOOS=linux GOARCH=arm64 go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o $(PROGRAM_OUTPUT_NAME) $(LINUX_CODESIGN) && tar -cjvf "page_linux_arm64.tar.bz2" $(PROGRAM_OUTPUT_NAME) && mv page_linux_arm64.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
 
 # linux arm 32-bit
 page_linux_arm.tar.bz2:
-	cd src && env GOOS=linux GOARCH=arm go build -o $(PROGRAM_OUTPUT_NAME) $(LINUX_CODESIGN) && tar -cjvf "page_linux_arm.tar.bz2" $(PROGRAM_OUTPUT_NAME) && mv page_linux_arm.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
+	cd src && env GOOS=linux GOARCH=arm go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o $(PROGRAM_OUTPUT_NAME) $(LINUX_CODESIGN) && tar -cjvf "page_linux_arm.tar.bz2" $(PROGRAM_OUTPUT_NAME) && mv page_linux_arm.tar.bz2 ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME)
 
 # windows intel 64-bit and codesign with osslsigncode
 page_windows_amd64.zip:
-	cd src && env GOOS=windows GOARCH=amd64 go build -o $(PROGRAM_OUTPUT_NAME).exe $(WINDOWS_CODESIGN) && tar -a -c -f "page_windows_amd64.zip" $(PROGRAM_OUTPUT_NAME).exe && mv page_windows_amd64.zip ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME).exe
+	cd src && env GOOS=windows GOARCH=amd64 go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o $(PROGRAM_OUTPUT_NAME).exe $(WINDOWS_CODESIGN) && tar -a -c -f "page_windows_amd64.zip" $(PROGRAM_OUTPUT_NAME).exe && mv page_windows_amd64.zip ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME).exe
 
 # windows arm 64-bit and codesign with osslsigncode
 page_windows_arm64.zip:
-	cd src && env GOOS=windows GOARCH=arm64 go build -o $(PROGRAM_OUTPUT_NAME).exe $(WINDOWS_CODESIGN) && tar -a -c -f "page_windows_arm64.zip" $(PROGRAM_OUTPUT_NAME).exe && mv page_windows_arm64.zip ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME).exe
+	cd src && env GOOS=windows GOARCH=arm64 go build -ldflags "\
+	-X pagecli.com/main/constants.IsProduction=$(PRODUCTION) \
+	-X pagecli.com/main/constants.AppTier=$(APP_TIER) \
+	-X pagecli.com/main/constants.GoogleAnalyticsApiSecret=$(GOOGLE_ANALYTICS_API_SECRET) \
+	-X pagecli.com/main/constants.LoggingServerPassword=$(LOGGING_SERVER_PASSWORD) \
+	-X pagecli.com/main/constants.LoggingServerURL=$(LOGGING_SERVER_URL)" -o $(PROGRAM_OUTPUT_NAME).exe $(WINDOWS_CODESIGN) && tar -a -c -f "page_windows_arm64.zip" $(PROGRAM_OUTPUT_NAME).exe && mv page_windows_arm64.zip ../$(BUILD_RELEASE_PATH) && rm $(PROGRAM_OUTPUT_NAME).exe
 
 $(BUILD_PATH):
 	$(MKDIR) $@

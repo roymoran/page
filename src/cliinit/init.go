@@ -80,7 +80,10 @@ func CliInit() {
 	if dirErr != nil {
 		logMessage = fmt.Sprint("CliInit error. Error creating tf install path.", dirErr)
 
-		logging.LogException(logMessage, true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: logMessage,
+		})
 		log.Fatal(logMessage)
 	}
 
@@ -89,7 +92,10 @@ func CliInit() {
 	if configError != nil {
 		logMessage = fmt.Sprint("CliInit error. Error creating config.json.", configError)
 
-		logging.LogException(logMessage, true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: logMessage,
+		})
 		log.Fatal(logMessage)
 	}
 
@@ -98,7 +104,10 @@ func CliInit() {
 	if installErr != nil {
 		logMessage = fmt.Sprint("CliInit error. Error installing terraform.", installErr)
 
-		logging.LogException(logMessage, true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: logMessage,
+		})
 		log.Fatal(logMessage)
 	}
 
@@ -109,7 +118,10 @@ func CliInit() {
 	if configError != nil {
 		logMessage = fmt.Sprint("CliInit error. Error setting InitialConfig to true.", configError)
 
-		logging.LogException(logMessage, true)
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: logMessage,
+		})
 		log.Fatal(logMessage)
 	}
 }

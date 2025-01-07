@@ -8,6 +8,7 @@ package commands
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
@@ -99,14 +100,23 @@ func Handle(args []string, channel chan string) {
 	command, commandValid := commandLookup[programArgs.ArgValues["command"]]
 
 	if programArgs.ArgValues["command"] == "" {
-		logging.LogEvent("command", "(none)", strings.Join(programArgs.AdditionalArgValues, " "), 0)
+		logging.NewAnalytics().FireEvent("command", logging.EventParams{
+			"name": "(none)",
+			"args": "(none)",
+		})
 	} else {
-		logging.LogEvent("command", programArgs.ArgValues["command"], strings.Join(programArgs.AdditionalArgValues, " "), 0)
+		logging.NewAnalytics().FireEvent("command", logging.EventParams{
+			"name": programArgs.ArgValues["command"],
+			"args": strings.Join(programArgs.AdditionalArgValues, " "),
+		})
 	}
 
 	if !commandValid {
 		OutputChannel <- fmt.Sprint("unrecognized command ", programArgs.ArgValues["command"], ". See 'page' for list of valid commands.\n")
-		logging.LogException("unrecognized command", false)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: "Unrecognized command " + programArgs.ArgValues["command"],
+		})
 		close(OutputChannel)
 		return
 	}
@@ -116,7 +126,6 @@ func Handle(args []string, channel chan string) {
 	command.Execute()
 	OutputChannel <- command.Output()
 	close(OutputChannel)
-	return
 }
 
 func BuildUsageInfo() string {
@@ -126,13 +135,20 @@ func BuildUsageInfo() string {
 	for catergoryID, category := range usageCategories {
 		usageInfo += fmt.Sprint("\n", category, "\n")
 
-		for commandName, command := range commandLookup {
+		sortedCommandNames := make([]string, 0)
+		for k := range commandLookup {
+			sortedCommandNames = append(sortedCommandNames, k)
+		}
+
+		sort.Strings(sortedCommandNames)
+
+		for _, commandName := range sortedCommandNames {
 			if commandName == "none" || commandName == "infra" {
 				continue
 			}
 
-			if command.UsageCategory() == catergoryID {
-				fmt.Fprint(&b, "   ", commandName, "\t\t", command.UsageInfoShort(), "\n")
+			if commandLookup[commandName].UsageCategory() == catergoryID {
+				fmt.Fprint(&b, "   ", commandName, "\t\t", commandLookup[commandName].UsageInfoShort(), "\n")
 				usageInfo += fmt.Sprint(b.String())
 				b.Reset()
 			}
@@ -158,7 +174,10 @@ func ValidateArgs(commandInfo *CommandInfo, args []string) {
 		commandInfo.ExecutionOutput += fmt.Sprintln()
 		commandInfo.ExecutionOutput += fmt.Sprint("See 'page help ", commandInfo.DisplayName, "' for usage info.")
 		commandInfo.ExecutionOutput += fmt.Sprintln()
-		logging.LogException("invalid command arguements", false)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: "invalid command arguements",
+		})
 		return
 	}
 

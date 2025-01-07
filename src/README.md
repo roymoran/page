@@ -4,7 +4,7 @@ For fast debugging just build the application and execute it.
 
 ```bash
 # compile and output application to build directory
-$ make
+$ make PRODUCTION=false APP_TIER=OSS GOOGLE_ANALYTICS_API_SECRET=example LOGGING_SERVER_PASSWORD=example LOGGING_SERVER_URL=http://192.168.1.140:32750/
 # navigate to executable
 $ cd build
 # execute

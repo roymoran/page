@@ -9,7 +9,7 @@ import (
 
 func TestNoneCommand(t *testing.T) {
 	args := []string{}
-	expectedSubstring := "page cli v"
+	expectedSubstring := "page v"
 	output := make(chan string)
 	go commands.Handle(args, output)
 	if !strings.Contains(<-output, expectedSubstring) {

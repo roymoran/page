@@ -17,14 +17,18 @@ variables:
   GOPRIVATE: "gitlab.nasapps.net"
 
 before_script:
+  - go version
+  - go env
+  # set CGO_ENABLED=0 due to error
+  # In file included from _cgo_export.c:4:
+  # cgo-gcc-export-header-prolog:31:14: error: size of array ‘_check_for_64_bit_pointer_matching_GoInt’ is negative
+  - export CGO_ENABLED=0
   - echo -e "machine gitlab.nasapps.net\nlogin $GITLAB_USERNAME\npassword $GITLAB_TOKEN" > ~/.netrc
 
 build:
   stage: builds
   script:
-    - go version
-    - go env
-    - make
+    - make PRODUCTION=$PRODUCTION APP_TIER=$APP_TIER_OSS GOOGLE_ANALYTICS_API_SECRET=$GOOGLE_ANALYTICS_API_SECRET LOGGING_SERVER_PASSWORD=$LOGGING_SERVER_PASSWORD LOGGING_SERVER_URL=$LOGGING_SERVER_URL
 
 test:
     stage: tests
@@ -39,7 +43,7 @@ all:
   script:
     - apt-get update -y
     - apt-get install bzip2 -y
-    - make release
+    - make release PRODUCTION=$PRODUCTION APP_TIER=$APP_TIER_OSS GOOGLE_ANALYTICS_API_SECRET=$GOOGLE_ANALYTICS_API_SECRET LOGGING_SERVER_PASSWORD=$LOGGING_SERVER_PASSWORD LOGGING_SERVER_URL=$LOGGING_SERVER_URL
   artifacts:
     paths:
       - $CI_PROJECT_DIR/build/bins/**

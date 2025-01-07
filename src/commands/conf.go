@@ -48,7 +48,10 @@ func (c Conf) BindArgs() {
 		logMessage = fmt.Sprint("unrecognized value '", conf.ArgValues["providerType"], "'. Expected either registrar or host\n\n")
 		conf.ExecutionOk = false
 		conf.ExecutionOutput = logMessage
-		logging.LogException(logMessage, false)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: logMessage,
+		})
 		return
 	}
 
@@ -59,7 +62,10 @@ func (c Conf) BindArgs() {
 		logMessage = fmt.Sprint("unrecognized value '", conf.ArgValues["actionName"], "'. Expected either add or list\n\n")
 		conf.ExecutionOk = false
 		conf.ExecutionOutput = logMessage
-		logging.LogException(logMessage, false)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: logMessage,
+		})
 		return
 	}
 
@@ -81,7 +87,10 @@ func (c Conf) BindArgs() {
 			logMessage = fmt.Sprint("unrecognized value '", conf.ArgValues["providerName"], "' for ", conf.ArgValues["providerType"], ". See 'page ", conf.ArgValues["providerType"], " list' for currently supported ", conf.ArgValues["providerType"], "s\n\n")
 			conf.ExecutionOk = false
 			conf.ExecutionOutput = logMessage
-			logging.LogException(logMessage, false)
+			logging.SendLog(logging.LogRecord{
+				Level:   "error",
+				Message: logMessage,
+			})
 			return
 		}
 	}
@@ -132,7 +141,10 @@ func (c Conf) Execute() {
 	err := confArgs.Action(confArgs.Provider, conf.ArgValues["providerName"], OutputChannel)
 	if err != nil {
 		conf.ExecutionOk = false
-		logging.LogException(err.Error(), false)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: err.Error(),
+		})
 	}
 }
 

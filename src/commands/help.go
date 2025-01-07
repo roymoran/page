@@ -29,7 +29,10 @@ func (h Help) BindArgs() {
 		logMessage = fmt.Sprint("unrecognized command '", help.ArgValues["commandName"], "'. See 'page' for valid commands.\n")
 		help.ExecutionOk = false
 		help.ExecutionOutput += logMessage
-		logging.LogException(logMessage, false)
+		logging.SendLog(logging.LogRecord{
+			Level:   "error",
+			Message: logMessage,
+		})
 		return
 	}
 }
