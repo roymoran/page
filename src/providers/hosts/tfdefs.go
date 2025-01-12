@@ -85,9 +85,16 @@ type RegistrarModuleTemplate struct {
 }
 
 type RegistrarModuleProperties struct {
-	Domains map[string]Domain `json:"domains,omitempty"`
-	Source  string            `json:"source,omitempty"`
+	Domains    map[string]Domain     `json:"domains,omitempty"`
+	DNSRecords map[string]DNSRecords `json:"dns_records,omitempty"`
+	Source     string                `json:"source,omitempty"`
 }
+
 type Domain struct {
 	Domain string `json:"domain,omitempty"`
+}
+
+type DNSRecords struct {
+	Records    string   `json:"records,omitempty"`
+	RecordVars []string `json:"record_vars,omitempty"`
 }

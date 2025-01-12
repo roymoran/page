@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-git/go-git/v5"
 	"pagecli.com/main/cliinit"
@@ -216,16 +214,8 @@ func (u Up) Execute() {
 		return
 	}
 
-	if err != nil {
-		up.ExecutionOk = false
-		up.ExecutionOutput += err.Error()
-		logging.SendLog(logging.LogRecord{
-			Level:   "critical",
-			Message: err.Error(),
-		})
-		return
-	}
-
+	// lets create the base infrastructure required to host
+	// the website. This varies by host.
 	err = host.ConfigureHost(hostAlias, siteDir, pageDefinition)
 	if err != nil {
 		up.ExecutionOk = false
@@ -237,38 +227,42 @@ func (u Up) Execute() {
 		return
 	}
 
-	err = registrar.ConfigureCertificate(registrarAlias, pageDefinition)
-	if err != nil {
-		up.ExecutionOk = false
-		up.ExecutionOutput += err.Error()
-		logging.SendLog(logging.LogRecord{
-			Level:   "critical",
-			Message: "Failed to configure certificate, " + err.Error(),
-		})
-		return
+	// If the host is capable of certificate management, lets rely on it.
+	// Relying on host for this capability offsets the need for manual
+	// intervention for certificate renewals. Otherwise, we rely on ACME/LetsEncrypt
+	// for local certificate management and upload the certificate to the host.
+	if host.IsManagedCertificateCapable() {
+		err = host.ConfigureCertificate(hostAlias, pageDefinition)
+		if err != nil {
+			up.ExecutionOk = false
+			up.ExecutionOutput += err.Error()
+			return
+		}
+
+		// we've generated the managed certificate, but we need to surface
+		// the DNS settings so that the registrar can finalize domain verification
+		err = writeDNSRecordVarToRegistrarModule(hostAlias, registrarAlias, formattedDomain, formattedDomain+"_dns_records")
+		if err != nil {
+			up.ExecutionOk = false
+			up.ExecutionOutput += err.Error()
+			return
+		}
+	} else {
+		err = registrar.ConfigureCertificate(registrarAlias, pageDefinition)
+		if err != nil {
+			up.ExecutionOk = false
+			up.ExecutionOutput += err.Error()
+			return
+		}
+		// now adjust host module terraform template to provide
+		// certificate details as input to the host module
+		err = addCertificatesToHostModule(hostAlias, registrarAlias, formattedDomain)
+		if err != nil {
+			up.ExecutionOk = false
+			up.ExecutionOutput += err.Error()
+			return
+		}
 	}
-
-	// now adjust host module terraform template to provide
-	// certificate details as input to the host module
-	err = addCertificatesToHostModule(hostAlias, registrarAlias, formattedDomain)
-
-	err = host.ConfigureWebsite(hostAlias, siteDir, pageDefinition)
-	if err != nil {
-		up.ExecutionOk = false
-		up.ExecutionOutput += err.Error()
-		logging.SendLog(logging.LogRecord{
-			Level:   "critical",
-			Message: "Failed to configure website, " + err.Error(),
-		})
-		return
-	}
-
-	// now adjust host module terraform template to include
-	// output values for the host module
-	err = addOutputsToHostModule(hostAlias, registrarAlias, formattedDomain)
-
-	// now adjust registrar module terraform template
-	err = writeCnameDomainToRegistrarModule(hostAlias, registrarAlias, formattedDomain)
 
 	err = registrar.ConfigureDNS(registrarAlias, pageDefinition)
 	if err != nil {
@@ -281,75 +275,46 @@ func (u Up) Execute() {
 		return
 	}
 
-	hostOutputKey := "host_" + hostAlias + "_" + formattedDomain
-	certExpiration, _ := hosts.TfSingleOutput[string](hostOutputKey, "certificate_expiry")
-	dayBeforeRenew, _ := hosts.TfSingleOutput[int](hostOutputKey, "certificate_min_days_before_renew")
-	// domain, _ := hosts.TfSingleOutput[string](hostOutputKey, "domain")
-
-	// Parse the time from the string
-	var userReadableExpiration string
-	var renewInfo string
-	expirationTime, err := time.Parse(time.RFC3339, certExpiration)
+	err = host.ConfigureWebsite(hostAlias, siteDir, pageDefinition)
 	if err != nil {
-		userReadableExpiration = certExpiration
-		renewInfo = "Certificate Renewal: run 'page up' within " + strconv.Itoa(dayBeforeRenew) + " days of expiration"
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to configure website, " + err.Error(),
+		})
+		return
+	}
 
-	} else {
-		// Format the time to be more user-readable
-		userReadableExpiration = expirationTime.Format("January 2, 2006 at 3:04pm (MST)")
-		// Calculate the renewal window start time
-		renewalWindowStart := expirationTime.AddDate(0, 0, -dayBeforeRenew)
-		// Calculate the time remaining before the renewal window starts
-		timeUntilRenewal := time.Until(renewalWindowStart)
-		daysUntilRenewal := int(timeUntilRenewal.Hours() / 24)
-		renewInfo = "Certificate Renewal: run 'page up' in " + strconv.Itoa(daysUntilRenewal) + " days"
+	// now adjust registrar module terraform template
+	err = writeDNSRecordVarToRegistrarModule(hostAlias, registrarAlias, formattedDomain, formattedDomain+"_domain")
+	if err != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to configure registrar, " + err.Error(),
+		})
+		return
+	}
 
+	err = registrar.ConfigureDNS(registrarAlias, pageDefinition)
+	if err != nil {
+		up.ExecutionOk = false
+		up.ExecutionOutput += err.Error()
+		logging.SendLog(logging.LogRecord{
+			Level:   "critical",
+			Message: "Failed to configure registrar, " + err.Error(),
+		})
+		return
 	}
 
 	up.ExecutionOutput += fmt.Sprintln("")
-	up.ExecutionOutput += fmt.Sprintln("Page details")
-	up.ExecutionOutput += fmt.Sprintln("Domain: https://" + pageDefinition.Domain)
-	up.ExecutionOutput += fmt.Sprintln("Certificate Expires: " + userReadableExpiration)
-	up.ExecutionOutput += fmt.Sprintln(renewInfo)
+	up.ExecutionOutput += fmt.Sprintln("Done!")
 }
 
 func (u Up) Output() string {
 	return up.ExecutionOutput
-}
-
-func addOutputsToHostModule(hostAlias string, registrarAlias string, formattedSiteDomain string) error {
-	var hostModuleTemplate hosts.HostModuleTemplate
-	templateData, readFileErr := os.ReadFile(cliinit.ModuleTemplatePath("host", hostAlias))
-	if readFileErr != nil {
-		return readFileErr
-	}
-
-	err := json.Unmarshal(templateData, &hostModuleTemplate)
-	if err != nil {
-		return err
-	}
-
-	hostModuleOutputValueProperties := hosts.HostModuleOutputValueProperties{
-		Domain:                        "${module.host_" + hostAlias + "." + formattedSiteDomain + "_domain}",
-		CertificateMinDaysBeforeRenew: "${module.registrar_" + registrarAlias + "." + formattedSiteDomain + "_certificate.min_days_remaining}",
-		CertificateExpiry:             "${module.registrar_" + registrarAlias + "." + formattedSiteDomain + "_certificate.certificate_not_after}",
-	}
-
-	if hostModuleTemplate.Output == nil {
-		hostModuleTemplate.Output = map[string]hosts.HostModuleOutputValue{}
-	}
-
-	hostModuleTemplate.Output["host_"+hostAlias+"_"+formattedSiteDomain] = hosts.HostModuleOutputValue{
-		Value: hostModuleOutputValueProperties,
-	}
-
-	file, err := json.MarshalIndent(hostModuleTemplate, "", " ")
-	err = os.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func addCertificatesToHostModule(hostAlias string, registrarAlias string, formattedSiteDomain string) error {
@@ -373,6 +338,10 @@ func addCertificatesToHostModule(hostAlias string, registrarAlias string, format
 	hostModuleTemplate.Module["host_"+hostAlias].Certificates[formattedSiteDomain+"_certificate"] = newCert
 
 	file, err := json.MarshalIndent(hostModuleTemplate, "", " ")
+	if err != nil {
+		return err
+	}
+
 	err = os.WriteFile(cliinit.ModuleTemplatePath("host", hostAlias), []byte(file), 0644)
 	if err != nil {
 		return err
@@ -381,10 +350,9 @@ func addCertificatesToHostModule(hostAlias string, registrarAlias string, format
 	return nil
 }
 
-func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, formattedSiteDomain string) error {
+func writeDNSRecordVarToRegistrarModule(hostAlias string, registrarAlias string, formattedSiteDomain string, recordVarName string) error {
 	var registrarModuleTemplate hosts.RegistrarModuleTemplate
 	templateData, readFileErr := os.ReadFile(cliinit.ModuleTemplatePath("registrar", registrarAlias))
-
 	if readFileErr != nil {
 		return readFileErr
 	}
@@ -394,13 +362,85 @@ func writeCnameDomainToRegistrarModule(hostAlias string, registrarAlias string, 
 		return err
 	}
 
-	cnameDomain := hosts.Domain{
-		Domain: "${module.host_" + hostAlias + "." + formattedSiteDomain + "_domain}",
+	registrarKey := "registrar_" + registrarAlias
+	dnsRecordsKey := formattedSiteDomain + "_dns_records"
+	registrarModule := registrarModuleTemplate.Module[registrarKey]
+	newDnsRecordVar := "module.host_" + hostAlias + "." + recordVarName
+	dnsRecords := hosts.DNSRecords{}
+
+	if registrarModule.DNSRecords == nil {
+		registrarModule.DNSRecords = make(map[string]hosts.DNSRecords)
 	}
 
-	registrarModuleTemplate.Module["registrar_"+registrarAlias].Domains[formattedSiteDomain+"_domain"] = cnameDomain
+	if _, keyPresent := registrarModule.DNSRecords[dnsRecordsKey]; keyPresent {
+		dnsRecords = registrarModule.DNSRecords[dnsRecordsKey]
+	}
+
+	for _, recordVar := range dnsRecords.RecordVars {
+		if strings.Compare(recordVar, newDnsRecordVar) == 0 {
+			return nil
+		}
+	}
+
+	dnsRecords.RecordVars = append(dnsRecords.RecordVars, newDnsRecordVar)
+
+	registrarModule.DNSRecords[dnsRecordsKey] = dnsRecords
+	registrarModuleTemplate.Module[registrarKey] = registrarModule
 
 	file, err := json.MarshalIndent(registrarModuleTemplate, "", " ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(cliinit.ModuleTemplatePath("registrar", registrarAlias), []byte(file), 0644)
+	if err != nil {
+		return err
+	}
+
+	err = updateDNSRecordsInRegistrarModule(registrarAlias, formattedSiteDomain)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func updateDNSRecordsInRegistrarModule(registrarAlias string, formattedSiteDomain string) error {
+	var registrarModuleTemplate hosts.RegistrarModuleTemplate
+	templateData, readFileErr := os.ReadFile(cliinit.ModuleTemplatePath("registrar", registrarAlias))
+	if readFileErr != nil {
+		return readFileErr
+	}
+
+	err := json.Unmarshal(templateData, &registrarModuleTemplate)
+	if err != nil {
+		return err
+	}
+
+	registrarKey := "registrar_" + registrarAlias
+	dnsRecordsKey := formattedSiteDomain + "_dns_records"
+	registrarModule := registrarModuleTemplate.Module[registrarKey]
+
+	dnsRecords := registrarModule.DNSRecords[dnsRecordsKey]
+	dnsRecords.Records = "${concat("
+	for index, recordVar := range dnsRecords.RecordVars {
+		if index == len(dnsRecords.RecordVars)-1 {
+			dnsRecords.Records += recordVar
+
+		} else {
+			dnsRecords.Records += recordVar + ","
+		}
+	}
+	dnsRecords.Records += ")}"
+
+	registrarModule.DNSRecords[dnsRecordsKey] = dnsRecords
+	registrarModuleTemplate.Module[registrarKey] = registrarModule
+
+	file, err := json.MarshalIndent(registrarModuleTemplate, "", " ")
+	if err != nil {
+		return err
+	}
+
 	err = os.WriteFile(cliinit.ModuleTemplatePath("registrar", registrarAlias), []byte(file), 0644)
 	if err != nil {
 		return err

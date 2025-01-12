@@ -15,10 +15,12 @@ import (
 type IHost interface {
 	ConfigureAuth() error
 	ConfigureHost(hostAlias string, templatePath string, page definition.PageDefinition) error
+	ConfigureCertificate(string, definition.PageDefinition) error
 	ConfigureWebsite(hostAlias string, templatePath string, page definition.PageDefinition) error
 	AddHost(alias string, definitionPath string) error
 	ProviderTemplate() []byte
 	ProviderConfigTemplate() []byte
+	IsManagedCertificateCapable() bool
 }
 
 func (hp HostProvider) Add(name string, channel chan string) error {
@@ -28,12 +30,11 @@ func (hp HostProvider) Add(name string, channel chan string) error {
 	host.ConfigureAuth()
 	providerTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "provider.tf.json")
 	providerConfigTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "providerconfig.tf.json")
-	certificatesVariableTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "certificatesvar.tf.json")
 
 	moduleTemplatePath := cliinit.ModuleTemplatePath("host", alias)
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprintln("Configuring", name, "host...")
-		err := InstallHostTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, certificatesVariableTemplatePath)
+		err := InstallHostTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), host, providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath)
 		if err != nil {
 			return err
 		}
@@ -61,7 +62,7 @@ func (hp HostProvider) List(name string, channel chan string) error {
 	return nil
 }
 
-func InstallHostTerraformProvider(name string, alias string, providerAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, certificatesVariableTemplatePath string) error {
+func InstallHostTerraformProvider(name string, alias string, providerAliasPath string, host IHost, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string) error {
 	hostDirErr := os.MkdirAll(providerAliasPath, os.ModePerm)
 	if hostDirErr != nil {
 		os.RemoveAll(providerAliasPath)
@@ -72,12 +73,10 @@ func InstallHostTerraformProvider(name string, alias string, providerAliasPath s
 	moduleTemplatePathErr := os.WriteFile(moduleTemplatePath, hostModuleTemplate(name, alias), 0644)
 	providerTemplatePathErr := os.WriteFile(providerTemplatePath, host.ProviderTemplate(), 0644)
 	providerConfigTemplatePathErr := os.WriteFile(providerConfigTemplatePath, host.ProviderConfigTemplate(), 0644)
-	hostCertificatesVariableTemplatePathErr := os.WriteFile(certificatesVariableTemplatePath, hostCertificatesVariableTemplate(alias), 0644)
 
 	if moduleTemplatePathErr != nil ||
 		providerTemplatePathErr != nil ||
-		providerConfigTemplatePathErr != nil ||
-		hostCertificatesVariableTemplatePathErr != nil {
+		providerConfigTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
 		os.RemoveAll(providerAliasPath)
 		return fmt.Errorf("failed os.WriteFile for provider template")
@@ -99,26 +98,11 @@ func hostModuleTemplate(providerName string, alias string) []byte {
 	var hostProviderTemplate map[string]interface{} = map[string]interface{}{
 		"module": map[string]interface{}{
 			"host_" + alias: map[string]interface{}{
-				"source":       "./" + providerName + "/" + alias,
-				"certificates": map[string]string{},
+				"source": "./" + providerName + "/" + alias,
 			},
 		},
 	}
 
 	file, _ := json.MarshalIndent(hostProviderTemplate, "", " ")
-	return file
-}
-
-func hostCertificatesVariableTemplate(alias string) []byte {
-
-	var hostCertificatesVariableTemplate map[string]interface{} = map[string]interface{}{
-		"variable": map[string]interface{}{
-			"certificates": map[string]interface{}{
-				"type": "map(object({certificate_pem = string, private_key_pem = string, certificate_chain = string}))",
-			},
-		},
-	}
-
-	file, _ := json.MarshalIndent(hostCertificatesVariableTemplate, "", " ")
 	return file
 }

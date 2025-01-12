@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"pagecli.com/main/cliinit"
-	"pagecli.com/main/constants"
 	"pagecli.com/main/definition"
 	"pagecli.com/main/providers/hosts"
 )
@@ -24,16 +23,9 @@ type IRegistrar interface {
 
 func (rp RegistrarProvider) Add(name string, channel chan string) error {
 	var alias string = AssignAliasName("registrar")
-	var acmeEmail string
 
 	registrarProvider := SupportedProviders.Providers["registrar"].(RegistrarProvider)
 	registrar := registrarProvider.Supported[name]
-
-	fmt.Print("ACME registration email: ")
-	_, err := fmt.Scanln(&acmeEmail)
-	if err != nil {
-		return err
-	}
 
 	credentials, authErr := registrar.ConfigureAuth()
 	registrarProviderName, registrarProviderDefinition := registrar.ProviderDefinition()
@@ -47,14 +39,14 @@ func (rp RegistrarProvider) Add(name string, channel chan string) error {
 	// This doesn't work with multiple aliases since
 	// provider config file is created only once on host dir configuration
 	providerConfigTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "providerconfig.tf.json")
-	acmeRegistrationTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "acmeregistration.tf.json")
-	domainsVariableTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "domainsvar.tf.json")
+	// acmeRegistrationTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "acmeregistration.tf.json")
+	registrarVariablesTemplatePath := filepath.Join(cliinit.ProviderAliasPath(name, alias), "registrarvar.tf.json")
 
 	moduleTemplatePath := cliinit.ModuleTemplatePath("registrar", alias)
 
 	if !AliasDirectoryConfigured(cliinit.ProviderAliasPath(name, alias)) {
 		channel <- fmt.Sprintln("Configuring", name, "registrar...")
-		err := InstallRegistrarTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, acmeRegistrationTemplatePath, acmeEmail, registrarProviderName, registrarProviderDefinition, registrarProviderConfig, domainsVariableTemplatePath)
+		err := InstallRegistrarTerraformProvider(name, alias, cliinit.ProviderAliasPath(name, alias), providerTemplatePath, providerConfigTemplatePath, moduleTemplatePath, registrarProviderName, registrarProviderDefinition, registrarProviderConfig, registrarVariablesTemplatePath)
 		if err != nil {
 			return err
 		}
@@ -84,7 +76,7 @@ func (rp RegistrarProvider) List(name string, channel chan string) error {
 	return nil
 }
 
-func InstallRegistrarTerraformProvider(name string, alias string, providerAliasPath string, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, acmeRegistrationTemplatePath string, acmeRegistrationEmail string, registrarProviderName string, registrarProviderDefinition hosts.Provider, registrarProviderConfig map[string]string, domainsVariableTemplatePath string) error {
+func InstallRegistrarTerraformProvider(name string, alias string, providerAliasPath string, providerTemplatePath string, providerConfigTemplatePath string, moduleTemplatePath string, registrarProviderName string, registrarProviderDefinition hosts.Provider, registrarProviderConfig map[string]string, registrarVariablesTemplatePath string) error {
 	hostDirErr := os.MkdirAll(providerAliasPath, os.ModePerm)
 	if hostDirErr != nil {
 		os.Remove(providerAliasPath)
@@ -96,10 +88,12 @@ func InstallRegistrarTerraformProvider(name string, alias string, providerAliasP
 	moduleTemplatePathErr := os.WriteFile(moduleTemplatePath, registrarModuleTemplate(name, alias), 0644)
 	providerTemplatePathErr := os.WriteFile(providerTemplatePath, registrarProviderTemplate, 0644)
 	providerConfigTemplatePathErr := os.WriteFile(providerConfigTemplatePath, registrarProviderConfigTemplate(registrarProviderName, registrarProviderConfig), 0644)
-	acmeRegistrationTemplatePathErr := os.WriteFile(acmeRegistrationTemplatePath, acmeRegistrationTemplate(acmeRegistrationEmail), 0644)
-	domainsVariableTemplatePathErr := os.WriteFile(domainsVariableTemplatePath, hostDomainsVariableTemplate(), 0644)
+	registrarVariablesTemplatePathErr := os.WriteFile(registrarVariablesTemplatePath, hostRegistrarVariablesTemplate(), 0644)
 
-	if moduleTemplatePathErr != nil || providerTemplatePathErr != nil || providerConfigTemplatePathErr != nil || acmeRegistrationTemplatePathErr != nil || domainsVariableTemplatePathErr != nil {
+	if moduleTemplatePathErr != nil ||
+		providerTemplatePathErr != nil ||
+		providerConfigTemplatePathErr != nil ||
+		registrarVariablesTemplatePathErr != nil {
 		os.Remove(moduleTemplatePath)
 		os.RemoveAll(providerAliasPath)
 		fmt.Println("failed os.WriteFile for provider template")
@@ -119,16 +113,15 @@ func InstallRegistrarTerraformProvider(name string, alias string, providerAliasP
 
 func registrarModuleTemplate(providerName string, alias string) []byte {
 
-	var awsProviderTemplate hosts.ModuleTemplate = hosts.ModuleTemplate{
+	var registrarProviderTemplate hosts.ModuleTemplate = hosts.ModuleTemplate{
 		Module: map[string]interface{}{
 			"registrar_" + alias: map[string]interface{}{
-				"source":  "./" + providerName + "/" + alias,
-				"domains": map[string]string{},
+				"source": "./" + providerName + "/" + alias,
 			},
 		},
 	}
 
-	file, _ := json.MarshalIndent(awsProviderTemplate, "", " ")
+	file, _ := json.MarshalIndent(registrarProviderTemplate, "", " ")
 	return file
 }
 
@@ -136,14 +129,6 @@ func registrarProviderTemplate(registrarProviderName string, registrarProviderDe
 	var providerTemplate hosts.ProviderTemplate = hosts.ProviderTemplate{
 		Terraform: hosts.RequiredProviders{
 			RequiredProvider: map[string]hosts.Provider{
-				"acme": {
-					Source:  "vancluever/acme",
-					Version: "2.21.0",
-				},
-				"tls": {
-					Source:  "hashicorp/tls",
-					Version: "4.0.4",
-				},
 				registrarProviderName: registrarProviderDefinition,
 			},
 		},
@@ -156,9 +141,6 @@ func registrarProviderTemplate(registrarProviderName string, registrarProviderDe
 func registrarProviderConfigTemplate(registrarProviderName string, registrarProviderConfig map[string]string) []byte {
 	var providerConfigTemplate hosts.ProviderConfigTemplate = hosts.ProviderConfigTemplate{
 		Provider: map[string]interface{}{
-			"acme": map[string]interface{}{
-				"server_url": constants.AcmeServerURL(),
-			},
 			registrarProviderName: registrarProviderConfig,
 		},
 	}
@@ -167,38 +149,23 @@ func registrarProviderConfigTemplate(registrarProviderName string, registrarProv
 	return file
 }
 
-func acmeRegistrationTemplate(registrationEmail string) []byte {
-	var acmeRegistrationTemplate map[string]interface{} = map[string]interface{}{
-		"resource": map[string]interface{}{
-			"tls_private_key": map[string]interface{}{
-				"private_key": map[string]interface{}{
-					"algorithm": "RSA",
-				},
-			},
+func hostRegistrarVariablesTemplate() []byte {
 
-			"acme_registration": map[string]interface{}{
-				"reg": map[string]interface{}{
-					"account_key_pem": "${tls_private_key.private_key.private_key_pem}",
-					"email_address":   registrationEmail,
-				},
-			},
-		},
-	}
-
-	file, _ := json.MarshalIndent(acmeRegistrationTemplate, "", " ")
-	return file
-}
-
-func hostDomainsVariableTemplate() []byte {
-
-	var hostDomainsVariableTemplate map[string]interface{} = map[string]interface{}{
+	var hostRegistrarVariablesTemplate map[string]interface{} = map[string]interface{}{
 		"variable": map[string]interface{}{
 			"domains": map[string]interface{}{
-				"type": "map(object({domain = string}))",
+				"type":     "map(object({domain = string}))",
+				"nullable": "true",
+				"default":  nil,
+			},
+			"dns_records": map[string]interface{}{
+				"type":     "map(object({records = list(object({ host = string, type = string, value = string, ttl = number})), record_vars = list(string)}))",
+				"nullable": "true",
+				"default":  nil,
 			},
 		},
 	}
 
-	file, _ := json.MarshalIndent(hostDomainsVariableTemplate, "", " ")
+	file, _ := json.MarshalIndent(hostRegistrarVariablesTemplate, "", " ")
 	return file
 }

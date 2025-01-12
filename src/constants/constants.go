@@ -8,7 +8,7 @@ type AppTierType string
 
 const (
 	Free AppTierType = "OSS"
-	Demo AppTierType = "Demo"
+	Demo AppTierType = "Preview"
 	Paid AppTierType = "Paid"
 )
 
@@ -32,7 +32,7 @@ type AppVars struct {
 
 var consts Consts = Consts{
 	appName:               "page",
-	appVersion:            "0.3.3",
+	appVersion:            "0.3.4",
 	acmeServerURL:         "https://acme-v02.api.letsencrypt.org/directory",
 	loggingServerUsername: "loggingserver",
 	measurementID:         "G-BRG7DX159G",

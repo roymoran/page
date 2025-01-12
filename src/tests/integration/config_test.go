@@ -45,7 +45,7 @@ func TestTerraformNamecheapRegistrarProviderInstalled(t *testing.T) {
 	setup()
 	defer cleanup()
 
-	input := []byte("nc\nroy.moran@icloud.com\nrmoran20\napiKey1\n")
+	input := []byte("nc\nrmoran20\napiKey1\n")
 	tmpfile, err := os.CreateTemp("", "gotest")
 
 	if err != nil {

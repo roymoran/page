@@ -1,0 +1,19 @@
+# This configuration file defines your site to be deployed
+# The comments displayed before each property should be informative
+# enough to get your site deployed.
+
+# page config template version
+version: "0"
+# specify a supported host name or an alias
+# supported hosts can be found with 'page conf host list'
+host: "aws"
+# specify a supported registrar name or an alias
+# supported registrars can be found with 'page conf registrar list'
+registrar: "namecheap"
+# specify the domain name for your site. The registrar
+# you specified above must own the domain name.
+# Only specify a top-level domain name.
+domain: "backlogjobs.com"
+# files - a path to static assets to be published, 
+# either a local file path or public git url.
+files: "https://gitlab.com/page-templates/placeholders/comingsoon.git"

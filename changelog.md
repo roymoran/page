@@ -1,3 +1,20 @@
+## [v0.3.4] - Now with AWS Managed Certificate
+
+Use your terminal to install this release for Linux or Windows:
+
+```bash
+# for macos/linux
+$ curl -sSL https://raw.githubusercontent.com/roymoran/page/main/install/install.sh | sh
+# for windows powershell
+$ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/roymoran/page/main/install/install.ps1')
+```
+
+On macOS download and run the .pkg installer.
+
+Changes:
+
+* AWS host now defaults to a managed certificate to avoid manual intervention for certificate renewals. Renewals are now automatically managed by Amazon Certificate Manager.
+
 ## [v0.3.3] - Small Changes
 
 Use your terminal to install this release for Linux or Windows:

@@ -43,9 +43,8 @@ func (n Namecheap) ConfigureAuth() (cliinit.Credentials, error) {
 
 func (n Namecheap) ConfigureDNS(registrarAlias string, pageConfig definition.PageDefinition) error {
 
-	dnsRecordType := "ALIAS"
-	if dnsRecordInfraFile := filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_"+strings.ToLower(dnsRecordType)+".tf.json"); !terraformutils.ResourcesConfigured(dnsRecordInfraFile) {
-		registrarDnsRecordResourceTemplate := dnsResourceTemplate(pageConfig.Domain, dnsRecordType)
+	if dnsRecordInfraFile := filepath.Join(cliinit.ProviderAliasPath(n.RegistrarName, registrarAlias), strings.Replace(pageConfig.Domain, ".", "_", -1)+"_dns.tf.json"); !terraformutils.ResourcesConfigured(dnsRecordInfraFile) {
+		registrarDnsRecordResourceTemplate := dnsResourceTemplate(pageConfig.Domain)
 		dnsRecordResourceFile, _ := json.MarshalIndent(registrarDnsRecordResourceTemplate, "", " ")
 
 		err := os.WriteFile(dnsRecordInfraFile, dnsRecordResourceFile, 0644)
@@ -65,9 +64,11 @@ func (n Namecheap) ConfigureDNS(registrarAlias string, pageConfig definition.Pag
 		return nil
 	}
 	var moduleIdentifier string = "module.registrar_" + registrarAlias + "."
-	var dnsRecordIdentifier string = moduleIdentifier + "namecheap_domain_records." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_" + strings.ToLower(dnsRecordType)
-	hosts.TfApplyWithTarget(progress.DomainCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{dnsRecordIdentifier})
-
+	var dnsRecordIdentifier string = moduleIdentifier + "namecheap_domain_records." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_dns_records"
+	err := hosts.TfApplyWithTarget(progress.DomainCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{dnsRecordIdentifier})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -104,8 +105,10 @@ func (n Namecheap) ConfigureCertificate(registrarAlias string, pageConfig defini
 	// for renewal and renew if necessary. If certificate is not up for renewal, lets provide
 	// some output that indicates to the user when the certificate will be up for renewal
 	var moduleIdentifier string = "module.registrar_" + registrarAlias + "."
-	hosts.TfApplyWithTarget(progress.CertificateCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{moduleIdentifier + "acme_certificate." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_certificate"})
-
+	err := hosts.TfApplyWithTarget(progress.CertificateCheck, progress.ValidatingSequence, progress.StandardTimeout, []string{moduleIdentifier + "acme_certificate." + strings.Replace(pageConfig.Domain, ".", "_", -1) + "_certificate"})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -175,22 +178,24 @@ func AcmeCertificateResourceTemplate(dnsProvider string, siteDomain string, cred
 	}
 }
 
-// TODO: Add ability to add multiple records to a domain here
-func dnsResourceTemplate(siteDomain string, recordType string) map[string]interface{} {
+func dnsResourceTemplate(siteDomain string) map[string]interface{} {
 	formattedDomain := strings.Replace(siteDomain, ".", "_", -1)
 
 	var dnsRecordResourceTemplate map[string]interface{} = map[string]interface{}{
 		"resource": map[string]interface{}{
 			"namecheap_domain_records": map[string]interface{}{
-				formattedDomain + "_" + strings.ToLower(recordType): map[string]interface{}{
+				formattedDomain + "_dns_records": map[string]interface{}{
 					"domain": siteDomain,
-					"record": map[string]interface{}{
-						"hostname": "@",
-						"type":     recordType,
-						"address":  "${lookup(var.domains, " + fmt.Sprintf(`"`) + formattedDomain + "_domain" + fmt.Sprintf(`"`) + ").domain}.",
-						"ttl":      60,
+					"dynamic": map[string]interface{}{
+						"record": map[string]interface{}{
+							"for_each": "${lookup(var.dns_records, " + fmt.Sprintf(`"`) + formattedDomain + "_dns_records" + fmt.Sprintf(`"`) + ").records}",
+							"content": map[string]interface{}{
+								"hostname": "${replace(record.value.host, \"" + siteDomain + ".\", \"\")}",
+								"type":     "${record.value.type}",
+								"address":  "${record.value.value}",
+							},
+						},
 					},
-					// TODO: Add ability to add multiple records to a domain here
 				},
 			},
 		},

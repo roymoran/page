@@ -15,9 +15,10 @@
             "env": {
                 "APP_TIER": "OSS",
                 "PRODUCTION": "false",
-                "GOOGLE_ANALYTICS_API_SECRET": "example",
-                "BASIC_AUTH_PASSWORD": "example",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
                 "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+                "PAGE_CLI_DEBUG": "true"
             }
         },
         {
@@ -30,6 +31,14 @@
                 "build"
             ],
             "console": "externalTerminal",
+            "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+                "PAGE_CLI_DEBUG": "true"
+            }
         },
         {
             "name": "page new",
@@ -41,6 +50,14 @@
                 "new"
             ],
             "console": "externalTerminal",
+            "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+                "PAGE_CLI_DEBUG": "true"
+            }
         },
         {
             "name": "page help",
@@ -52,6 +69,14 @@
                 "help"
             ],
             "console": "externalTerminal",
+            "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+                "PAGE_CLI_DEBUG": "true"
+            }
         },
         {
             "name": "page help conf",
@@ -64,6 +89,14 @@
                 "conf"
             ],
             "console": "externalTerminal",
+            "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+                "PAGE_CLI_DEBUG": "true"
+            }
         },
         {
             "name": "page conf registrar add namecheap",
@@ -78,6 +111,14 @@
                 "namecheap"
             ],
             "console": "externalTerminal",
+            "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+                "PAGE_CLI_DEBUG": "true"
+            }
         },
         {
             "name": "page up",
@@ -90,6 +131,11 @@
             ],
             "console": "externalTerminal",
             "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
                 "PAGE_CLI_DEBUG": "true"
             }
         },
@@ -105,6 +151,14 @@
                 "{ \"file_path\": \"/var/style.css\" }"
             ],
             "console": "externalTerminal",
+            "env": {
+                "APP_TIER": "OSS",
+                "PRODUCTION": "false",
+                "GOOGLE_ANALYTICS_API_SECRET": "HXu99420TwCp2qjQ3jrDEA",
+                "BASIC_AUTH_PASSWORD": "g5xagsQVqiR3rBU",
+                "LOGGING_SERVER_URL": "http://192.168.1.140:32750/",
+                "PAGE_CLI_DEBUG": "true"
+            }
         },
     ]
 }
